@@ -39,29 +39,30 @@ See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
 ****
 endif::arc42help[]
 
-=== <Runtime Scenario 1>
-
-
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
-
-It is possible to use a sequence diagram:
+=== <6.1.Sign Up Flow>
 
 [plantuml,"Sequence diagram",png]
 ----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+image::images/sign up.png[Sign Up Diagram]
 ----
 
-=== <Runtime Scenario 2>
+=== <6.2.Sign In Flow>
 
-=== ...
+[plantuml,"Sequence diagram",png]
+----
+image::images/sign in.png[Sign In Diagram]
+----
 
-=== <Runtime Scenario n>
+=== <6.3.Game Flow>
+
+[plantuml,"Sequence diagram",png]
+----
+image::images/game.png[Game Diagram]
+----
+
+=== <6.4.Statistics Flow>
+
+[plantuml,"Sequence diagram",png]
+----
+image::images/statistics.png[Statistics Diagram]
+----
