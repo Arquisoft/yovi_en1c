@@ -41,28 +41,23 @@ endif::arc42help[]
 
 === <6.1.Sign Up Flow>
 
-[plantuml,"Sequence diagram",png]
 ----
 image::images/sign up.png[Sign Up Diagram]
 ----
 
 === <6.2.Sign In Flow>
 
-[plantuml,"Sequence diagram",png]
 ----
 image::images/sign in.png[Sign In Diagram]
 ----
 
 === <6.3.Game Flow>
 
-[plantuml,"Sequence diagram",png]
 ----
 image::images/game.png[Game Diagram]
 ----
 
 === <6.4.Statistics Flow>
-
-[plantuml,"Sequence diagram",png]
 ----
 image::images/statistics.png[Statistics Diagram]
 ----
