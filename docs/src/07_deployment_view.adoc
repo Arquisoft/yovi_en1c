@@ -63,15 +63,25 @@ endif::arc42help[]
 _**<Overview Diagram>**_
 
 Motivation::
+The system uses Docker to keep services isolated and portable, ensuring smooth transitions between development, testing, and production. 
+A microservices approach separates key functions like authentication, game logic, allowing independent 
+scaling and preventing failures in one service from affecting the rest.
 
-_<explanation in text form>_
+If something goes wrong, the container system helps because if one part fails, it can be restarted without affecting the others.
+
+
 
 Quality and/or Performance Features::
+This system can be scaled up as needed, therefore handling growth. 
 
-_<explanation in text form>_
+
 
 Mapping of Building Blocks to Infrastructure::
-_<description of the mapping>_
+[options="header",cols="2,2"]
+|===
+| Artifact | Infrastructure
+| - | -
+|===
 
 
 === Infrastructure Level 2
