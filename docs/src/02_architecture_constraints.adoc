@@ -97,26 +97,16 @@ endif::arc42help[]
 | Constraint ID | Constraint | Impact | Rationale
 
 | OC-01
-| **Academic Project**
-| Project follows ASW (Advanced Software Architecture) laboratory curriculum
-| Learning outcomes take precedence; project serves educational purposes
-
-| OC-02
-| **Team-Based Development**
-| Multiple team members work on different components simultaneously
-| Requires clear separation of concerns and well-defined interfaces between services
-
-| OC-03
 | **GitHub Repository**
 | Code must be hosted on GitHub under Arquisoft organization (arquisoft/yovi_0)
 | Version control, CI/CD integration, and artifact publication requirements
 
-| OC-04
+| OC-02
 | **SonarCloud Quality Gates**
 | Code must pass SonarCloud quality analysis and coverage thresholds
 | Quality assurance and maintainability requirements
 
-| OC-05
+| OC-03
 | **Release and Deployment Automation**
 | Automated CI/CD pipelines must build, test, and deploy on every release
 | Ensures consistency and reduces manual deployment errors
