@@ -75,12 +75,14 @@ Quality and/or Performance Features::
 This system can be scaled up as needed, therefore handling growth. 
 
 
-
 Mapping of Building Blocks to Infrastructure::
 [options="header",cols="2,2"]
 |===
 | Artifact | Infrastructure
-| - | -
+| webapp (React) | WebApp Container
+| users (Node.js/Express) | Users Container
+| gamey (Rust) | GameY Container
+| Database (MongoDB) | Database Container
 |===
 
 
