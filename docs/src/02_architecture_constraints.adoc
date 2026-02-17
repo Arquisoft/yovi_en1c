@@ -27,3 +27,132 @@ See https://docs.arc42.org/section-2/[Architecture Constraints] in the arc42 doc
 
 ****
 endif::arc42help[]
+
+=== Technical Constraints
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+.Contents
+Technical constraints that restrict architectural and implementation decisions.
+
+.Motivation
+These constraints shape the fundamental design of the system and affect technology choices.
+****
+endif::arc42help[]
+
+|===
+| Constraint ID | Constraint | Impact | Rationale
+
+| TC-01
+| **Microservices Architecture**
+| System must be deployed as three independent containerized services (Webapp, Users Service, GameY)
+| University ASW labs require practice with distributed system architecture and Docker-based deployments
+
+| TC-02
+| **Programming Language Diversity**
+| Frontend must use TypeScript/React, Backend must use Node.js/Express, Game engine must use Rust
+| Learning objectives require hands-on experience with multiple programming paradigms and ecosystems
+
+| TC-03
+| **Docker Containerization**
+| All services must be containerized and orchestrated via Docker Compose
+| Standardized deployment environment across development, testing, and production
+
+| TC-04
+| **HTTP/REST API Communication**
+| All inter-service communication must use HTTP REST protocol with JSON data format
+| Industry standard for microservices communication; ensures compatibility and simplicity
+
+| TC-05
+| **Real-time Game Updates**
+| Game engine must support WebSocket connections for real-time player interactions
+| User experience requirement for responsive gaming; avoids polling overhead
+
+| TC-06
+| **Monitoring Stack Integration**
+| All services must expose Prometheus metrics; system must include Prometheus and Grafana stack
+| Production observability requirement; enables performance monitoring and alerting
+
+| TC-07
+| **Git Repository Structure**
+| All code must be maintained in a single monorepo with multi-component structure
+| Facilitates coordinated development across multiple teams and services
+|===
+
+=== Organizational Constraints
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+.Contents
+Organizational constraints and political constraints that influence architectural decisions.
+
+.Motivation
+Understanding organizational constraints is essential for realistic and feasible architecture decisions.
+****
+endif::arc42help[]
+
+|===
+| Constraint ID | Constraint | Impact | Rationale
+
+| OC-01
+| **GitHub Repository**
+| Code must be hosted on GitHub under Arquisoft organization (arquisoft/yovi_0)
+| Version control, CI/CD integration, and artifact publication requirements
+
+| OC-02
+| **SonarCloud Quality Gates**
+| Code must pass SonarCloud quality analysis and coverage thresholds
+| Quality assurance and maintainability requirements
+
+| OC-03
+| **Release and Deployment Automation**
+| Automated CI/CD pipelines must build, test, and deploy on every release
+| Ensures consistency and reduces manual deployment errors
+|===
+
+=== Conventions and Naming Guidelines
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+.Contents
+Programming, documentation and naming conventions that should be adhered to by all team members.
+
+.Motivation
+Conventions improve consistency, readability and maintainability of the codebase and documentation.
+****
+endif::arc42help[]
+
+|===
+| Convention | Rules | Example
+
+| **Project Structure**
+| Each service in separate directory; services are independently deployable
+| `/webapp`, `/users`, `/gamey`, `/docs`
+
+| **Package Naming**
+| Services follow npm/Cargo naming conventions; lowercase with hyphens where appropriate
+| `yovi_0-webapp`, `yovi_0-users`, `gamey`
+
+| **API Endpoints**
+| REST endpoints follow RESTful conventions; resource-based paths
+| `POST /createuser`, `GET /game/:id`, `POST /move`
+
+| **Configuration**
+| Environment-specific settings via environment variables and `.env` files
+| `VITE_API_URL`, service ports, database URLs
+
+| **Documentation**
+| Arc42 template in AsciiDoc format; architecture documentation in `/docs/src`
+| `01_introduction.adoc`, `03_context_and_scope.adoc`
+
+| **Testing**
+| Unit tests co-located with source code; test files suffixed with `.test.ts/.test.js`
+| `RegisterForm.test.tsx`, `users-service.test.js`
+
+| **Code Quality**
+| TypeScript strict mode; ESLint configuration; Rust clippy lints
+| All code must pass linting before CI/CD acceptance
+|===
