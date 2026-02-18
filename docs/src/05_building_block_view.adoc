@@ -1,225 +1,162 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-building-block-view]]
-
-
 == Building Block View
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-The building block view shows the static decomposition of the system into building blocks (modules, components, subsystems, classes, interfaces, packages, libraries, frameworks, layers, partitions, tiers, functions, macros, operations, data structures, ...) as well as their dependencies (relationships, associations, ...)
+=== Level 1: White Box of the Overall System
 
-This view is mandatory for every architecture documentation.
-In analogy to a house this is the _floor plan_.
+The building block view shows the static decomposition of the system into building blocks and their dependencies.
 
-.Motivation
-Maintain an overview of your source code by making its structure understandable through
-abstraction.
+**Motivation:**
+Decomposing the system into separate components (Webapp, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).
 
-This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.
+**Contained Building Blocks:**
 
-.Form
-The building block view is a hierarchical collection of black boxes and white boxes
-(see figure below) and their descriptions.
-
-image::05_building_blocks-EN.png["Hierarchy of building blocks"]
-
-*Level 1* is the white box description of the overall system together with black
-box descriptions of all contained building blocks.
-
-*Level 2* zooms into some building blocks of level 1.
-Thus it contains the white box description of selected building blocks of level 1, together with black box descriptions of their internal building blocks.
-
-*Level 3* zooms into selected building blocks of level 2, and so on.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-5/[Building Block View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
-=== Whitebox Overall System
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you describe the decomposition of the overall system using the following white box template. It contains
-
- * an overview diagram
- * a motivation for the decomposition
- * black box descriptions of the contained building blocks. For these we offer you alternatives:
-
-   ** use _one_ table for a short and pragmatic overview of all contained building blocks and their interfaces
-   ** use a list of black box descriptions of the building blocks according to the black box template (see below).
-   Depending on your choice of tool this list could be sub-chapters (in text files), sub-pages (in a Wiki) or nested elements (in a modeling tool).
-
-
- * (optional:) important interfaces, that are not explained in the black box templates of a building block, but are very important for understanding the white box.
-Since there are so many ways to specify interfaces why do not provide a specific template for them.
- In the worst case you have to specify and describe syntax, semantics, protocols, error handling,
- restrictions, versions, qualities, necessary compatibilities and many things more.
-In the best case you will get away with examples or simple signatures.
-
-****
-endif::arc42help[]
-
-_**<Overview Diagram>**_
-
-Motivation::
-
-_<text explanation>_
-
-
-Contained Building Blocks::
-_<Description of contained building block (black boxes)>_
-
-Important Interfaces::
-_<Description of important interfaces>_
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Insert your explanations of black boxes from level 1:
-
-If you use tabular form you will only describe your black boxes with name and
-responsibility according to the following schema:
+[plantuml, "level-1-diagram", svg]
+----
+node "User" as user
+node "WIQ System" {
+    component [React Webapp] as webapp
+    component [Node.js/Rust Backend] as backend
+    database [MongoDB] as db
+}
+user -> webapp : Plays Game Y
+webapp -> backend : API Requests
+backend -> db : Persists Data
+----
 
 [cols="1,2" options="header"]
 |===
 | **Name** | **Responsibility**
-| _<black box 1>_ | _<Text>_
-| _<black box 2>_ | _<Text>_
+| React Webapp | Provides the user interface for playing Game Y and user registration.
+| Backend Services | Coordinates game logic, authentication, and service communication.
+| MongoDB | **(Database)** Acts as the primary NoSQL data store for user profiles and history.
+|===
+==== React Webapp
+**Purpose/Responsibility:**
+Provides the user interface for playing Game Y, handling user registration, and displaying real-time game updates.
+
+**Interface(s):**
+* **Web UI:** React-based frontend accessible via browser.
+* **API Consumer:** Communicates with Backend Services via REST/JSON.
+
+**Directory/File Location:**
+`./apps/webapp`
+
+==== Backend Services
+**Purpose/Responsibility:**
+Acts as the central orchestrator. It manages authentication, coordinates game logic between the engine and the user, and handles data persistence.
+
+**Interface(s):**
+* **REST API:** Provides endpoints for login, game actions, and stats.
+* **Engine Connector:** Internal communication with the Rust Game Engine.
+
+**Directory/File Location:**
+`./apps/backend`
+
+==== MongoDB
+**Purpose/Responsibility:**
+Stores persistent data including user credentials, match history, and global rankings.
+
+**Directory/File Location:**
+`./data/db`
+**Important Interfaces:**
+* **REST API:** Communication between frontend and backend via JSON.
+* **Database Connection:** Backend access to MongoDB on port 27017.
+
+---
+
+=== Level 2: White Box of the Backend Services
+
+This level zooms into the Backend to show how it is decomposed into specialized microservices.
+
+[plantuml, "level-2-diagram", svg]
+----
+package "Backend Services" {
+    component [Auth Service] as auth
+    component [Game Service] as game
+    component [User Statistics] as stats
+}
+database "MongoDB" as db
+
+auth -> db : User credentials
+game -> db : Game Y state (YEN)
+stats -> db : Match statistics
+----
+
+**Contained Building Blocks (Internal):**
+
+[cols="1,2" options="header"]
+|===
+| **Name** | **Responsibility**
+| Auth Service | (Node.js) Manages user identity, registration, and security.
+| Game Engine | (Rust) Handles the core rules and hexagonal grid logic for Game Y.
+| Stats Service | Aggregates data for leaderboards and user win/loss history.
 |===
 
+---
+==== Auth Service
+**Purpose/Responsibility:**
+Handles user registration, authentication, and session management. It issues JWT (JSON Web Tokens) for secure access to other services.
 
+**Interface(s):**
+* **HTTP POST /register:** Creates new user accounts.
+* **HTTP POST /login:** Validates credentials and returns a token.
 
-If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
-Its headline is the name of the black box.
-****
-endif::arc42help[]
+**Directory/File Location:**
+`./apps/backend/services/auth`
 
-==== <Name black box 1>
+==== Game Engine (Rust)
+**Purpose/Responsibility:**
+The core of the system. It handles the Game Y logic, validates hexagonal grid moves, and calculates win/loss conditions. Built in Rust for high performance.
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you describe <black box 1>
-according the the following black box template:
+**Interface(s):**
+* **Rust-Node Bridge:** Internal API for receiving game moves and returning states.
 
-* Purpose/Responsibility
-* Interface(s), when they are not extracted as separate paragraphs. This interfaces may include qualities and performance characteristics.
-* (Optional) Quality-/Performance characteristics of the black box, e.g.availability, run time behavior, ....
-* (Optional) directory/file location
-* (Optional) Fulfilled requirements (if you need traceability to requirements).
-* (Optional) Open issues/problems/risks
+**Directory/File Location:**
+`./apps/backend/services/game-engine`
 
-****
-endif::arc42help[]
+==== Statistics Service
+**Purpose/Responsibility:**
+Calculates and updates user rankings and match history. It processes data asynchronously to ensure the game remains responsive.
 
-_<Purpose/Responsibility>_
+**Directory/File Location:**
+`./apps/backend/services/stats`
 
-_<Interface(s)>_
+=== Level 3: White Box of the Database
 
-_<(Optional) Quality/Performance Characteristics>_
+At this level, we describe how the data is structured within MongoDB to support the system’s requirements.
 
-_<(Optional) Directory/File Location>_
+[plantuml, "level-3-diagram", svg]
+----
+database "MongoDB" {
+    folder "Collections" {
+        [Users]
+        [Matches]
+        [Statistics]
+    }
+}
+----
 
-_<(Optional) Fulfilled Requirements>_
+==== Users Collection
+**Purpose/Responsibility:** Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the WIQ System.
 
-_<(optional) Open Issues/Problems/Risks>_
+* **`username`**: Unique identifier for the user.
+* **`password`**: Salted and hashed using BCrypt for security.
+* **`email`**: Used for account recovery and notifications.
 
+**Directory/File Location:** `./data/db/users`
 
+==== Matches Collection
+**Purpose/Responsibility:** Maintains a persistent record of all games played, allowing for match history tracking and game state resumption.
 
+* **`players`**: References to the Users collection for both participants.
+* **`moves`**: Array of moves stored in **YEN notation** to recreate the game state.
+* **`status`**: Indicates the current state of the game (Ongoing, Finished, or Draw).
 
-==== <Name black box 2>
+**Directory/File Location:** `./data/db/matches`
 
-_<black box template>_
+==== Statistics Collection
+**Purpose/Responsibility:** A pre-calculated and optimized collection used for generating the global leaderboard and user performance metrics. It is updated asynchronously by the Stats Service.
 
-==== <Name black box n>
-
-_<black box template>_
-
-
-==== <Name interface 1>
-
-...
-
-==== <Name interface m>
-
-
-
-=== Level 2
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can specify the inner structure of (some) building blocks from level 1 as white boxes.
-
-You have to decide which building blocks of your system are important enough to justify such a detailed description.
-Please prefer relevance over completeness. Specify important, surprising, risky, complex or volatile building blocks.
-Leave out normal, simple, boring or standardized parts of your system
-****
-endif::arc42help[]
-
-==== White Box _<building block 1>_
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-...describes the internal structure of _building block 1_.
-****
-endif::arc42help[]
-
-_<white box template>_
-
-==== White Box _<building block 2>_
-
-
-_<white box template>_
-
-...
-
-==== White Box _<building block m>_
-
-
-_<white box template>_
-
-
-
-=== Level 3
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can specify the inner structure of (some) building blocks from level 2 as white boxes.
-
-When you need more detailed levels of your architecture please copy this
-part of arc42 for additional levels.
-****
-endif::arc42help[]
-
-==== White Box <_building block x.1_>
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Specifies the internal structure of _building block x.1_.
-****
-endif::arc42help[]
-
-_<white box template>_
-
-
-==== White Box <_building block x.2_>
-
-_<white box template>_
-
-
-
-==== White Box <_building block y.1_>
-
-_<white box template>_
+**Directory/File Location:** `./data/db/statistics`
