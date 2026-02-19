@@ -60,63 +60,7 @@ For multiple environments or alternative deployments please copy and adapt this 
 ****
 endif::arc42help[]
 
-_**Overview Diagram**_
-[plantuml, target="deployment-diagram-simple", format="png"]
-----
-@startuml
-' --- Configuration ---
-skinparam componentStyle uml2
-skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 50
-skinparam ranksep 50
-
-' --- Legend (Fixed colors) ---
-legend top right
-  < #99FFCC > External service
-  < #99CCFF > Container
-  < #D4E157 > Docker host
-end legend
-
-' --- External Node ---
-node "User" <<device>> #99FFCC {
-    artifact "Web Client" <<artifact>> as WebClient
-}
-
-' --- Docker Host ---
-node "Docker Host" <<executionEnvironment>> #D4E157 {
-    
-    ' Entry point at the boundary
-    rectangle "WebApp\nContainer" as WebApp #99CCFF
-    rectangle "Gateway\nContainer" as Gateway #99CCFF
-    
-    rectangle "Users Service\nContainer" as Users #99CCFF
-    rectangle "GameY Service\nContainer" as Game #99CCFF
-    
-    database "Database Container" as DB #99CCFF {
-        storage "MongoDB" as Mongo
-    }
-    
-    rectangle "Prometheus\nContainer" as Prometheus #99CCFF
-    rectangle "Grafana\nContainer" as Grafana #99CCFF
-}
-
-' --- Relationships ---
-' Using direct lines for a cleaner look
-WebClient -down-> WebApp : HTTPS
-WebApp -down-> Gateway : HTTPS
-
-Gateway -down-> Users
-Gateway -down-> Game
-
-Game -down-> DB : MongoDB Protocol
-
-' Monitoring
-Grafana -right-> Prometheus
-Prometheus -down-> Gateway
-
-@enduml
-----
+image::07-Level1DeploymentDiagram.png[Deployment Diagram Level 1 Infrastructure]
 
 Motivation::
 The system uses Docker to keep services isolated and portable, ensuring smooth transitions between development, testing, and production. 
@@ -129,13 +73,14 @@ If something goes wrong, the container system helps because if one part fails, i
 
 Quality and/or Performance Features::
 This system can be scaled up as needed, therefore handling growth. 
-
+We’ve focused on performance too, MongoDB is used for flexible and efficient data storage for the game information.
 
 Mapping of Building Blocks to Infrastructure::
 [options="header",cols="2,2"]
 |===
 | Artifact | Infrastructure
 | webapp (React) | WebApp Container
+| gateway (Node.js/Express) | Gateway Container
 | users (Node.js/Express) | Users Container
 | gamey (Rust) | GameY Container
 | Database (MongoDB) | Database Container
