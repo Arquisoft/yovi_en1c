@@ -69,6 +69,20 @@ A table with quality goals and concrete scenarios, ordered by priorities
 ****
 endif::arc42help[]
 
+.Form
+Table with the most important quality goals with regards to the stakeholders' expectations as well as scenarios in which these non-functional qualities are measured.
+****
+endif::arc42help[]
+
+[options="header",cols="1,2,2"]
+|===
+|Quality Goal|Description
+| _<Usability>_ | _<Intuitive user interface to boost use experience. Logical move suggestions by the bot>_
+| _<Performance efficiency>_ | _<Game should process moves with minimal response time>_
+| _<Maintainability>_ | _<Organized and easy-to-read code to facilitate easier modifications and updates in the future.>_
+| _<Availability>_ | _<Having the servers be up with only minimal downtime>_ 
+|===
+
 === Stakeholders
 
 ifdef::arc42help[]
@@ -96,6 +110,8 @@ endif::arc42help[]
 [options="header",cols="1,2,2"]
 |===
 |Role/Name|Contact|Expectations
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+| _<Micrati>_ | _<Micrati contact>_ | _<Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible >_
+| _<End Users>_ | _<Game players>_ | _<Intuitive and well performing game platform>_
+| _<Course professors>_ | _<Pablo González González - gonzalezgpablo@uniovi.es, Jose Emilio Labra Gayo - labra@uniovi.es>_ | _<Easy to read documentation which highlights key decisions and how work has been divided.>_
+| _<Development team>_ | _<Team members>_ | _<To create a game which satisfies other stakeholders' expectations>_
 |===
