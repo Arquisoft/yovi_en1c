@@ -19,13 +19,13 @@ endif::arc42help[]
 
 === Requirements Overview
 
-FUNCTIONAL REQUIREMENTS
-- Publicly accessible application via web which allows users to play matches of Game Y
-- To offer a possibility to play against the machine
-- Ability for users to register in the system
-- Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics
-- API through which user info and game data can be managed
-- Game state should follow YEN notation using JSON messages
+**FUNCTIONAL REQUIREMENTS**
+* Publicly accessible application via web which allows users to play matches of Game Y
+* To offer a possibility to play against the machine
+* Ability for users to register in the system
+* Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics
+* API through which user info and game data can be managed
+* Game state should follow YEN notation using JSON messages
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -76,12 +76,11 @@ If you as an architect do not know how the quality of your work will be judged..
 ****
 endif::arc42help[]
 
-.Form
 Table with the most important quality goals with regards to the stakeholders' expectations as well as scenarios in which these non-functional qualities are measured.
 ****
 endif::arc42help[]
 
-[options="header",cols="1,2,2"]
+[options="header",cols="1,2"]
 |===
 |Quality Goal|Description
 | Usability | Intuitive user interface to boost use experience. Logical move suggestions by the bot.
@@ -90,7 +89,7 @@ endif::arc42help[]
 | Availability | Having the servers be up with only minimal downtime.
 |===
 
-=== Stakeholders
+1.3 Stakeholders
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -117,8 +116,8 @@ endif::arc42help[]
 [options="header",cols="1,2,2"]
 |===
 |Role/Name|Contact|Expectations
-| _Micrati> | Micrati contact_ | Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.
-| _End Users_ | Game players | Intuitive and well performing game platform.
-| _Course professors_ | Pablo González González - gonzalezgpablo@uniovi.es, Jose Emilio Labra Gayo - labra@uniovi.es>_ | _<Easy to read documentation which highlights key decisions and how work has been divided.
-| _Development team_ | Team members | To create a game which satisfies other stakeholders' expectations.
+| Micrati | Micrati contact | Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.
+| End Users | Game players | Intuitive and well performing game platform.
+| Course professors | Pablo González González - gonzalezgpablo@uniovi.es, Jose Emilio Labra Gayo - labra@uniovi.es | Easy to read documentation which highlights key decisions and how work has been divided.
+| Development team | Team members | To create a game which satisfies other stakeholders' expectations.
 |===
