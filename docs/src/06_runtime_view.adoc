@@ -54,3 +54,4 @@ image::../images/game.png[Game Diagram]
 === <6.4.Statistics Flow>
 
 image::../images/statistics.png[Statistics Diagram]
+
