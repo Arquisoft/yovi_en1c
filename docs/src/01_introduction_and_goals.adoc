@@ -75,10 +75,6 @@ If you as an architect do not know how the quality of your work will be judged..
 ****
 endif::arc42help[]
 
-Table with the most important quality goals with regards to the stakeholders' expectations as well as scenarios in which these non-functional qualities are measured.
-****
-endif::arc42help[]
-
 [options="header",cols="1,2"]
 |===
 |Quality Goal|Description
