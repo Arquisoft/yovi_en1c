@@ -17,17 +17,14 @@ These include
 ****
 endif::arc42help[]
 
-=== Requirements Overview
+=== Functional requirements
 
-**FUNCTIONAL REQUIREMENTS**
-<ul>
- <li>Publicly accessible application via web which allows users to play matches of Game Y. </li>
- <li>To offer a possibility to play against the machine. </li>
- <li>Ability for users to register in the system. </li>
- <li>Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics. </li>
- <li>API through which user info and game data can be managed. </li>
- <li>Game state should follow YEN notation using JSON messages </li>
-</ul>
+* Publicly accessible application via web which allows users to play matches of Game Y.
+* To offer a possibility to play against the machine.
+* Ability for users to register in the system.
+* Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics.
+* API through which user info and game data can be managed.
+* Game state should follow YEN notation using JSON messages
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -115,11 +112,11 @@ Table with role names, person names, and their expectations with respect to the 
 ****
 endif::arc42help[]
 
-[options="header",cols="1,2,2"]
+[options="header",cols="1,2"]
 |===
-|Role/Name|Contact|Expectations
-| Micrati | Micrati contact | Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.
-| End Users | Game players | Intuitive and well performing game platform.
-| Course professors | Pablo González González - gonzalezgpablo@uniovi.es, Jose Emilio Labra Gayo - labra@uniovi.es | Easy to read documentation which highlights key decisions and how work has been divided.
-| Development team | Team members | To create a game which satisfies other stakeholders' expectations.
+|Role/Name|Expectations
+| Micrati | Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.
+| End Users | Intuitive and well performing game platform.
+| Course professors | Easy to read documentation which highlights key decisions and how work has been divided.
+| Development team | To create a game which satisfies other stakeholders' expectations.
 |===
