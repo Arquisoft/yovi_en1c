@@ -20,11 +20,11 @@ endif::arc42help[]
 === Requirements Overview
 
 **FUNCTIONAL REQUIREMENTS**
-* Publicly accessible application via web which allows users to play matches of Game Y
-* To offer a possibility to play against the machine
-* Ability for users to register in the system
-* Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics
-* API through which user info and game data can be managed
+* Publicly accessible application via web which allows users to play matches of Game Y. x 
+* To offer a possibility to play against the machine. x 
+* Ability for users to register in the system. x 
+* Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics. x 
+* API through which user info and game data can be managed. x 
 * Game state should follow YEN notation using JSON messages
 
 ifdef::arc42help[]
