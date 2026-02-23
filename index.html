@@ -447,7 +447,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel1">
 <li><a href="#section-introduction-and-goals">1. Introduction and Goals</a>
 <ul class="sectlevel2">
-<li><a href="#_requirements_overview">1.1. Requirements Overview</a></li>
+<li><a href="#_functional_requirements">1.1. Functional requirements</a></li>
 <li><a href="#_quality_goals">1.2. Quality Goals</a></li>
 <li><a href="#_stakeholders">1.3. Stakeholders</a></li>
 </ul>
@@ -586,7 +586,29 @@ These include</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_requirements_overview">1.1. Requirements Overview</h3>
+<h3 id="_functional_requirements">1.1. Functional requirements</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Publicly accessible application via web which allows users to play matches of Game Y.</p>
+</li>
+<li>
+<p>To offer a possibility to play against the machine.</p>
+</li>
+<li>
+<p>Ability for users to register in the system.</p>
+</li>
+<li>
+<p>Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics.</p>
+</li>
+<li>
+<p>API through which user info and game data can be managed.</p>
+</li>
+<li>
+<p>Game state should follow YEN notation using JSON messages</p>
+</li>
+</ul>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -639,12 +661,38 @@ They are not necessarily identical.</p>
 Make sure to be very concrete about these qualities, avoid buzzwords.
 If you as an architect do not know how the quality of your work will be judged&#8230;&#8203;</p>
 </div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>A table with quality goals and concrete scenarios, ordered by priorities</p>
 </div>
 </div>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Quality Goal</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Intuitive user interface to boost use experience. Logical move suggestions by the bot.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Performance efficiency</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game should process moves with minimal response time.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maintainability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Organized and easy-to-read code to facilitate easier modifications and updates in the future.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Having the servers be up with only minimal downtime.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect2">
 <h3 id="_stakeholders">1.3. Stakeholders</h3>
@@ -687,27 +735,31 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 40%;">
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Role/Name</th>
-<th class="tableblock halign-left valign-top">Contact</th>
 <th class="tableblock halign-left valign-top">Expectations</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Micrati</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">End Users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Intuitive and well performing game platform.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Course professors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Easy to read documentation which highlights key decisions and how work has been divided.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Development team</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">To create a game which satisfies other stakeholders' expectations.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1180,42 +1232,88 @@ together with a mapping table showing the relationships between channels and inp
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>A short summary and explanation of the fundamental decisions and solution strategies, that shape system architecture. It includes</p>
+<p>=== Technological decisions
+Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>technology decisions</p>
-</li>
-<li>
-<p>decisions about the top-level decomposition of the system, e.g. usage of an architectural pattern or design pattern</p>
-</li>
-<li>
-<p>decisions on how to achieve key quality goals</p>
-</li>
-<li>
-<p>relevant organizational decisions, e.g. selecting a development process or delegating certain tasks to third parties.</p>
-</li>
-</ul>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Name</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Motivation</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rust</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">An in-demand programming language in the industry and renowned for its performance.Our professors have set this as a so-called constraint.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TypeScript</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Better performance and error catching capabilities than its subset JavaScript. Works seamlessly with HTML and CSS.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MongoDB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flexible data storage model fits our project than its relational counterparts.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">React</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Widely used JavaScript framework facilitates user-friendly components for the front-end.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vite</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Complements React UI library. Modern industry standard for React projects.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Express</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Facilitates easy HTTP req/res cycle for the back end of the user creation page.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docker</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">We can encapsulate different components of our software application into Docker containers which can be hosted on Azure.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Azure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Offers an on-demand computing environment over the cloud for our virtual machine that is highly scalable.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Github</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Easier code management via Git version control. Automatic code deployment to the virtual machine via GitHub Actions.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>These decisions form the cornerstones for your architecture. They are the foundation for many other detailed decisions or implementation rules.</p>
+<p>=== Achieving key quality goals</p>
 </div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>Keep the explanations of such key decisions short.</p>
-</div>
-<div class="paragraph">
-<p>Motivate what was decided and why it was decided that way,
-based upon problem statement, quality goals and key constraints.
-Refer to details in the following sections.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-4/">Solution Strategy</a> in the arc42 documentation.</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Quality goal</th>
+<th class="tableblock halign-left valign-top">How we achieve it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maintainability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Well-structured code and clear documentation to support future changes.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Intuitive UI with React; Rust for efficient, reliable behavior.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Multiple server instances for redundancy and reduced single points of failure.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -2123,7 +2221,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-17 21:23:09 +0100
+Last updated 2026-02-23 11:47:46 +0100
 </div>
 </div>
 </body>
