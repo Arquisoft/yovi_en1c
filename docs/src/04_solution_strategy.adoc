@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
-4.1 Technological decisions
+=== Technological decisions
 Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.
 
 [cols="1,2" options="header"]
@@ -21,9 +21,15 @@ Here are the key decisions related to the technological aspects of our project. 
 
 |===
 
-4.2 Achieving key quality goals
-* **Maintainability:** Well structured code along with proper documentation that guides developers to maintain the application
-* **Usability:** Rust provides high-quality performance. UI will be designed to be as intuitive as possible for the game users with React.
-* **Availability:** We are looking to deploy multiple server instances to create redundancy and to avoid single points of failure.
+=== Achieving key quality goals
+
+[cols="1,3",options="header"]
+|===
+| Quality goal | How we achieve it
+| Maintainability | Well-structured code and clear documentation to support future changes.
+| Usability | Intuitive UI with React; Rust for efficient, reliable behavior.
+| Availability | Multiple server instances for redundancy and reduced single points of failure.
+|===
+
 ****
 endif::arc42help[]
