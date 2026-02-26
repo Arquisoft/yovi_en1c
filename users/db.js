@@ -29,7 +29,7 @@ async function connectDB() {
         );
 
       await User.deleteMany({});
-      console.log("🗑️ Database cleared");
+      console.log("🗑️  Database cleared");
 
       await User.insertMany(seedUsers);
       console.log("🌱 Test data inserted successfully");

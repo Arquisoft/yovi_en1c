@@ -55,12 +55,22 @@ app.post("/createuser", async (req, res) => {
     const savedUser = await newUser.save();
     console.log("User saved to DB:", savedUser._id);
 
+    //Date formatting
+    const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
+      timeZone: "Europe/Madrid",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     // 4. Return the message along with the data fetched from the DB
     res.json({
-      message: `Hello ${savedUser.name}! Welcome to the course!`,
+      message: `Hello ${savedUser.name}! Welcome to the course! You were registered at ${formattedDate}`,
       databaseInfo: {
         id: savedUser._id,
-        registeredAt: savedUser.createdAt, // This confirms the DB generated the date
+        registeredAt: formattedDate,
         status: "Success: Connection verified",
       },
     });
