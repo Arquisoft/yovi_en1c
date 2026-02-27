@@ -100,7 +100,7 @@ async function startServer() {
 }
 
 // Check if the file is being run directly
-if (require.main === module) {
+if (require.main == module) {
   startServer();
 }
 
