@@ -100,7 +100,8 @@ async function startServer() {
 }
 
 // Check if the file is being run directly
-
-startServer();
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
