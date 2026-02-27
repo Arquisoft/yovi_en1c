@@ -14,9 +14,8 @@ async function connectDB() {
     console.log("MongoDB connected:", mongoUri);
 
     // Seed logic: Only run if not in production
-    // Seed logic: Only run if not in production
     if (process.env.NODE_ENV !== "production") {
-      // FIX: Check if the model already exists before defining it
+      // Check if the model already exists before defining it
       const User =
         mongoose.models.User ||
         mongoose.model(
@@ -29,10 +28,10 @@ async function connectDB() {
         );
 
       await User.deleteMany({});
-      console.log("🗑️  Database cleared");
+      console.log("Database cleared");
 
       await User.insertMany(seedUsers);
-      console.log("🌱 Test data inserted successfully");
+      console.log("Test data inserted successfully");
     }
   } catch (err) {
     console.error("MongoDB connection error:", err);

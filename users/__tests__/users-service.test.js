@@ -28,4 +28,35 @@ describe("POST /createuser", () => {
     expect(res.body).toHaveProperty("message");
     expect(res.body.message).toMatch(/Hello Pablo! Welcome to the course!/i);
   });
+
+  it("should return 400 if database save fails", async () => {
+    //Simulate a database error by making the save method throw an error
+    vi.spyOn(User.prototype, "save").mockRejectedValueOnce(
+      new Error("Database error simulated"),
+    );
+
+    const res = await request(app)
+      .post("/createuser")
+      .send({ username: "ErrorUser" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error", "Database error");
+    expect(res.body.details).toBe("Database error simulated");
+  });
+
+  it("should use fallback email if none is provided", async () => {
+    const saveSpy = vi
+      .spyOn(User.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve(this); // Return the current instance
+      });
+
+    const res = await request(app)
+      .post("/createuser")
+      .send({ username: "NoEmailUser" }); // No email provided
+
+    expect(res.status).toBe(200);
+    //Verify that the email was set to the fallback value
+    expect(saveSpy.mock.instances[0].email).toBe("NoEmailUser@example.com");
+  });
 });
