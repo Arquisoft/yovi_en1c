@@ -39,19 +39,19 @@ See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
 ****
 endif::arc42help[]
 
-=== <6.1.Sign Up Flow>
+=== Sign Up Flow
 
 image::../images/sign_up.png[Sign Up Diagram]
 
-=== <6.2.Sign In Flow>
+=== Sign In Flow
 
 image::../images/sign_in.png[Sign In Diagram]
 
-=== <6.3.Game Flow>
+=== Game Flow
 
 image::../images/game.png[Game Diagram]
 
-=== <6.4.Statistics Flow>
+=== Statistics Flow
 
 image::../images/statistics.png[Statistics Diagram]
 
