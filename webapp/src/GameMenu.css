@@ -1,0 +1,111 @@
+/* Centering + max width */
+.menu {
+    width: min(680px, 92vw);
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Card look */
+.menuCard {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 18px;
+    backdrop-filter: blur(8px);
+}
+
+/* Titles */
+.menuTitle {
+    margin: 0 0 6px 0;
+    font-size: 1.3rem;
+}
+
+.menuSubtitle {
+    margin: 0 0 16px 0;
+    opacity: 0.85;
+}
+
+/* Form layout */
+.menuGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 560px) {
+    .menuGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Input groups */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fieldLabel {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.select {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 10, 10, 0.35);
+    color: inherit;
+    outline: none;
+}
+
+.select:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Buttons */
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.btnPrimary {
+    background: rgba(90, 150, 255, 0.25);
+    border-color: rgba(90, 150, 255, 0.35);
+}
+
+.btnPrimary:hover {
+    background: rgba(90, 150, 255, 0.32);
+}
+
+/* Preview box */
+.preview {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    overflow: auto;
+}
+
+.previewTitle {
+    margin: 0 0 8px 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    font-weight: 600;
+}
