@@ -13,6 +13,9 @@ COPY . .
 ARG VITE_API_URL="http://localhost:3000"
 RUN export VITE_API_URL=${VITE_API_URL} && npm run build
 
+ARG VITE_API_URL="http://localhost:4000"
+RUN export VITE_API_URL=${VITE_API_URL} && npm run build
+
 # Production image
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
