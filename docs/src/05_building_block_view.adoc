@@ -8,16 +8,16 @@ ifndef::imagesdir[:imagesdir: ../images]
 The building block view shows the static decomposition of the system into building blocks and their dependencies.
 
 **Motivation:**
-Decomposing the system into separate components (Webapp, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).
+Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).
 
 **Contained Building Blocks:**
 
 [plantuml, "level-1-diagram", svg]
 ----
 node "User" as user
-node "WIQ System" {
-    component [React Webapp] as webapp
-    component [Node.js/Rust Backend] as backend
+node "Y Game System" {
+    component [Frontend(React)] as webapp
+    component [Gateway & User Service\n(Node.js/Rust)] as backend
     database [MongoDB] as db
 }
 user -> webapp : Plays Game Y
@@ -28,11 +28,11 @@ backend -> db : Persists Data
 [cols="1,2" options="header"]
 |===
 | **Name** | **Responsibility**
-| React Webapp | Provides the user interface for playing Game Y and user registration.
+| Frontend(React) | Provides the user interface for playing Game Y and user registration.
 | Backend Services | Coordinates game logic, authentication, and service communication.
 | MongoDB | **(Database)** Acts as the primary NoSQL data store for user profiles and history.
 |===
-==== React Webapp
+==== Frontend(React)
 **Purpose/Responsibility:**
 Provides the user interface for playing Game Y, handling user registration, and displaying real-time game updates.
 
@@ -73,7 +73,7 @@ This level zooms into the Backend to show how it is decomposed into specialized 
 [plantuml, "level-2-diagram", svg]
 ----
 package "Backend Services" {
-    component [Auth Service] as auth
+    component [User Service(Auth)] as auth
     component [Game Service] as game
     component [User Statistics] as stats
 }
@@ -139,7 +139,7 @@ database "MongoDB" {
 ----
 
 ==== Users Collection
-**Purpose/Responsibility:** Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the WIQ System.
+**Purpose/Responsibility:** Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the Y Game System.
 
 * **`username`**: Unique identifier for the user.
 * **`password`**: Salted and hashed using BCrypt for security.
@@ -162,4 +162,4 @@ database "MongoDB" {
 
 **Directory/File Location:** `./data/db/statistics`
 
-// PR review test - Elif
+// PR review test - Elif 
