@@ -1,20 +1,62 @@
-import { describe, it, expect, afterEach, vi } from 'vitest'
-import request from 'supertest'
-import app from '../users-service.js'
+import { describe, it, expect, afterEach, vi } from "vitest";
+import request from "supertest";
+import app from "../users-service.js";
 
-describe('POST /createuser', () => {
-    afterEach(() => {
-        vi.restoreAllMocks()
-    })
+//Import the model to mock the db
+const mongoose = require("mongoose");
+const User = mongoose.model("User");
 
-    it('returns a greeting message for the provided username', async () => {
-        const res = await request(app)
-            .post('/createuser')
-            .send({ username: 'Pablo' })
-            .set('Accept', 'application/json')
+describe("POST /createuser", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-        expect(res.status).toBe(200)
-        expect(res.body).toHaveProperty('message')
-        expect(res.body.message).toMatch(/Hello Pablo! Welcome to the course!/i)
-    })
-})
+  it("returns a greeting message for the provided username", async () => {
+    // Mock the save method of the User model to avoid actual DB operations
+    const saveSpy = vi.spyOn(User.prototype, "save").mockResolvedValue({
+      _id: "12345",
+      name: "Pablo",
+      createdAt: new Date(),
+    });
+
+    const res = await request(app)
+      .post("/createuser")
+      .send({ username: "Pablo" })
+      .set("Accept", "application/json");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message");
+    expect(res.body.message).toMatch(/Hello Pablo! Welcome to the course!/i);
+  });
+
+  it("should return 400 if database save fails", async () => {
+    //Simulate a database error by making the save method throw an error
+    vi.spyOn(User.prototype, "save").mockRejectedValueOnce(
+      new Error("Database error simulated"),
+    );
+
+    const res = await request(app)
+      .post("/createuser")
+      .send({ username: "ErrorUser" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error", "Database error");
+    expect(res.body.details).toBe("Database error simulated");
+  });
+
+  it("should use fallback email if none is provided", async () => {
+    const saveSpy = vi
+      .spyOn(User.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve(this); // Return the current instance
+      });
+
+    const res = await request(app)
+      .post("/createuser")
+      .send({ username: "NoEmailUser" }); // No email provided
+
+    expect(res.status).toBe(200);
+    //Verify that the email was set to the fallback value
+    expect(saveSpy.mock.instances[0].email).toBe("NoEmailUser@example.com");
+  });
+});

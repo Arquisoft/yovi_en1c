@@ -1,4 +1,14 @@
 services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - monitor-net
   users:
     build: ./users
     container_name: users
@@ -7,6 +17,11 @@ services:
       - "3000:3000"
     networks:
       - monitor-net
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/yovi
+    depends_on:
+      - mongo
 
   webapp:
     build:
@@ -54,3 +69,6 @@ services:
 networks:
   monitor-net:
     driver: bridge
+
+volumes:
+  mongo-data:
