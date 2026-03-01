@@ -50,34 +50,20 @@ endif::arc42help[]
 | University ASW labs require practice with distributed system architecture and Docker-based deployments
 
 | TC-02
-| **Programming Language Diversity**
-| Frontend must use TypeScript/React, Backend must use Node.js/Express, Game engine must use Rust
-| Learning objectives require hands-on experience with multiple programming paradigms and ecosystems
-
-| TC-03
 | **Docker Containerization**
 | All services must be containerized and orchestrated via Docker Compose
 | Standardized deployment environment across development, testing, and production
 
-| TC-04
-| **HTTP/REST API Communication**
-| All inter-service communication must use HTTP REST protocol with JSON data format
-| Industry standard for microservices communication; ensures compatibility and simplicity
-
-| TC-05
-| **Real-time Game Updates**
-| Game engine must support WebSocket connections for real-time player interactions
-| User experience requirement for responsive gaming; avoids polling overhead
-
-| TC-06
-| **Monitoring Stack Integration**
-| All services must expose Prometheus metrics; system must include Prometheus and Grafana stack
-| Production observability requirement; enables performance monitoring and alerting
-
-| TC-07
+| TC-03
 | **Git Repository Structure**
 | All code must be maintained in a single monorepo with multi-component structure
 | Facilitates coordinated development across multiple teams and services
+
+
+| TC-04
+| **Use of Arc42 nas documentation standard**
+| All the documentation must be completed using the standard of the Arc42 documentation template 
+| Creates more unified project making it easier to understand by people not belonoging to the team
 |===
 
 === Organizational Constraints
