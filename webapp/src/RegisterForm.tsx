@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const RegisterForm: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -12,30 +12,30 @@ const RegisterForm: React.FC = () => {
     setError(null);
 
     if (!username.trim()) {
-      setError('Please enter a username.');
+      setError("Please enter a username.");
       return;
     }
 
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
-      const res = await fetch(`${API_URL}/createuser`, {
-        method: 'POST',
+      const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${API_URL}/users/createuser`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setResponseMessage(data.message);
-        setUsername('');
+        setUsername("");
       } else {
-        setError(data.error || 'Server error');
+        setError(data.error || "Server error");
       }
     } catch (err: any) {
-      setError(err.message || 'Network error');
+      setError(err.message || "Network error");
     } finally {
       setLoading(false);
     }
@@ -54,17 +54,20 @@ const RegisterForm: React.FC = () => {
         />
       </div>
       <button type="submit" className="submit-button" disabled={loading}>
-        {loading ? 'Entering...' : 'Lets go!'}
+        {loading ? "Entering..." : "Lets go!"}
       </button>
 
       {responseMessage && (
-        <div className="success-message" style={{ marginTop: 12, color: 'green' }}>
+        <div
+          className="success-message"
+          style={{ marginTop: 12, color: "green" }}
+        >
           {responseMessage}
         </div>
       )}
 
       {error && (
-        <div className="error-message" style={{ marginTop: 12, color: 'red' }}>
+        <div className="error-message" style={{ marginTop: 12, color: "red" }}>
           {error}
         </div>
       )}
