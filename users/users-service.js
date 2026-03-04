@@ -71,11 +71,11 @@ app.post("/createuser", async (req, res) => {
 });
 
 app.delete('/deleteuser/:username', async (req, res) => {
-  const username = req.params.username;
+  const usernameParam = String(req.params.username); 
   try {
-    const result = await User.deleteOne({ name: username });
+    const result = await User.deleteOne({ name: { $eq: usernameParam } }); 
     if (result.deletedCount === 1) {
-      res.json({ message: `User ${username} deleted successfully!` });
+      res.json({ message: `User ${usernameParam} deleted successfully!` });
     } else {
       res.status(404).json({ error: "User not found" });
     }
