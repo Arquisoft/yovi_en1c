@@ -1,8 +1,9 @@
 import { render, screen,  waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import RegisterForm from '../RegisterForm'
-import { afterEach, describe, expect, test, vi } from 'vitest' 
+import { afterEach, describe, expect, it, test, vi } from 'vitest' 
 import '@testing-library/jest-dom'
+import App from '../App'
 
 
 describe('RegisterForm', () => {
@@ -43,3 +44,31 @@ describe('RegisterForm', () => {
     })
   })
 })
+
+describe('App - backend connectivity', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('shows Gamey as Online when fetch succeeds', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response('OK')));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Gamey/i)).toBeInTheDocument();
+      expect(screen.getByText(/Online/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows Gamey as Offline when fetch fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValueOnce(new Error('Network error')));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Gamey/i)).toBeInTheDocument();
+      expect(screen.getByText(/Offline/i)).toBeInTheDocument();
+    });
+  });
+});

@@ -1,63 +1,79 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const port = 3000;
-const swaggerUi = require('swagger-ui-express');
-const fs = require('node:fs');
-const YAML = require('js-yaml');
-const promBundle = require('express-prom-bundle');
-const { MongoClient } = require('mongodb');
+const swaggerUi = require("swagger-ui-express");
+const fs = require("node:fs");
+const YAML = require("js-yaml");
+const promBundle = require("express-prom-bundle");
 
-const url = 'mongodb://mongodb:27017';
-const client = new MongoClient(url);
-const dbName = 'usersdb';
+const { connectDB, mongoose } = require("./db");
 
-const metricsMiddleware = promBundle({includeMethod: true});
+const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const User = mongoose.model("User", UserSchema);
+
 try {
-  const swaggerDocument = YAML.load(fs.readFileSync('./openapi.yaml', 'utf8'));
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  const swaggerDocument = YAML.load(fs.readFileSync("./openapi.yaml", "utf8"));
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } catch (e) {
-  console.log("Swagger dosyası yüklenemedi:", e.message);
+  console.log("Swagger error:", e.message);
 }
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
 
 app.use(express.json());
 
-app.post('/createuser', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
-  }
-
+app.post("/createuser", async (req, res) => {
+  const { username, email } = req.body;
   try {
-    await client.connect();
-    const db = client.db(dbName);
-    const users = db.collection('users');
+    const newUser = new User({
+      name: username,
+      email: email || `${username}@example.com`,
+    });
+    const savedUser = await newUser.save();
     
-    const result = await users.insertOne({ username, password, createdAt: new Date() });
-    res.json({ message: `User ${username} created successfully!`, id: result.insertedId });
+    const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
+      timeZone: "Europe/Madrid",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    res.json({
+      message: `Hello ${savedUser.name}! Welcome to the course! You were registered at ${formattedDate}`,
+      databaseInfo: {
+        id: savedUser._id,
+        registeredAt: formattedDate,
+        status: "Success: Connection verified",
+      },
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({
+      error: "Database error",
+      details: err.message,
+    });
   }
 });
-
 
 app.delete('/deleteuser/:username', async (req, res) => {
   const username = req.params.username;
   try {
-    await client.connect();
-    const db = client.db(dbName);
-    const users = db.collection('users');
-    
-    const result = await users.deleteOne({ username: username });
+    const result = await User.deleteOne({ name: username });
     if (result.deletedCount === 1) {
       res.json({ message: `User ${username} deleted successfully!` });
     } else {
@@ -68,10 +84,20 @@ app.delete('/deleteuser/:username', async (req, res) => {
   }
 });
 
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`User Service (with MongoDB) listening at http://localhost:${port}`)
-  })
+async function startServer() {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`User Service listening at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error("Critical error during startup:", error);
+    process.exit(1);
+  }
+}
+
+if (require.main == module) {
+  startServer();
 }
 
 module.exports = app;
