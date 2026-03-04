@@ -12,18 +12,8 @@ Decomposing the system into separate components (Frontend, Backend, and Database
 
 **Contained Building Blocks:**
 
-[plantuml, "level-1-diagram", svg]
-----
-node "User" as user
-node "Y Game System" {
-    component [Frontend(React)] as webapp
-    component [Gateway & User Service\n(Node.js/Rust)] as backend
-    database [MongoDB] as db
-}
-user -> webapp : Plays Game Y
-webapp -> backend : API Requests
-backend -> db : Persists Data
-----
+
+image::../images/05_level_1.png[Level 1]
 
 [cols="1,2" options="header"]
 |===
@@ -70,19 +60,9 @@ Stores persistent data including user credentials, match history, and global ran
 
 This level zooms into the Backend to show how it is decomposed into specialized microservices.
 
-[plantuml, "level-2-diagram", svg]
-----
-package "Backend Services" {
-    component [User Service(Auth)] as auth
-    component [Game Service] as game
-    component [User Statistics] as stats
-}
-database "MongoDB" as db
 
-auth -> db : User credentials
-game -> db : Game Y state (YEN)
-stats -> db : Match statistics
-----
+
+image::../images/05_level_2.png[Level 2]
 
 **Contained Building Blocks (Internal):**
 
@@ -127,16 +107,9 @@ Calculates and updates user rankings and match history. It processes data asynch
 
 At this level, we describe how the data is structured within MongoDB to support the system’s requirements.
 
-[plantuml, "level-3-diagram", svg]
-----
-database "MongoDB" {
-    folder "Collections" {
-        [Users]
-        [Matches]
-        [Statistics]
-    }
-}
-----
+
+
+image::../images/05_level_3.png[Level 3]
 
 ==== Users Collection
 **Purpose/Responsibility:** Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the Y Game System.
