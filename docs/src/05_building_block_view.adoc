@@ -12,18 +12,7 @@ Decomposing the system into separate components (Frontend, Backend, and Database
 
 **Contained Building Blocks:**
 
-[plantuml, "level-1-diagram", svg]
-----
-node "User" as user
-node "Y Game System" {
-    component [Frontend(React)] as webapp
-    component [Gateway & User Service\n(Node.js/Rust)] as backend
-    database [MongoDB] as db
-}
-user -> webapp : Plays Game Y
-webapp -> backend : API Requests
-backend -> db : Persists Data
-----
+image::05_level_1.png[Level 1 Architecture Diagram]
 
 [cols="1,2" options="header"]
 |===
@@ -48,7 +37,7 @@ Provides the user interface for playing Game Y, handling user registration, and 
 Acts as the central orchestrator. It manages authentication, coordinates game logic between the engine and the user, and handles data persistence.
 
 **Interface(s):**
-* **REST API:** Provides endpoints for login, game actions, and stats.
+* **REST API:** Provides endpoints for login and game actions.
 * **Engine Connector:** Internal communication with the Rust Game Engine.
 
 **Directory/File Location:**
@@ -56,7 +45,7 @@ Acts as the central orchestrator. It manages authentication, coordinates game lo
 
 ==== MongoDB
 **Purpose/Responsibility:**
-Stores persistent data including user credentials, match history, and global rankings.
+Stores persistent data including user credentials and match history.
 
 **Directory/File Location:**
 `./data/db`
@@ -70,19 +59,7 @@ Stores persistent data including user credentials, match history, and global ran
 
 This level zooms into the Backend to show how it is decomposed into specialized microservices.
 
-[plantuml, "level-2-diagram", svg]
-----
-package "Backend Services" {
-    component [User Service(Auth)] as auth
-    component [Game Service] as game
-    component [User Statistics] as stats
-}
-database "MongoDB" as db
-
-auth -> db : User credentials
-game -> db : Game Y state (YEN)
-stats -> db : Match statistics
-----
+image::05_level_2.png[Level 2 Architecture Diagram]
 
 **Contained Building Blocks (Internal):**
 
@@ -91,7 +68,6 @@ stats -> db : Match statistics
 | **Name** | **Responsibility**
 | Auth Service | (Node.js) Manages user identity, registration, and security.
 | Game Engine | (Rust) Handles the core rules and hexagonal grid logic for Game Y.
-| Stats Service | Aggregates data for leaderboards and user win/loss history.
 |===
 
 ---
@@ -113,30 +89,17 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 **Interface(s):**
 * **Rust-Node Bridge:** Internal API for receiving game moves and returning states.
 
+
 **Directory/File Location:**
 `./apps/backend/services/game-engine`
 
-==== Statistics Service
-**Purpose/Responsibility:**
-Calculates and updates user rankings and match history. It processes data asynchronously to ensure the game remains responsive.
 
-**Directory/File Location:**
-`./apps/backend/services/stats`
 
 === Level 3: White Box of the Database
 
 At this level, we describe how the data is structured within MongoDB to support the system’s requirements.
 
-[plantuml, "level-3-diagram", svg]
-----
-database "MongoDB" {
-    folder "Collections" {
-        [Users]
-        [Matches]
-        [Statistics]
-    }
-}
-----
+image::05_level_3.png[Level 3 Architecture Diagram, width=400]
 
 ==== Users Collection
 **Purpose/Responsibility:** Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the Y Game System.
@@ -154,12 +117,6 @@ database "MongoDB" {
 * **`moves`**: Array of moves stored in **YEN notation** to recreate the game state.
 * **`status`**: Indicates the current state of the game (Ongoing, Finished, or Draw).
 
-**Directory/File Location:** `./data/db/matches`
-
-==== Statistics Collection
-**Purpose/Responsibility:** A pre-calculated and optimized collection used for generating the global leaderboard and user performance metrics. It is updated asynchronously by the Stats Service.
+**Directory/File Location:** ./data/db/matches
 
 
-**Directory/File Location:** `./data/db/statistics`
-
-// PR review test - Elif 
