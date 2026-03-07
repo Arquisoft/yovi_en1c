@@ -2,7 +2,6 @@ import './App.css'
 import { useState } from 'react';
 import RegisterForm from './RegisterForm';
 import GameMenu, { type GameConfig } from './GameMenu';
-import reactLogo from './assets/react.svg';
 
 function App() {
   const [username, setUsername] = useState<string | null>(null);
@@ -15,14 +14,6 @@ function App() {
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
 
       <main className="AppMain">
         {!username ? (

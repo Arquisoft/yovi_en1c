@@ -17,23 +17,23 @@ type Props = {
     onLogOut: () => void;
 };
 
-const boardSizeLabels: Record<BoardSize, string> = {
-    small: 'Small (--)',
-    medium: 'Medium (**)',
-    large: 'Large (93 nodes)'
-};
+const boardSizes: { value: BoardSize; title: string; description: string }[] = [
+    { value: 'small', title: 'Small', description: 'Quick match' },
+    { value: 'medium', title: 'Medium', description: 'Balanced board' },
+    { value: 'large', title: 'Large', description: '93 playable nodes' },
+];
 
-const modeLabels: Record<GameMode, string> = {
-    standard: 'Standard',
-    standard_pie: 'Standard (Pie)',
-    master_y: 'Master Y',
-};
+const gameModes: { value: GameMode; title: string; description: string }[] = [
+    { value: 'standard', title: 'Standard', description: 'Classic Y rules' },
+    { value: 'standard_pie', title: 'Standard Pie', description: 'Includes pie rule' },
+    { value: 'master_y', title: 'Master Y', description: 'More advanced variant' },
+];
 
-const layoutLabels: Record<LayoutStyle, string> = {
-    classic: 'Classic',
-    futuristic: 'Futuristic',
-    wooden: 'Wooden'
-};
+const layouts: { value: LayoutStyle; title: string; description: string }[] = [
+    { value: 'classic', title: 'Classic', description: 'Clean tournament look' },
+    { value: 'futuristic', title: 'Futuristic', description: 'Neon sci-fi style' },
+    { value: 'wooden', title: 'Wooden', description: 'Board-game table feel' },
+];
 
 export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
     const [config, setConfig] = useState<GameConfig>({
@@ -45,74 +45,80 @@ export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
     return (
         <div className="menu">
             <div className="menuCard">
-                <h2 className="menuTitle">Hello, {userName} 👋</h2>
-                <p className="menuSubtitle">Choose how you want to play Y.</p>
-
-                <div className="menuGrid">
-                    <div className="field">
-                        <span className="fieldLabel">Board size</span>
-                        <select
-                            className="select"
-                            value={config.boardSize}
-                            onChange={(e) =>
-                                setConfig((c) => ({ ...c, boardSize: e.target.value as BoardSize }))
-                            }
-                        >
-                            {Object.entries(boardSizeLabels).map(([value, label]) => (
-                                <option key={value} value={value}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="field">
-                        <span className="fieldLabel">Game mode</span>
-                        <select
-                            className="select"
-                            value={config.mode}
-                            onChange={(e) =>
-                                setConfig((c) => ({ ...c, mode: e.target.value as GameMode }))
-                            }
-                        >
-                            {Object.entries(modeLabels).map(([value, label]) => (
-                                <option key={value} value={value}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="field">
-                        <span className="fieldLabel">Layout style</span>
-                        <select
-                            className="select"
-                            value={config.layout}
-                            onChange={(e) =>
-                                setConfig((c) => ({ ...c, layout: e.target.value as LayoutStyle }))
-                            }
-                        >
-                            {Object.entries(layoutLabels).map(([value, label]) => (
-                                <option key={value} value={value}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                <div className="menuHeader">
+                    <h2 className="menuTitle">Game Lobby</h2>
+                    <p className="menuSubtitle">Welcome, {userName}. Choose your setup for Y.</p>
                 </div>
+
+                <section className="menuSection">
+                    <h3 className="sectionTitle">Board size</h3>
+                    <div className="optionGrid">
+                        {boardSizes.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={`optionCard ${config.boardSize === option.value ? 'selected' : ''}`}
+                                onClick={() =>
+                                    setConfig((current) => ({ ...current, boardSize: option.value }))
+                                }
+                            >
+                                <span className="optionTitle">{option.title}</span>
+                                <span className="optionDescription">{option.description}</span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="menuSection">
+                    <h3 className="sectionTitle">Game mode</h3>
+                    <div className="optionGrid">
+                        {gameModes.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={`optionCard ${config.mode === option.value ? 'selected' : ''}`}
+                                onClick={() =>
+                                    setConfig((current) => ({ ...current, mode: option.value }))
+                                }
+                            >
+                                <span className="optionTitle">{option.title}</span>
+                                <span className="optionDescription">{option.description}</span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="menuSection">
+                    <h3 className="sectionTitle">Layout style</h3>
+                    <div className="optionGrid">
+                        {layouts.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={`optionCard ${config.layout === option.value ? 'selected' : ''}`}
+                                onClick={() =>
+                                    setConfig((current) => ({ ...current, layout: option.value }))
+                                }
+                            >
+                                <span className="optionTitle">{option.title}</span>
+                                <span className="optionDescription">{option.description}</span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
 
                 <div className="actions">
-                    <button className="btn btnPrimary" type="button" onClick={() => onStartGame(config)}>
+                    <button
+                        className="btn btnPrimary btnLarge"
+                        type="button"
+                        onClick={() => onStartGame(config)}
+                    >
                         Start game
                     </button>
-                    <button className="btn" type="button" onClick={onLogOut}>
+
+                    <button className="btn btnSecondary" type="button" onClick={onLogOut}>
                         Log out
                     </button>
-                </div>
-
-                <div className="preview">
-                    <div className="previewTitle">Config preview</div>
-                    <pre style={{ margin: 0 }}>{JSON.stringify(config, null, 2)}</pre>
                 </div>
             </div>
         </div>

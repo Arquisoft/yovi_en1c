@@ -1,111 +1,137 @@
-/* Centering + max width */
 .menu {
-    width: min(680px, 92vw);
+    width: min(900px, 94vw);
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px 16px;
 }
 
-/* Card look */
 .menuCard {
-    background: rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(94, 219, 231, 0.95), rgba(18, 22, 36, 0.96));
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 18px;
-    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
 }
 
-/* Titles */
+.menuHeader {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
 .menuTitle {
-    margin: 0 0 6px 0;
-    font-size: 1.3rem;
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
 }
 
 .menuSubtitle {
-    margin: 0 0 16px 0;
-    opacity: 0.85;
+    margin-top: 8px;
+    opacity: 0.82;
+    font-size: 1rem;
 }
 
-/* Form layout */
-.menuGrid {
+.menuSection {
+    margin-top: 24px;
+}
+
+.sectionTitle {
+    margin-bottom: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.optionGrid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
 }
 
-@media (min-width: 560px) {
-    .menuGrid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-/* Input groups */
-.field {
+.optionCard {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-}
-
-.fieldLabel {
-    font-size: 0.95rem;
-    opacity: 0.9;
-}
-
-.select {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(10, 10, 10, 0.35);
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 110px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
     color: inherit;
-    outline: none;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-.select:focus {
-    border-color: rgba(255, 255, 255, 0.35);
+.optionCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.07);
 }
 
-/* Buttons */
+.optionCard.selected {
+    border-color: rgba(108, 140, 255, 0.95);
+    background: rgba(108, 140, 255, 0.16);
+    box-shadow: 0 0 0 1px rgba(108, 140, 255, 0.2);
+}
+
+.optionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.optionDescription {
+    font-size: 0.92rem;
+    opacity: 0.8;
+    line-height: 1.35;
+}
+
 .actions {
     display: flex;
-    gap: 10px;
-    margin-top: 16px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
 }
 
 .btn {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-    color: inherit;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 1rem;
     cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .btn:hover {
-    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.btnLarge {
+    min-width: 220px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 14px 22px;
 }
 
 .btnPrimary {
-    background: rgba(90, 150, 255, 0.25);
-    border-color: rgba(90, 150, 255, 0.35);
+    background: linear-gradient(135deg, #5b7cff, #7a5cff);
+    color: white;
 }
 
-.btnPrimary:hover {
-    background: rgba(90, 150, 255, 0.32);
+.btnSecondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
 }
 
-/* Preview box */
-.preview {
-    margin-top: 16px;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    overflow: auto;
-}
+@media (max-width: 760px) {
+    .optionGrid {
+        grid-template-columns: 1fr;
+    }
 
-.previewTitle {
-    margin: 0 0 8px 0;
-    font-size: 0.95rem;
-    opacity: 0.9;
-    font-weight: 600;
+    .menuCard {
+        padding: 20px;
+    }
+
+    .menuTitle {
+        font-size: 1.6rem;
+    }
 }
