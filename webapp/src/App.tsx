@@ -1,16 +1,26 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import RegisterForm from "./RegisterForm";
+import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
 function App() {
   const [gameyOnline, setGameyOnline] = useState<boolean | null>(null);
+  const [showBoard, setShowBoard] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8000/gamey/status")
       .then(() => setGameyOnline(true))
       .catch(() => setGameyOnline(false));
   }, []);
+
+  if (showBoard) {
+    return (
+      <GameBoard
+        onBack={() => setShowBoard(false)}
+      />
+    );
+  }
 
   return (
     <div className="App">
@@ -32,6 +42,10 @@ function App() {
       )}
 
       <RegisterForm />
+
+      <button onClick={() => setShowBoard(true)} style={{ marginTop: 24 }}>
+        Go to Game Y →
+      </button>
     </div>
   );
 }
