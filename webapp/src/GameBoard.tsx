@@ -1,28 +1,28 @@
 import './GameBoard.css';
 
 
-function getBoardN(size: 'small'): number {
+function getBoardRowCount(size: 'small'): number {
     switch (size) {
-        case 'small':  return 7;
+        case 'small': return 7;
     }
 }
 
-function hexPoints(cx: number, cy: number, r: number): string {
+function hexagonPoints(centerX: number, centerY: number, radius: number): string {
     return Array.from({ length: 6 }, (_, i) => {
         const angle = (Math.PI / 180) * (60 * i + 30);
-        return `${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`;
+        return `${(centerX + radius * Math.cos(angle)).toFixed(2)},${(centerY + radius * Math.sin(angle)).toFixed(2)}`;
     }).join(' ');
 }
 
-export default function GameBoard({onBack }: { onBack: () => void }) {
-    const n  = getBoardN('small'); // número de filas del tablero (ej: 13 para large)
-    const R  = n <= 7 ? 30 : n <= 10 ? 25 : 20; // radio de cada hexágono en px, decrece al aumentar el tablero
-    const SX = R * Math.sqrt(3); // separación horizontal entre hexágonos (ancho de hex punta-arriba)
-    const SY = R * 1.5;          // separación vertical entre filas (3/4 de la altura del hex)
-    const M  = R * 2.5;          // margen exterior del SVG para que los bordes no queden cortados
+export default function GameBoard({ onBack }: { onBack: () => void }) {
+    const rowCount      = getBoardRowCount('small'); // number of rows on the board
+    const hexRadius     = rowCount <= 7 ? 30 : rowCount <= 10 ? 25 : 20; // hex radius in px, decreases as the board grows
+    const colSpacing    = hexRadius * Math.sqrt(3); // horizontal spacing between hexagons (pointy-top hex width)
+    const rowSpacing    = hexRadius * 1.5;           // vertical spacing between rows (3/4 of hex height)
+    const outerMargin   = hexRadius * 2.5;           // outer SVG margin so edge hexagons are not clipped
 
-    const svgW = M * 2 + (n - 1) * SX + SX; // anchura total del SVG
-    const svgH = M * 2 + (n - 1) * SY + R * 2; // altura total del SVG
+    const svgWidth  = outerMargin * 2 + (rowCount - 1) * colSpacing + colSpacing; // total SVG width
+    const svgHeight = outerMargin * 2 + (rowCount - 1) * rowSpacing + hexRadius * 2; // total SVG height
 
     return (
         <div className="board">
@@ -42,25 +42,25 @@ export default function GameBoard({onBack }: { onBack: () => void }) {
 
                 <div className="svgWrapper">
                     <svg
-                        viewBox={`0 0 ${svgW} ${svgH}`}
+                        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                         style={{ display: 'block', width: '100%', height: 'auto' }}
                     >
-                        {Array.from({ length: n }, (_, row) =>
+                        {Array.from({ length: rowCount }, (_, row) =>
                             Array.from({ length: row + 1 }, (_, col) => {
-                                const cx = M + ((n - 1 - row) * SX / 2) + col * SX + SX / 2; // posición X del centro del hex (con offset para centrar la pirámide)
-                                const cy = M + row * SY + R; // posición Y del centro del hex
+                                const centerX = outerMargin + ((rowCount - 1 - row) * colSpacing / 2) + col * colSpacing + colSpacing / 2; // X center of hex (offset applied to center the triangle)
+                                const centerY = outerMargin + row * rowSpacing + hexRadius; // Y center of hex
 
-                                let fill    = 'rgba(255,255,255,0.04)'; // relleno por defecto (celda interior)
-                                let stroke  = 'rgba(0, 0, 0, 0.12)'; // borde por defecto
-                                let strokeW = 1;                        // grosor de borde por defecto
+                                const defaultFill        = 'rgba(255,255,255,0.04)'; // default fill for interior cells
+                                const defaultStroke      = 'rgba(0, 0, 0, 0.12)';   // default border color
+                                const defaultStrokeWidth = 1;                         // default border width
 
                                 return (
                                     <polygon
                                         key={`${row}-${col}`}
-                                        points={hexPoints(cx, cy, R - 1)}
-                                        fill={fill}
-                                        stroke={stroke}
-                                        strokeWidth={strokeW}
+                                        points={hexagonPoints(centerX, centerY, hexRadius - 1)}
+                                        fill={defaultFill}
+                                        stroke={defaultStroke}
+                                        strokeWidth={defaultStrokeWidth}
                                     />
                                 );
                             })
