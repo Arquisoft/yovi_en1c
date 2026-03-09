@@ -5,6 +5,7 @@ export type BoardSize = 'small' | 'medium' | 'large';
 export type GameMode = 'standard' | 'standard_pie' | 'master_y';
 export type LayoutStyle = 'classic' | 'futuristic' | 'wooden';
 
+// This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
     boardSize: BoardSize;
     mode: GameMode;
