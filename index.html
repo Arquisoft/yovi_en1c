@@ -465,7 +465,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_technical_context">3.2. Technical Context</a></li>
 </ul>
 </li>
-<li><a href="#section-solution-strategy">4. Solution Strategy</a></li>
+<li><a href="#section-solution-strategy">4. Solution Strategy</a>
+<ul class="sectlevel2">
+<li><a href="#_technological_decisions">4.1. Technological decisions</a></li>
+<li><a href="#_achieving_key_quality_goals">4.2. Achieving key quality goals</a></li>
+</ul>
+</li>
 <li><a href="#section-building-block-view">5. Building Block View</a>
 <ul class="sectlevel2">
 <li><a href="#_level_1_white_box_of_the_overall_system">5.1. Level 1: White Box of the Overall System</a></li>
@@ -475,10 +480,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-runtime-view">6. Runtime View</a>
 <ul class="sectlevel2">
-<li><a href="#_6_1_sign_up_flow">6.1. &lt;6.1.Sign Up Flow&gt;</a></li>
-<li><a href="#_6_2_sign_in_flow">6.2. &lt;6.2.Sign In Flow&gt;</a></li>
-<li><a href="#_6_3_game_flow">6.3. &lt;6.3.Game Flow&gt;</a></li>
-<li><a href="#_6_4_statistics_flow">6.4. &lt;6.4.Statistics Flow&gt;</a></li>
+<li><a href="#_sign_up_flow">6.1. Sign Up Flow</a></li>
+<li><a href="#_sign_in_flow">6.2. Sign In Flow</a></li>
+<li><a href="#_game_flow">6.3. Game Flow</a></li>
+<li><a href="#_statistics_flow">6.4. Statistics Flow</a></li>
 </ul>
 </li>
 <li><a href="#section-deployment-view">7. Deployment View</a>
@@ -832,39 +837,21 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">TC-02</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Programming Language Diversity</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Frontend must use TypeScript/React, Backend must use Node.js/Express, Game engine must use Rust</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Learning objectives require hands-on experience with multiple programming paradigms and ecosystems</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TC-03</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Docker Containerization</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">All services must be containerized and orchestrated via Docker Compose</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Standardized deployment environment across development, testing, and production</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TC-04</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>HTTP/REST API Communication</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">All inter-service communication must use HTTP REST protocol with JSON data format</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Industry standard for microservices communication; ensures compatibility and simplicity</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TC-05</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Real-time Game Updates</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Game engine must support WebSocket connections for real-time player interactions</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User experience requirement for responsive gaming; avoids polling overhead</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TC-06</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Monitoring Stack Integration</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">All services must expose Prometheus metrics; system must include Prometheus and Grafana stack</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Production observability requirement; enables performance monitoring and alerting</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TC-07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TC-03</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Git Repository Structure</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">All code must be maintained in a single monorepo with multi-component structure</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Facilitates coordinated development across multiple teams and services</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TC-04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Use of Arc42 nas documentation standard</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">All the documentation must be completed using the standard of the Arc42 documentation template</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Creates more unified project making it easier to understand by people not belonoging to the team</p></td>
 </tr>
 </tbody>
 </table>
@@ -1232,8 +1219,15 @@ together with a mapping table showing the relationships between channels and inp
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
-<p>=== Technological decisions
-Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.</p>
+<div class="title">Contents</div>
+<p>A short summary of fundamental decisions and solution strategies (tech, patterns, quality goals).</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_technological_decisions">4.1. Technological decisions</h3>
+<div class="paragraph">
+<p>Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1285,9 +1279,9 @@ Here are the key decisions related to the technological aspects of our project. 
 </tr>
 </tbody>
 </table>
-<div class="paragraph">
-<p>=== Achieving key quality goals</p>
 </div>
+<div class="sect2">
+<h3 id="_achieving_key_quality_goals">4.2. Achieving key quality goals</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 25%;">
@@ -1314,9 +1308,8 @@ Here are the key decisions related to the technological aspects of our project. 
 </tr>
 </tbody>
 </table>
-</div>
-</div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1329,14 +1322,14 @@ Here are the key decisions related to the technological aspects of our project. 
 </div>
 <div class="paragraph">
 <p><strong>Motivation:</strong>
-Decomposing the system into separate components (Webapp, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).</p>
+Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).</p>
 </div>
 <div class="paragraph">
 <p><strong>Contained Building Blocks:</strong></p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/level-1-diagram.svg" alt="level 1 diagram" width="904" height="125">
+<img src="./images/05_level_1.png" alt="Level 1 Architecture Diagram">
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1352,7 +1345,7 @@ Decomposing the system into separate components (Webapp, Backend, and Database) 
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">React Webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Frontend(React)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Provides the user interface for playing Game Y and user registration.</p></td>
 </tr>
 <tr>
@@ -1366,7 +1359,7 @@ Decomposing the system into separate components (Webapp, Backend, and Database) 
 </tbody>
 </table>
 <div class="sect3">
-<h4 id="_react_webapp">5.1.1. React Webapp</h4>
+<h4 id="_frontendreact">5.1.1. Frontend(React)</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
 Provides the user interface for playing Game Y, handling user registration, and displaying real-time game updates.</p>
@@ -1389,7 +1382,7 @@ Acts as the central orchestrator. It manages authentication, coordinates game lo
 </div>
 <div class="paragraph">
 <p><strong>Interface(s):</strong>
-* <strong>REST API:</strong> Provides endpoints for login, game actions, and stats.
+* <strong>REST API:</strong> Provides endpoints for login and game actions.
 * <strong>Engine Connector:</strong> Internal communication with the Rust Game Engine.</p>
 </div>
 <div class="paragraph">
@@ -1401,7 +1394,7 @@ Acts as the central orchestrator. It manages authentication, coordinates game lo
 <h4 id="_mongodb">5.1.3. MongoDB</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
-Stores persistent data including user credentials, match history, and global rankings.</p>
+Stores persistent data including user credentials and match history.</p>
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
@@ -1420,7 +1413,7 @@ Stores persistent data including user credentials, match history, and global ran
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/level-2-diagram.svg" alt="level 2 diagram" width="717" height="162">
+<img src="./images/05_level_2.png" alt="Level 2 Architecture Diagram">
 </div>
 </div>
 <div class="paragraph">
@@ -1445,10 +1438,6 @@ Stores persistent data including user credentials, match history, and global ran
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game Engine</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">(Rust) Handles the core rules and hexagonal grid logic for Game Y.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Stats Service</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aggregates data for leaderboards and user win/loss history.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1484,17 +1473,6 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 <code>./apps/backend/services/game-engine</code></p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_statistics_service">5.2.3. Statistics Service</h4>
-<div class="paragraph">
-<p><strong>Purpose/Responsibility:</strong>
-Calculates and updates user rankings and match history. It processes data asynchronously to ensure the game remains responsive.</p>
-</div>
-<div class="paragraph">
-<p><strong>Directory/File Location:</strong>
-<code>./apps/backend/services/stats</code></p>
-</div>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_level_3_white_box_of_the_database">5.3. Level 3: White Box of the Database</h3>
@@ -1503,13 +1481,13 @@ Calculates and updates user rankings and match history. It processes data asynch
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/level-3-diagram.svg" alt="level 3 diagram" width="312" height="308">
+<img src="./images/05_level_3.png" alt="Level 3 Architecture Diagram" width="400">
 </div>
 </div>
 <div class="sect3">
 <h4 id="_users_collection">5.3.1. Users Collection</h4>
 <div class="paragraph">
-<p><strong>Purpose/Responsibility:</strong> Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the WIQ System.</p>
+<p><strong>Purpose/Responsibility:</strong> Stores unique user profiles and secure authentication data. It ensures each player has a persistent identity within the Y Game System.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1547,16 +1525,7 @@ Calculates and updates user rankings and match history. It processes data asynch
 </ul>
 </div>
 <div class="paragraph">
-<p><strong>Directory/File Location:</strong> <code>./data/db/matches</code></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_statistics_collection">5.3.3. Statistics Collection</h4>
-<div class="paragraph">
-<p><strong>Purpose/Responsibility:</strong> A pre-calculated and optimized collection used for generating the global leaderboard and user performance metrics. It is updated asynchronously by the Stats Service.</p>
-</div>
-<div class="paragraph">
-<p><strong>Directory/File Location:</strong> <code>./data/db/statistics</code></p>
+<p><strong>Directory/File Location:</strong> ./data/db/matches</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1629,7 +1598,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_1_sign_up_flow">6.1. &lt;6.1.Sign Up Flow&gt;</h3>
+<h3 id="_sign_up_flow">6.1. Sign Up Flow</h3>
 <div class="imageblock">
 <div class="content">
 <img src="./images/sign_up.png" alt="Sign Up Diagram">
@@ -1637,7 +1606,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_2_sign_in_flow">6.2. &lt;6.2.Sign In Flow&gt;</h3>
+<h3 id="_sign_in_flow">6.2. Sign In Flow</h3>
 <div class="imageblock">
 <div class="content">
 <img src="./images/sign_in.png" alt="Sign In Diagram">
@@ -1645,7 +1614,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_3_game_flow">6.3. &lt;6.3.Game Flow&gt;</h3>
+<h3 id="_game_flow">6.3. Game Flow</h3>
 <div class="imageblock">
 <div class="content">
 <img src="./images/game.png" alt="Game Diagram">
@@ -1653,7 +1622,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_4_statistics_flow">6.4. &lt;6.4.Statistics Flow&gt;</h3>
+<h3 id="_statistics_flow">6.4. Statistics Flow</h3>
 <div class="imageblock">
 <div class="content">
 <img src="./images/statistics.png" alt="Statistics Diagram">
