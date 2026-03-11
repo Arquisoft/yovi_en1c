@@ -1,10 +1,10 @@
 {
-  "name": "users",
+  "name": "gateway",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Servicio Gateway para el monorepo",
+  "main": "gateway-service.js",
   "scripts": {
-    "start": "node users-service.js",
+    "start": "node gateway-service.js",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -13,8 +13,8 @@
   "dependencies": {
     "express": "^5.2.1",
     "express-prom-bundle": "^8.0.0",
+    "http-proxy-middleware": "^3.0.3",
     "js-yaml": "^4.1.0",
-    "mongoose": "^9.2.2",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
