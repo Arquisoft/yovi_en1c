@@ -3,6 +3,15 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
+ifdef::arc42help[]
+[role="arc42help"]
+
+****
+.Contents
+A short summary of fundamental decisions and solution strategies (tech, patterns, quality goals).
+****
+endif::arc42help[]
+
 === Technological decisions
 Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.
 
@@ -31,5 +40,3 @@ Here are the key decisions related to the technological aspects of our project. 
 | Availability | Multiple server instances for redundancy and reduced single points of failure.
 |===
 
-****
-endif::arc42help[]
