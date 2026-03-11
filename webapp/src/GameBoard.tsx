@@ -216,12 +216,11 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
 
         <div className="boardHeader">
           <button className="btn" type="button" onClick={onBack}>← Back</button>
-          <h2 className="boardTitle">Game <span className="titleY">Y</span></h2>
+          <h2>Yovi - Y Game</h2>
           <div style={{ width: 80 }} />
         </div>
 
         <div className="boardMeta">
-          <span className="infoTag">Mode: standard</span>
           <span className="infoTag">Size: small (7)</span>
           <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
           {gameStatus !== 'ongoing' && (
@@ -261,12 +260,10 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
                   fill    = 'rgba(56, 189, 248, 0.9)';
                   stroke  = '#7dd3fc';
                   strokeW = 2;
-                  filter  = 'url(#glowBlue)';
                 } else if (occupied === 1) {
                   fill    = isLastBot ? 'rgba(251, 113, 133, 1)' : 'rgba(251, 113, 133, 0.85)';
                   stroke  = '#fda4af';
                   strokeW = 2;
-                  filter  = isLastBot ? 'url(#glowBot)' : 'url(#glowRed)';
                 } else if (isHovered) {
                   fill    = 'rgba(56, 189, 248, 0.18)';
                   stroke  = 'rgba(56, 189, 248, 0.6)';
