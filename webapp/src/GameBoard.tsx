@@ -159,7 +159,10 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
     setLoading(true);
 
     try {
+      // Serialise the current board state (after the player's move) into YEN format
       const yen = buildYEN(afterPlayer, 1, n);
+
+      // POST the YEN to the gateway, which proxies it to the gamey service.
       const res = await fetch(
         `${GATEWAY_URL}/gamey/${API_VERSION}/ybot/choose/${BOT_ID}`,
         {
@@ -168,18 +171,21 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
           body: JSON.stringify(yen),
         },
       );
-
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.message ?? `HTTP ${res.status}`);
       }
 
+      // Parse the bot's chosen coordinates from the response.
       const data: BotResponse = await res.json();
       const { x: bx, y: by, z: bz } = data.coords;
+
+      // Convert the barycentric coordinates to the same string key format used in our boardMap.
       const botKey = coordKey(bx, by, bz);
 
       const afterBot: BoardMap = { ...afterPlayer, [botKey]: 1 };
       setBoardMap(afterBot);
+
       setLastBotMove(botKey);
 
       if (checkWin(afterBot, 1)) {
@@ -190,7 +196,7 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setErrorMsg(`Bot error: ${msg}`);
-      setCurrentTurn(0); // give turn back to player
+      setCurrentTurn(0);
     } finally {
       setLoading(false);
     }
