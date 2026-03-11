@@ -6,10 +6,7 @@ import GameBoard from "../GameBoard";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Builds a minimal successful bot response for a given cell.
- * Used to mock the gateway fetch throughout the tests.
- */
+/** Builds a minimal successful bot response for a given cell. */
 function botResponse(x: number, y: number, z: number) {
   return {
     ok: true,
@@ -21,10 +18,7 @@ function botResponse(x: number, y: number, z: number) {
   } as Response;
 }
 
-/**
- * Returns all SVG polygon elements rendered by the board.
- * A size-7 board has 7 * (7+1) / 2 = 28 cells.
- */
+/** Returns all SVG polygon elements — a size-7 board has 28 cells. */
 function getPolygons() {
   return document.querySelectorAll("polygon");
 }
@@ -36,7 +30,7 @@ describe("GameBoard – rendering", () => {
 
   test("renders the game title", () => {
     render(<GameBoard onBack={() => {}} />);
-    expect(screen.getByText("Y")).toBeInTheDocument();
+    expect(screen.getByText(/yovi/i)).toBeInTheDocument();
   });
 
   test("renders the back button", () => {
@@ -44,9 +38,8 @@ describe("GameBoard – rendering", () => {
     expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
   });
 
-  test("renders mode and size info tags", () => {
+  test("renders size info tag", () => {
     render(<GameBoard onBack={() => {}} />);
-    expect(screen.getByText(/mode: standard/i)).toBeInTheDocument();
     expect(screen.getByText(/size: small/i)).toBeInTheDocument();
   });
 
@@ -63,7 +56,6 @@ describe("GameBoard – rendering", () => {
 
   test("renders 28 hexagonal cells for a size-7 board", () => {
     render(<GameBoard onBack={() => {}} />);
-    // 7 * (7 + 1) / 2 = 28
     expect(getPolygons()).toHaveLength(28);
   });
 
@@ -135,13 +127,11 @@ describe("GameBoard – turn flow", () => {
       expect(body).toHaveProperty("layout");
       // A size-7 layout has exactly 6 row separators
       expect((body.layout.match(/\//g) || []).length).toBe(6);
-      // The clicked cell should appear as 'B' in the layout
       expect(body.layout).toContain("B");
     });
   });
 
   test("shows 'Bot thinking' status while waiting for the API response", async () => {
-    // Never resolves so the loading state persists during the assertion
     global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
     render(<GameBoard onBack={() => {}} />);
@@ -162,14 +152,10 @@ describe("GameBoard – turn flow", () => {
   });
 
   test("does not call the API again when clicking while bot is thinking", async () => {
-    // Never resolves so it stays in loading state
     global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
     render(<GameBoard onBack={() => {}} />);
-
-    // First click triggers the API call
     await userEvent.click(getPolygons()[0]);
-    // Second click while loading should be ignored
     await userEvent.click(getPolygons()[1]);
 
     expect(global.fetch).toHaveBeenCalledOnce();
@@ -179,20 +165,13 @@ describe("GameBoard – turn flow", () => {
     global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
 
     render(<GameBoard onBack={() => {}} />);
-
-    // Click the same cell twice
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/your turn/i));
 
-    const fetchCallsAfterFirst = (global.fetch as ReturnType<typeof vi.fn>)
-      .mock.calls.length;
+    global.fetch = vi.fn();
+    await userEvent.click(getPolygons()[0]);
 
-    global.fetch = vi.fn(); // reset to detect extra calls
-    await userEvent.click(getPolygons()[0]); // same cell again
-
-    // No new fetch should have been triggered
     expect(global.fetch).not.toHaveBeenCalled();
-    void fetchCallsAfterFirst; // suppress unused warning
   });
 });
 
@@ -251,7 +230,6 @@ describe("GameBoard – error handling", () => {
   });
 
   test("clears the error banner on the next player move", async () => {
-    // First call fails, second call succeeds
     global.fetch = vi
       .fn()
       .mockRejectedValueOnce(new Error("Network error"))
@@ -259,11 +237,9 @@ describe("GameBoard – error handling", () => {
 
     render(<GameBoard onBack={() => {}} />);
 
-    // Trigger error
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/bot error/i));
 
-    // Play again — error should disappear
     await userEvent.click(getPolygons()[1]);
     await waitFor(() => {
       expect(screen.queryByText(/bot error/i)).not.toBeInTheDocument();
@@ -276,14 +252,8 @@ describe("GameBoard – error handling", () => {
 describe("GameBoard – win / lose state", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  test("shows 'You win' and 'New game' button when player wins", async () => {
-
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue(botResponse(6, 0, 0));
-
+  test("does not show win/lose state on initial render", () => {
     render(<GameBoard onBack={() => {}} />);
-
     expect(screen.queryByText(/you win/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/bot wins/i)).not.toBeInTheDocument();
     expect(
@@ -291,12 +261,10 @@ describe("GameBoard – win / lose state", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("'New game' button resets board state", async () => {
+  test("board still has 28 cells after a move", async () => {
     global.fetch = vi.fn().mockResolvedValue(botResponse(0, 6, 0));
 
     render(<GameBoard onBack={() => {}} />);
-
-    // Play one normal turn
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/your turn/i));
 

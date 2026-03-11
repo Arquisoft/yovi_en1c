@@ -106,10 +106,3 @@ describe("RegisterForm", () => {
     });
   });
 });
-
-describe("App - backend connectivity", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-});
