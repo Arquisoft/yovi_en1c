@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import './GameBoard.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
+// right now we hardcode these for simplicity, but they could be made dynamic later
 const BOARD_SIZE = 7;
 const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL ?? 'http://localhost:8000';
 const BOT_ID = 'random_bot';

@@ -4,22 +4,22 @@ import RegisterForm from "./RegisterForm";
 import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
 function App() {
   const [gameyOnline, setGameyOnline] = useState<boolean | null>(null);
   const [showBoard, setShowBoard] = useState(false);
 
+  // Check whether the gamey service is reachable through the gateway on mount
   useEffect(() => {
-    fetch("http://localhost:8000/gamey/status")
+    fetch(`${API_URL}/gamey/status`)
       .then(() => setGameyOnline(true))
       .catch(() => setGameyOnline(false));
   }, []);
 
+  // Once the user registers successfully, go straight to the board
   if (showBoard) {
-    return (
-      <GameBoard
-        onBack={() => setShowBoard(false)}
-      />
-    );
+    return <GameBoard onBack={() => setShowBoard(false)} />;
   }
 
   return (
@@ -41,11 +41,8 @@ function App() {
         </p>
       )}
 
-      <RegisterForm />
-
-      <button onClick={() => setShowBoard(true)} style={{ marginTop: 24 }}>
-        Go to Game Y →
-      </button>
+      {/* onSuccess navigates directly to the board — no separate button needed */}
+      <RegisterForm onSuccess={() => setShowBoard(true)} />
     </div>
   );
 }

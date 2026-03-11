@@ -11,7 +11,7 @@ describe("RegisterForm", () => {
   });
 
   test("shows validation error when username is empty", async () => {
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     const user = userEvent.setup();
 
     await waitFor(async () => {
@@ -29,7 +29,7 @@ describe("RegisterForm", () => {
       json: async () => ({ message: "Hello Pablo! Welcome to the course!" }),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     // Wrap interaction + assertion inside waitFor
     await waitFor(async () => {
@@ -51,7 +51,7 @@ describe("RegisterForm", () => {
       json: async () => ({ error: "User already exists" }),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
@@ -66,7 +66,7 @@ describe("RegisterForm", () => {
 
     global.fetch = vi.fn().mockRejectedValueOnce(new Error("Connection lost"));
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
@@ -84,7 +84,7 @@ describe("RegisterForm", () => {
       json: async () => ({}),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
 
@@ -98,7 +98,7 @@ describe("RegisterForm", () => {
 
     global.fetch = vi.fn().mockRejectedValueOnce({});
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
 
