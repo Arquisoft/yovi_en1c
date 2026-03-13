@@ -223,7 +223,6 @@ impl GameY {
         if self.check_game_over() {
             tracing::info!("Game is already over. Move at {} could be ignored", coords);
         }
-
         if self.board_map.contains_key(&coords) {
             return Err(GameYError::Occupied {
                 coordinates: coords,
@@ -545,7 +544,7 @@ fn apply_player_color(symbol: String, player: Option<PlayerId>) -> String {
 }
 
 /// Represents the current status of a game.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum GameStatus {
     /// The game is still in progress with the specified player to move next.
     Ongoing { next_player: PlayerId },

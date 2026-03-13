@@ -5,7 +5,7 @@ use std::fmt::Display;
 ///
 /// A movement can either be placing a piece on the board at specific coordinates,
 /// or performing a special game action like swapping or resigning.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Movement {
     /// A piece placement on the board.
     Placement {

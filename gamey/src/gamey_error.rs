@@ -122,6 +122,13 @@ pub enum GameYError {
         /// Description of what went wrong.
         message: String,
     },
+
+    /// Client operation failed or invalid operation for current mode.
+    #[error("Client error: {message}")]
+    ClientError {
+        /// Description of what went wrong.
+        message: String,
+    },
 }
 
 #[cfg(test)]
