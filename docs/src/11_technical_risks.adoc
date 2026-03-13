@@ -7,10 +7,27 @@ Considering the recent loss of a team member, the team's tendency towards end-of
 [cols="1,1,2,2"]
 |===
 | Category & Item | Relevance | Considerations | Potential Mitigation
-| Workflow Risk (End-of-sprint spikes) | 2 | Accumulating work at the end of a sprint leads to rushed implementations, bugs, and "quick fixes" that introduce technical debt. | Implement strict "Work in Progress" (WIP) limits, encourage Continuous Integration (CI), and prioritize task completion early in the sprint.
-| Code Integration Risk (Merge conflicts) | 2 | Frequent conflicts disrupt flow and signal gaps in test coverage or architectural understanding. Hastily resolved conflicts hide technical debt. | Enforce stricter test requirements before merging, adopt a robust branching strategy, and investigate root causes of recurring failures.
-| Technology Adoption (React, MongoDB, Rust) | 2 | Limited experience can lead to suboptimal implementations, performance bottlenecks, or maintainability challenges. | Conduct internal knowledge-sharing sessions, focus code reviews on best practices, and dedicate spike time for deep-dive learning.
-| Implicit Knowledge (Bus factor) | 1 | Critical modules rely on specific individuals, creating a bottleneck and a risk to long-term maintainability. | Maintain up-to-date documentation of key functionalities, use pair programming for complex modules, and document decisions via ADRs.
+
+| **Workflow Imbalance** (End-of-sprint rush)
+| 2
+| Concentrating workload at the end of a sprint often leads to rushed implementation, higher defect rates, and technical debt.
+| Maintain strict "Work in Progress" (WIP) limits, ensure continuous integration, and prioritize the completion of tasks early in the cycle.
+
+| **Integration Risk** (Merge conflicts)
+| 2
+| Frequent branch conflicts disrupt development momentum and may indicate gaps in testing or architectural alignment.
+| Require passing tests before merging, follow a consistent branching strategy, and address the root causes of recurring test failures.
+
+| **Technology Adoption** (React, MongoDB, Rust)
+| 2
+| Limited experience with the project stack can result in inefficient code patterns, performance issues, or future maintenance challenges.
+| Share technical knowledge within the team, focus code reviews on framework best practices, and allocate time for researching documentation.
+
+| **Knowledge Silos** (Bus factor)
+| 1
+| Relying on specific individuals for critical system knowledge creates a bottleneck and risks the long-term maintainability of the project.
+| Standardize documentation for core logic, encourage pair programming for complex features, and record all major design decisions in ADRs.
+
 |===
 
 ifdef::arc42help[]
