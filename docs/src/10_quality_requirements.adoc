@@ -31,7 +31,7 @@ endif::arc42help[]
 
 The following diagram shows the hierarchical structure of the main non-functional requirements.
 
-image::quality-tree.svg[Quality Tree, align="center", width=800]
+image::QualityTree.svg[Quality Tree, align="center", width=800]
 
 ifdef::arc42help[]
 [role="arc42help"]
