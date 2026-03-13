@@ -24,28 +24,28 @@ path = "src/lib.rs"
 
 
 [dependencies]
-anyhow = "1.0"
+anyhow = "1.0.102"
 axum = { version = "0.8", features = ["macros"] }
-clap = { version = "4.0", features = ["derive"] }
-rand = "0.9"
+clap = { version = "4.6.0", features = ["derive"] }
+rand = "0.10.0"
 rustyline = { version = "17.0", features = ["with-file-history"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "1.0"
+serde_json = "1.0.149" 
+thiserror = "2.0.18"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.50.0", features = ["full"] }
 tower-http = { version = "0.6", features = ["cors"] }
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.13.2", features = ["json"] }
 
 
 [dev-dependencies]
-tower = { version = "0.5", features = ["util"] }
+tower = { version = "0.5.3", features = ["util"] }
 http-body-util = "0.1"
 mime = "0.3"
-tempfile = "3.15"
-proptest = "1.5"
-criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.27.0"
+proptest = "1.10.0"
+criterion = { version = "0.8.2", features = ["html_reports"] }
 mockito = "1.2"
 
 [[bench]]

@@ -1,6 +1,6 @@
 
 use crate::core::{GameY, GameStatus};
-use crate::{Coordinates, GameAction, GameYError, Movement, PlayerId, RenderOptions, YEN};
+use crate::{GameYError, Movement, PlayerId, RenderOptions};
 use std::path::Path;
 
 /// Game gateway client that can operate in local or remote mode.
@@ -318,7 +318,7 @@ impl GameGatewayClient {
 mod tests {
     use super::*;
     use crate::core::{Coordinates, Movement, PlayerId, RenderOptions};
-    use crate::{GameAction, GameYError};
+    use crate::{GameYError};
     use std::fs;
     use std::path::PathBuf;
 
@@ -362,7 +362,7 @@ mod tests {
         client
             .add_move(Movement::Placement {
                 player: PlayerId::new(0),
-                coords: Coordinates::new(0, 1, 1),
+                coords: Coordinates::new(0, 1, 0),
             })
             .unwrap();
         client.save_to_file(&file).unwrap();
@@ -430,7 +430,12 @@ mod tests {
     fn local_client_status() {
         let client = LocalClient::new(2);
         let status = client.status();
-        assert!(status.move_history.is_empty());
+        match status {
+            GameStatus::Ongoing { next_player } => {
+                assert_eq!(*next_player, PlayerId::new(0));
+            }
+            _ => panic!("expected ongoing status"),
+        }
     }
 
     #[test]
@@ -546,9 +551,7 @@ mod tests {
         let mut server = mockito::Server::new_async().await;
 
         let response = serde_json::json!({
-            "move_history": [],
-            "board_size": 4,
-            "current_player": 0
+            "Ongoing": { "next_player": 0 }
         });
         let _mock = server
             .mock(
