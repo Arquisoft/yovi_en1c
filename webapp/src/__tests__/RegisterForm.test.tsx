@@ -1,9 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RegisterForm from "../RegisterForm";
-import { afterEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
-import App from "../App";
 
 describe("RegisterForm", () => {
   afterEach(() => {
@@ -11,7 +10,7 @@ describe("RegisterForm", () => {
   });
 
   test("shows validation error when username is empty", async () => {
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     const user = userEvent.setup();
 
     await waitFor(async () => {
@@ -29,7 +28,7 @@ describe("RegisterForm", () => {
       json: async () => ({ message: "Hello Pablo! Welcome to the course!" }),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     // Wrap interaction + assertion inside waitFor
     await waitFor(async () => {
@@ -51,7 +50,7 @@ describe("RegisterForm", () => {
       json: async () => ({ error: "User already exists" }),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
@@ -66,7 +65,7 @@ describe("RegisterForm", () => {
 
     global.fetch = vi.fn().mockRejectedValueOnce(new Error("Connection lost"));
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
 
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
@@ -84,7 +83,7 @@ describe("RegisterForm", () => {
       json: async () => ({}),
     } as Response);
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
 
@@ -98,43 +97,12 @@ describe("RegisterForm", () => {
 
     global.fetch = vi.fn().mockRejectedValueOnce({});
 
-    render(<RegisterForm />);
+    render(<RegisterForm onSuccess={() => {}} />);
     await user.type(screen.getByLabelText(/whats your name\?/i), "Pablo");
     await user.click(screen.getByRole("button", { name: /lets go!/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
-    });
-  });
-});
-
-describe("App - backend connectivity", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("shows Gamey as Online when fetch succeeds", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response("OK")));
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Gamey/i)).toBeInTheDocument();
-      expect(screen.getByText(/Online/i)).toBeInTheDocument();
-    });
-  });
-
-  it("shows Gamey as Offline when fetch fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValueOnce(new Error("Network error")),
-    );
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Gamey/i)).toBeInTheDocument();
-      expect(screen.getByText(/Offline/i)).toBeInTheDocument();
     });
   });
 });

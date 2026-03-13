@@ -1,10 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-const RegisterForm: React.FC = () => {
-  const [username, setUsername] = useState("");
+const RegisterForm: React.FC<{ onSuccess: (username: string) => void }> = ({ onSuccess }) => {
+  const [username, setUsername]           = useState("");
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError]                 = useState<string | null>(null);
+  const [loading, setLoading]             = useState(false);
+  const [countdown, setCountdown]         = useState<number | null>(null);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      onSuccess(username);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [countdown]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -21,16 +41,14 @@ const RegisterForm: React.FC = () => {
       const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${API_URL}/users/createuser`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setResponseMessage(data.message);
-        setUsername("");
+        setCountdown(5);
       } else {
         setError(data.error || "Server error");
       }
@@ -51,18 +69,18 @@ const RegisterForm: React.FC = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="form-input"
+          // Disable input once registration is accepted
+          disabled={countdown !== null}
         />
       </div>
-      <button type="submit" className="submit-button" disabled={loading}>
+
+      <button type="submit" className="submit-button" disabled={loading || countdown !== null}>
         {loading ? "Entering..." : "Lets go!"}
       </button>
 
-      {responseMessage && (
-        <div
-          className="success-message"
-          style={{ marginTop: 12, color: "green" }}
-        >
-          {responseMessage}
+      {responseMessage && countdown !== null && (
+        <div className="success-message" style={{ marginTop: 12, color: "green" }}>
+          {responseMessage} — Entering the board in {countdown}s…
         </div>
       )}
 
