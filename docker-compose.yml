@@ -29,6 +29,7 @@ services:
       context: ./webapp
       args:
         - VITE_API_URL=http://localhost:8000
+        - VITE_GATEWAY_URL=http://localhost:8000
     container_name: webapp
     image: ghcr.io/arquisoft/yovi_en1c-webapp:latest
     ports:
