@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>yovi_en1c</title>
+<title></title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -436,7 +436,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1><span class="image"><img src="./images/arc42-logo.png" alt="arc42"></span> yovi_en1c</h1>
+<h1><span class="image"><img src="./images/yovi_en1c-logo.png" alt="arc42"></span></h1>
 <div class="details">
 <span id="revnumber">version 8.2 EN,</span>
 <span id="revdate">January 2023</span>
@@ -483,20 +483,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_sign_up_flow">6.1. Sign Up Flow</a></li>
 <li><a href="#_sign_in_flow">6.2. Sign In Flow</a></li>
 <li><a href="#_game_flow">6.3. Game Flow</a></li>
-<li><a href="#_statistics_flow">6.4. Statistics Flow</a></li>
 </ul>
 </li>
 <li><a href="#section-deployment-view">7. Deployment View</a>
 <ul class="sectlevel2">
 <li><a href="#_infrastructure_level_1">7.1. Infrastructure Level 1</a></li>
-<li><a href="#_infrastructure_level_2">7.2. Infrastructure Level 2</a></li>
 </ul>
 </li>
 <li><a href="#section-concepts">8. Cross-cutting Concepts</a>
 <ul class="sectlevel2">
-<li><a href="#_concept_1">8.1. <em>&lt;Concept 1&gt;</em></a></li>
-<li><a href="#_concept_2">8.2. <em>&lt;Concept 2&gt;</em></a></li>
-<li><a href="#_concept_n">8.3. <em>&lt;Concept n&gt;</em></a></li>
+<li><a href="#_persistence_and_data_access">8.1. Persistence and Data Access</a></li>
+<li><a href="#_configuration_and_environments">8.2. Configuration and Environments</a></li>
+<li><a href="#_test_data_seeding">8.3. Test Data (Seeding)</a></li>
+<li><a href="#_error_handling">8.4. Error Handling</a></li>
+<li><a href="#_testing_strategy">8.5. Testing Strategy</a></li>
+<li><a href="#_end_to_end_e2e_testing">8.6. End-to-End (E2E) Testing</a></li>
+<li><a href="#_yen_notation">8.7. YEN Notation</a></li>
 </ul>
 </li>
 <li><a href="#section-design-decisions">9. Architecture Decisions</a></li>
@@ -515,6 +517,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <style>
+h1 img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
 .arc42help {font-size:small; width: 14px; height: 16px; overflow: hidden; position: absolute; right: 0; padding: 2px 0 3px 2px;}
 .arc42help::before {content: "?";}
 .arc42help:hover {width:auto; height: auto; z-index: 100; padding: 10px;}
@@ -523,20 +531,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 	.arc42help {display:none;}
 }
 </style>
-<div class="paragraph">
-<p><strong>About arc42</strong></p>
-</div>
-<div class="paragraph lead">
-<p>arc42, the template for documentation of software and system architecture.</p>
-</div>
-<div class="paragraph">
-<p>Template Version 8.2 EN. (based upon AsciiDoc version), January 2023</p>
-</div>
-<div class="paragraph">
-<p>Created, maintained and &#169; by Dr. Peter Hruschka, Dr. Gernot Starke and contributors.
-See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
-</div>
-<hr>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="admonitionblock note">
@@ -849,7 +843,7 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">TC-04</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Use of Arc42 nas documentation standard</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Use of Arc42 as documentation standard</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">All the documentation must be completed using the standard of the Arc42 documentation template</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Creates more unified project making it easier to understand by people not belonoging to the team</p></td>
 </tr>
@@ -1620,14 +1614,6 @@ You will mainly capture scenarios in your documentation to communicate your arch
 <img src="./images/game.png" alt="Game Diagram">
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_statistics_flow">6.4. Statistics Flow</h3>
-<div class="imageblock">
-<div class="content">
-<img src="./images/statistics.png" alt="Statistics Diagram">
-</div>
-</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1779,165 +1765,289 @@ We’ve focused on performance too, MongoDB is used for flexible and efficient d
 </tr>
 </tbody>
 </table>
-</div>
-<div class="sect2">
-<h3 id="_infrastructure_level_2">7.2. Infrastructure Level 2</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Here you can include the internal structure of (some) infrastructure elements from level 1.</p>
-</div>
-<div class="paragraph">
-<p>Please copy the structure from level 1 for each selected element.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_1">7.2.1. <em>&lt;Infrastructure Element 1&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_2">7.2.2. <em>&lt;Infrastructure Element 2&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_n">7.2.3. <em>&lt;Infrastructure Element n&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
 <div style="page-break-after: always;"></div>
-</div>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="section-concepts">8. Cross-cutting Concepts</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
+<div class="sect2">
+<h3 id="_persistence_and_data_access">8.1. Persistence and Data Access</h3>
+<div class="paragraph">
+<p>The system uses <strong>MongoDB</strong> as its NoSQL database, managed through <strong>Mongoose</strong> as the ODM (Object Document Mapper) abstraction layer.</p>
+</div>
+<div class="paragraph">
+<p>The connection is established via the <code>MONGO_URI</code> environment variable. If not defined, the application falls back to <code>mongodb://mongo:27017/yovi</code>, intended for Docker Compose environments.</p>
+</div>
+<div class="paragraph">
+<p>The main data model is <code>User</code>, which includes the following fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>name</code> — user display name (String)</p>
+</li>
+<li>
+<p><code>email</code> — unique email address (String, unique)</p>
+</li>
+<li>
+<p><code>createdAt</code> — creation timestamp, auto-generated (Date, default: Date.now)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To prevent model redefinition errors, Mongoose models are registered using the following pattern:</p>
+</div>
+<div class="listingblock">
 <div class="content">
-<div class="paragraph">
-<div class="title">Content</div>
-<p>This section describes overall, principal regulations and solution ideas that are relevant in multiple parts (= cross-cutting) of your system.
-Such concepts are often related to multiple building blocks.
-They can include many different topics, such as</p>
+<pre class="highlight"><code class="language-javascript" data-lang="javascript">const User = mongoose.models.User || mongoose.model("User", schema);</code></pre>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>models, especially domain models</p>
-</li>
-<li>
-<p>architecture or design patterns</p>
-</li>
-<li>
-<p>rules for using specific technology</p>
-</li>
-<li>
-<p>principal, often technical decisions of an overarching (= cross-cutting) nature</p>
-</li>
-<li>
-<p>implementation rules</p>
-</li>
-</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_and_environments">8.2. Configuration and Environments</h3>
+<div class="paragraph">
+<p>The application adapts its behavior based on the <code>NODE_ENV</code> environment variable, requiring no code changes between deployments.</p>
 </div>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>Concepts form the basis for <em>conceptual integrity</em> (consistency, homogeneity) of the architecture.
-Thus, they are an important contribution to achieve inner qualities of your system.</p>
+<p>The database URI is injected via <code>MONGO_URI</code>, allowing the application to point to different instances per environment:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Environment</th>
+<th class="tableblock halign-left valign-top">Configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Local (Docker)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uses fallback <code>mongodb://mongo:27017/yovi</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Local (no Docker)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Set <code>MONGO_URI=mongodb://localhost:27017/yovi</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud (MongoDB Atlas)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Set <code>MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/yovi</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Production (Railway, Render, etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MONGO_URI</code> is injected automatically by the platform</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_test_data_seeding">8.3. Test Data (Seeding)</h3>
+<div class="paragraph">
+<p>In non-production environments (<code>NODE_ENV !== "production"</code>), the database is cleared and populated with predefined test data on every application startup.</p>
 </div>
 <div class="paragraph">
-<p>Some of these concepts cannot be assigned to individual building blocks, e.g. security or safety.</p>
+<p>This guarantees a known and reproducible state for development and testing, removing any dependency on external or pre-existing data. The seed data is centralized in the database configuration file.</p>
 </div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>The form can be varied:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>concept papers with any kind of structure</p>
-</li>
-<li>
-<p>cross-cutting model excerpts or scenarios using notations of the architecture views</p>
-</li>
-<li>
-<p>sample implementations, especially for technical concepts</p>
-</li>
-<li>
-<p>reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Structure</div>
-<p>A potential (but not mandatory) structure for this section could be:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Domain concepts</p>
-</li>
-<li>
-<p>User Experience concepts (UX)</p>
-</li>
-<li>
-<p>Safety and security concepts</p>
-</li>
-<li>
-<p>Architecture and design patterns</p>
-</li>
-<li>
-<p>"Under-the-hood"</p>
-</li>
-<li>
-<p>development concepts</p>
-</li>
-<li>
-<p>operational concepts</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Note: it might be difficult to assign individual concepts to one specific topic
-on this list.</p>
-</div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="./images/08-concepts-EN.drawio.png" alt="Possible topics for crosscutting concepts">
+<pre class="highlight"><code class="language-javascript" data-lang="javascript">if (process.env.NODE_ENV !== "production") {
+  await User.deleteMany({});
+  await User.insertMany(seedUsers);
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-8/">Concepts</a> in the arc42 documentation.</p>
-</div>
+<p>This logic is completely disabled in production, protecting real data from accidental deletion or corruption.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_concept_1">8.1. <em>&lt;Concept 1&gt;</em></h3>
+<h3 id="_error_handling">8.4. Error Handling</h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>Database connection errors are handled centrally inside the <code>connectDB()</code> function:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Caught via <code>try/catch</code></p>
+</li>
+<li>
+<p>Logged to the console using <code>console.error</code></p>
+</li>
+<li>
+<p>Re-thrown with <code>throw err</code> to prevent the application from starting in an invalid state without a database connection</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This behavior applies across the entire application, as no module can operate correctly without an established database connection.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_concept_2">8.2. <em>&lt;Concept 2&gt;</em></h3>
+<h3 id="_testing_strategy">8.5. Testing Strategy</h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>The project uses a component and integration testing approach based on the following tools:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Vitest</strong> — test runner and assertion library</p>
+</li>
+<li>
+<p><strong>React Testing Library</strong> — component rendering and user interaction simulation</p>
+</li>
+<li>
+<p><strong>@testing-library/user-event</strong> — realistic user event simulation (typing, clicking)</p>
+</li>
+<li>
+<p><strong>@testing-library/jest-dom</strong> — extended DOM matchers</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>&#8230;&#8203;</p>
+<p>Tests are organized using <code>describe</code> blocks per component or feature, and cover the following scenarios:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Validation</strong> — ensures the UI shows the correct error messages when required fields are empty.</p>
+</li>
+<li>
+<p><strong>Successful API response</strong> — mocks <code>fetch</code> to return a successful response and verifies the UI reflects it.</p>
+</li>
+<li>
+<p><strong>API error response</strong> — mocks <code>fetch</code> to return <code>ok: false</code> and verifies the error message is displayed.</p>
+</li>
+<li>
+<p><strong>Network failure</strong> — mocks <code>fetch</code> to reject entirely and verifies a fallback error message appears.</p>
+</li>
+<li>
+<p><strong>Default error messages</strong> — verifies that when the API returns no error detail, a generic fallback (<code>"Server error"</code>, <code>"Network error"</code>) is shown.</p>
+</li>
+<li>
+<p><strong>Backend connectivity</strong> — verifies the application correctly displays online/offline status based on backend reachability.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All external dependencies (e.g., <code>fetch</code>) are mocked using <code>vi.fn()</code> and restored after each test via <code>afterEach) &#8658; vi.restoreAllMocks(</code>, ensuring test isolation.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_concept_n">8.3. <em>&lt;Concept n&gt;</em></h3>
+<h3 id="_end_to_end_e2e_testing">8.6. End-to-End (E2E) Testing</h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>The project includes end-to-end tests using <strong>Cucumber</strong> (BDD) combined with <strong>Playwright</strong> as the browser automation engine.</p>
+</div>
+<div class="paragraph">
+<p>Tests are written in <code>Given/When/Then</code> format, making them readable and traceable to user stories:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Given</strong> — sets up the initial state (e.g., navigating to the register page)</p>
+</li>
+<li>
+<p><strong>When</strong> — simulates user actions (e.g., filling a form and submitting)</p>
+</li>
+<li>
+<p><strong>Then</strong> — asserts the expected outcome (e.g., success or error message visible)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following scenarios are covered:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Successful registration — fills the username field and verifies the welcome message appears</p>
+</li>
+<li>
+<p>API error (400) — intercepts the network call via <code>page.route()</code> and returns a mocked error response</p>
+</li>
+<li>
+<p>Network failure — aborts the network call entirely and verifies the fallback error message</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Network interception is done at the browser level using Playwright&#8217;s <code>page.route()</code>, allowing full control over API responses without modifying the backend. UI assertions rely on CSS class selectors (<code>.success-message</code>, <code>.error-message</code>) and <code>waitForSelector</code> with a timeout to handle async rendering.</p>
+</div>
+<div class="paragraph">
+<p>In addition to unit and component tests, the project includes <strong>End-to-End (E2E) tests</strong> using:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Cucumber</strong> — BDD-style test definitions using <code>Given/When/Then</code> syntax</p>
+</li>
+<li>
+<p><strong>Playwright</strong> — browser automation for real user interaction simulation</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>E2E tests cover full user flows through the actual UI, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Successful registration flow</p>
+</li>
+<li>
+<p>API error handling (mocked via <code>page.route()</code>)</p>
+</li>
+<li>
+<p>Network failure scenarios (aborted requests)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Network calls are intercepted and mocked at the browser level using Playwright&#8217;s <code>page.route()</code>, allowing E2E tests to run in isolation without a live backend.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_yen_notation">8.7. YEN Notation</h3>
+<div class="paragraph">
+<p>YEN (Y-game Extended Notation) is the standard format used across the system to represent the state of a Game Y match at any point in time. It is used as the communication language between the TypeScript web application and the Rust game logic module.</p>
+</div>
+<div class="paragraph">
+<p>A game state is expressed as a JSON object with the following fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>size</code> — the board size (number of cells per side)</p>
+</li>
+<li>
+<p><code>turn</code> — the identifier of the player whose turn it is</p>
+</li>
+<li>
+<p><code>players</code> — array of player identifiers</p>
+</li>
+<li>
+<p><code>layout</code> — string representing the current piece placement on the board, using <code>/</code> as row separators and <code>.</code> for empty cells</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "size": 4,
+  "turn": "R",
+  "players": ["B", "R"],
+  "layout": "B/.B/RB./B..R"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This notation is transversal to the entire system — any component that reads or writes game state must produce and consume valid YEN format.ifndef::imagesdir[:imagesdir: ../images]</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1946,6 +2056,10 @@ on this list.</p>
 <div class="sect1">
 <h2 id="section-design-decisions">9. Architecture Decisions</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>The ADRs (Architecture Decision Records) are stored in the GitHub Wiki of the project and are available at:
+<a href="https://github.com/Arquisoft/yovi_en1c/wiki/Architectural-Decisions" class="bare">https://github.com/Arquisoft/yovi_en1c/wiki/Architectural-Decisions</a></p>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2020,6 +2134,14 @@ concrete and measurable.</p>
 </div>
 <div class="sect2">
 <h3 id="_quality_tree">10.1. Quality Tree</h3>
+<div class="paragraph">
+<p>The following diagram shows the hierarchical structure of the main non-functional requirements.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="./images/QualityTree.svg" alt="Quality Tree" width="800">
+</div>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2052,6 +2174,96 @@ concrete and measurable.</p>
 </div>
 <div class="sect2">
 <h3 id="_quality_scenarios">10.2. Quality Scenarios</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Quality Goal</th>
+<th class="tableblock halign-left valign-top">Scenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Measure</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Time Behaviour</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fast game action processing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Backend validates player&#8217;s move and frontend updates the board quickly.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Move is visible to players within a second.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Time Behaviour</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Page loading</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The frontend should load the application and the game lobby without excessive delay.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No longer than five seconds to load the game page.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ease-of-Use</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">First time user starts a game</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A new user opens the app for the first time and wants to start a match.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">First time user should be able to start a match within two minutes of opening the app.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ease-of-Use</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Intuitive game interface</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Players are automatically aware of whose turn it is and how to do their move without thinking.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User testing with new users does not show any signs of struggle with the gameplay use.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Attractiveness</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pleasant user interface</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Consistent layout and color scheme across the application.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Test users do not complain about annoyance with the application&#8217;s outlook.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Server stability</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game should be available for players as much as possible.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MTBF goal of over 99%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Consistency</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game state tracking</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game state is stored in the backend correctly upon each move.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final game state stored correctly in the database after each game.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resilience</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Handling connection failures</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Players should be able to restore the game after losing connection.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game can be reconnected and continued from the same state within 10 seconds of connection recovery.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modularity</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separate functional units</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modules should be able to be edited in isolation as much as possible, with minimal coupling between the functional units.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modules can be tested in isolation for their functionalities.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2097,6 +2309,51 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div class="sect1">
 <h2 id="section-technical-risks">11. Risks and Technical Debts</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Following are stated the key risks and potential areas of technical debt that require attention (Relevance from 1(low) to 3(high)):</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3335%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Category &amp; Item</th>
+<th class="tableblock halign-left valign-top">Relevance</th>
+<th class="tableblock halign-left valign-top">Considerations</th>
+<th class="tableblock halign-left valign-top">Potential Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Workflow Imbalance</strong> (End-of-sprint rush)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Concentrating workload at the end of a sprint often leads to rushed implementation, higher defect rates, and technical debt.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maintain strict "Work in Progress" (WIP) limits, ensure continuous integration, and prioritize the completion of tasks early in the cycle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Integration Risk</strong> (Merge conflicts)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Frequent branch conflicts disrupt development momentum and may indicate gaps in testing or architectural alignment.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Require passing tests before merging, follow a consistent branching strategy, and address the root causes of recurring test failures.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Technology Adoption</strong> (React, MongoDB, Rust)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Limited experience with the project stack can result in inefficient code patterns, performance issues, or future maintenance challenges.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Share technical knowledge within the team, focus code reviews on framework best practices, and allocate time for researching documentation.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Knowledge Silos</strong> (Bus factor)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Relying on specific individuals for critical system knowledge creates a bottleneck and risks the long-term maintainability of the project.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Standardize documentation for core logic, encourage pair programming for complex features, and record all major design decisions in ADRs.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2175,12 +2432,48 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Game Y Hexagonal Grid</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The core hexagonal grid-based game that serves as the primary functional focus of the system.</em></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YEN Notation</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A specific data format used in this project to represent the game state and moves within JSON messages.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>GameY Bot (AI)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An automated player implemented in the GameY Service (Rust) that provides moves and strategic logic to compete.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Gateway (Facade)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A central entry point (Node.js/Express) that routes frontend requests to internal microservices, improving security and decoupling.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A platform used to package the Webapp, Users Service, and GameY Service into isolated containers for consistent deployment.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker-compose</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An orchestration tool used to define and run the multi-container environment (including the database) with a single command.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Microservices Approach</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An architectural style where the system is divided into small, independent services (Persistence, Game Engine, Frontend) that communicate between them.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>MongoDB</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The NoSQL database used to store flexible data structures such as user profiles, match history, and game states.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Rust (Cargo)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The high-performance programming language and package manager used specifically for the GameY engine to ensure rapid move calculation.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>React (Vite)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The frontend library and build tool used to create the interactive, component-based user interface for the browser.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Deployment Virtual Machine (Azure VM)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The on-demand, scalable computing resource that provides a virtualized Linux environment in the cloud, offering full control over the operating system and hardware configuration.</em></p></td>
 </tr>
 </tbody>
 </table>
@@ -2190,7 +2483,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-23 11:47:46 +0100
+Last updated 2026-03-14 19:15:49 +0100
 </div>
 </div>
 </body>
