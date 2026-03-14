@@ -6,7 +6,7 @@
 // configure EN settings for asciidoc
 include::src/config.adoc[]
 
-= image:arc42-logo.png[arc42] yovi_en1c
+= image:yovi_en1c-logo.png[arc42, align="center"]
 :revnumber: 8.2 EN
 :revdate: January 2023
 :revremark: (based upon AsciiDoc version)
@@ -17,6 +17,12 @@ include::src/config.adoc[]
 ifdef::backend-html5[]
 ++++
 <style>
+h1 img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
 .arc42help {font-size:small; width: 14px; height: 16px; overflow: hidden; position: absolute; right: 0; padding: 2px 0 3px 2px;}
 .arc42help::before {content: "?";}
 .arc42help:hover {width:auto; height: auto; z-index: 100; padding: 10px;}
@@ -28,11 +34,11 @@ ifdef::backend-html5[]
 ++++
 endif::backend-html5[]
 
+// Removed to have a cleaner documentation
+// include::src/about-arc42.adoc[]
 
-include::src/about-arc42.adoc[]
-
-// horizontal line
-***
+// horizontal line removed too.
+// ***
 
 ifdef::arc42help[]
 [role="arc42help"]

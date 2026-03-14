@@ -51,7 +51,9 @@ image::../images/sign_in.png[Sign In Diagram]
 
 image::../images/game.png[Game Diagram]
 
+////
+// Not yet implemented
 === Statistics Flow
 
 image::../images/statistics.png[Statistics Diagram]
-
+////
