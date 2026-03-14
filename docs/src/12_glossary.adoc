@@ -36,9 +36,37 @@ endif::arc42help[]
 |===
 |Term |Definition
 
-|<Term-1>
-|<definition-1>
+| Game Y Hexagonal Grid
+| The core hexagonal grid-based game that serves as the primary functional focus of the system.
 
-|<Term-2>
-|<definition-2>
+| YEN Notation
+| A specific data format used in this project to represent the game state and moves within JSON messages.
+
+| GameY Bot (AI)
+| An automated player implemented in the GameY Service (Rust) that provides moves and strategic logic to compete.
+
+| Gateway (Facade)
+| A central entry point (Node.js/Express) that routes frontend requests to internal microservices, improving security and decoupling.
+
+| Docker
+| A platform used to package the Webapp, Users Service, and GameY Service into isolated containers for consistent deployment.
+
+| Docker-compose
+| An orchestration tool used to define and run the multi-container environment (including the database) with a single command.
+
+| Microservices Approach
+| An architectural style where the system is divided into small, independent services (Persistence, Game Engine, Frontend) that communicate between them.
+
+| MongoDB
+| The NoSQL database used to store flexible data structures such as user profiles, match history, and game states.
+
+| Rust (Cargo)
+| The high-performance programming language and package manager used specifically for the GameY engine to ensure rapid move calculation.
+
+| React (Vite)
+| The frontend library and build tool used to create the interactive, component-based user interface for the browser.
+
+| Deployment Virtual Machine (Azure VM)
+| The on-demand, scalable computing resource that provides a virtualized Linux environment in the cloud, offering full control over the operating system and hardware configuration.
+
 |===

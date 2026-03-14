@@ -3,6 +3,8 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-design-decisions]]
 == Architecture Decisions
 
+The ADRs (Architecture Decision Records) are stored in the GitHub Wiki of the project and are available at:
+https://github.com/Arquisoft/yovi_en1c/wiki/Architectural-Decisions
 
 ifdef::arc42help[]
 [role="arc42help"]
