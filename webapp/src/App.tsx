@@ -1,16 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./App.css";
 import RegisterForm from "./RegisterForm";
+import GameMenu from "./GameMenu";
+import type { GameConfig } from "./GameMenu";
+import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
-function App() {
-  const [gameyOnline, setGameyOnline] = useState<boolean | null>(null);
+type Screen = 'register' | 'menu' | 'board';
 
-  useEffect(() => {
-    fetch("http://localhost:8000/gamey/status")
-      .then(() => setGameyOnline(true))
-      .catch(() => setGameyOnline(false));
-  }, []);
+function App() {
+  const [screen, setScreen] = useState<Screen>('register');
+  const [userName, setUserName] = useState('');
+
+  if (screen === 'menu') {
+    return (
+      <GameMenu
+        userName={userName}
+        onStartGame={(_config: GameConfig) => setScreen('board')}
+        onLogOut={() => {
+          setUserName('');
+          setScreen('register');
+        }}
+      />
+    );
+  }
+
+  if (screen === 'board') {
+    return <GameBoard onBack={() => setScreen('menu')} />;
+  }
 
   return (
     <div className="App">
@@ -21,17 +38,19 @@ function App() {
         <a href="https://react.dev" target="_blank" rel="noreferrer">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
+          <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
+        </a>
       </div>
 
       <h2>Welcome to the Software Arquitecture 2025-2026 course</h2>
 
-      {gameyOnline !== null && (
-        <p style={{ color: gameyOnline ? "green" : "red" }}>
-          Gamey: {gameyOnline ? "✓ Online" : "✗ Offline"}
-        </p>
-      )}
-
-      <RegisterForm />
+      <RegisterForm
+        onRegistered={(name: string) => {
+          setUserName(name);
+          setScreen('menu');
+        }}
+      />
     </div>
   );
 }
