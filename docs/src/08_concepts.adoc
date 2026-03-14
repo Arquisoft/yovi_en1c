@@ -100,3 +100,175 @@ Tests are written in `Given/When/Then` format, making them readable and traceabl
 * **Given** — sets up the initial state (e.g., navigating to the register page)
 * **When** — simulates user actions (e.g., filling a form and submitting)
 * **Then** — asserts the expected outcome (e.g., success or error message visible)
+
+The following scenarios are covered:
+
+* Successful registration — fills the username field and verifies the welcome message appears
+* API error (400) — intercepts the network call via `page.route()` and returns a mocked error response
+* Network failure — aborts the network call entirely and verifies the fallback error message
+
+Network interception is done at the browser level using Playwright's `page.route()`, allowing full control over API responses without modifying the backend. UI assertions rely on CSS class selectors (`.success-message`, `.error-message`) and `waitForSelector` with a timeout to handle async rendering.
+
+In addition to unit and component tests, the project includes **End-to-End (E2E) tests** using:
+
+* **Cucumber** — BDD-style test definitions using `Given/When/Then` syntax
+* **Playwright** — browser automation for real user interaction simulation
+
+E2E tests cover full user flows through the actual UI, including:
+
+* Successful registration flow
+* API error handling (mocked via `page.route()`)
+* Network failure scenarios (aborted requests)
+
+Network calls are intercepted and mocked at the browser level using Playwright's `page.route()`, allowing E2E tests to run in isolation without a live backend.
+
+=== YEN Notation
+
+YEN (Y-game Extended Notation) is the standard format used across the system to represent the state of a Game Y match at any point in time. It is used as the communication language between the TypeScript web application and the Rust game logic module.
+
+A game state is expressed as a JSON object with the following fields:
+
+* `size` — the board size (number of cells per side)
+* `turn` — the identifier of the player whose turn it is
+* `players` — array of player identifiers
+* `layout` — string representing the current piece placement on the board, using `/` as row separators and `.` for empty cells
+
+Example:
+
+[source,json]
+----
+{
+  "size": 4,
+  "turn": "R",
+  "players": ["B", "R"],
+  "layout": "B/.B/RB./B..R"
+}
+----
+
+This notation is transversal to the entire system — any component that reads or writes game state must produce and consume valid YEN format.ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-concepts]]
+== Cross-cutting Concepts
+
+=== Persistence and Data Access
+
+The system uses **MongoDB** as its NoSQL database, managed through **Mongoose** as the ODM (Object Document Mapper) abstraction layer.
+
+The connection is established via the `MONGO_URI` environment variable. If not defined, the application falls back to `mongodb://mongo:27017/yovi`, intended for Docker Compose environments.
+
+The main data model is `User`, which includes the following fields:
+
+* `name` — user display name (String)
+* `email` — unique email address (String, unique)
+* `createdAt` — creation timestamp, auto-generated (Date, default: Date.now)
+
+To prevent model redefinition errors, Mongoose models are registered using the following pattern:
+
+[source,javascript]
+----
+const User = mongoose.models.User || mongoose.model("User", schema);
+----
+
+=== Configuration and Environments
+
+The application adapts its behavior based on the `NODE_ENV` environment variable, requiring no code changes between deployments.
+
+The database URI is injected via `MONGO_URI`, allowing the application to point to different instances per environment:
+
+[cols="1,2"]
+|===
+| Environment | Configuration
+
+| Local (Docker)
+| Uses fallback `mongodb://mongo:27017/yovi`
+
+| Local (no Docker)
+| Set `MONGO_URI=mongodb://localhost:27017/yovi`
+
+| Cloud (MongoDB Atlas)
+| Set `MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/yovi`
+
+| Production (Railway, Render, etc.)
+| `MONGO_URI` is injected automatically by the platform
+|===
+
+=== Test Data (Seeding)
+
+In non-production environments (`NODE_ENV !== "production"`), the database is cleared and populated with predefined test data on every application startup.
+
+This guarantees a known and reproducible state for development and testing, removing any dependency on external or pre-existing data. The seed data is centralized in the database configuration file.
+
+[source,javascript]
+----
+if (process.env.NODE_ENV !== "production") {
+  await User.deleteMany({});
+  await User.insertMany(seedUsers);
+}
+----
+
+This logic is completely disabled in production, protecting real data from accidental deletion or corruption.
+
+=== Error Handling
+
+Database connection errors are handled centrally inside the `connectDB()` function:
+
+* Caught via `try/catch`
+* Logged to the console using `console.error`
+* Re-thrown with `throw err` to prevent the application from starting in an invalid state without a database connection
+
+This behavior applies across the entire application, as no module can operate correctly without an established database connection.
+
+=== Testing Strategy
+
+The project uses a component and integration testing approach based on the following tools:
+
+* **Vitest** — test runner and assertion library
+* **React Testing Library** — component rendering and user interaction simulation
+* **@testing-library/user-event** — realistic user event simulation (typing, clicking)
+* **@testing-library/jest-dom** — extended DOM matchers
+
+Tests are organized using `describe` blocks per component or feature, and cover the following scenarios:
+
+* **Validation** — ensures the UI shows the correct error messages when required fields are empty.
+* **Successful API response** — mocks `fetch` to return a successful response and verifies the UI reflects it.
+* **API error response** — mocks `fetch` to return `ok: false` and verifies the error message is displayed.
+* **Network failure** — mocks `fetch` to reject entirely and verifies a fallback error message appears.
+* **Default error messages** — verifies that when the API returns no error detail, a generic fallback (`"Server error"`, `"Network error"`) is shown.
+* **Backend connectivity** — verifies the application correctly displays online/offline status based on backend reachability.
+
+All external dependencies (e.g., `fetch`) are mocked using `vi.fn()` and restored after each test via `afterEach(() => vi.restoreAllMocks())`, ensuring test isolation.
+
+=== End-to-End (E2E) Testing
+
+The project includes end-to-end tests using **Cucumber** (BDD) combined with **Playwright** as the browser automation engine.
+
+Tests are written in `Given/When/Then` format, making them readable and traceable to user stories:
+
+* **Given** — sets up the initial state (e.g., navigating to the register page)
+* **When** — simulates user actions (e.g., filling a form and submitting)
+* **Then** — asserts the expected outcome (e.g., success or error message visible)
+
+=== YEN Notation
+
+YEN (Y-game Extended Notation) is the standard format used across the system to represent the state of a Game Y match at any point in time. It is used as the communication language between the TypeScript web application and the Rust game logic module.
+
+A game state is expressed as a JSON object with the following fields:
+
+* `size` — the board size (number of cells per side)
+* `turn` — the identifier of the player whose turn it is
+* `players` — array of player identifiers
+* `layout` — string representing the current piece placement on the board, using `/` as row separators and `.` for empty cells
+
+Example:
+
+[source,json]
+----
+{
+  "size": 4,
+  "turn": "R",
+  "players": ["B", "R"],
+  "layout": "B/.B/RB./B..R"
+}
+----
+
+This notation is transversal to the entire system — any component that reads or writes game state must produce and consume valid YEN format.
