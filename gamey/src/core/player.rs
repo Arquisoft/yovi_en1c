@@ -1,8 +1,7 @@
 use std::fmt::Display;
 
 /// Represents a player in the game with an identifier and a name.
-#[derive(Debug, Clone, PartialEq, Eq, Hash,
-         serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Player {
     id: PlayerId,
     name: String,
@@ -35,7 +34,7 @@ impl Display for Player {
 ///
 /// This is a lightweight wrapper around a `u32` that provides type safety
 /// for player identification throughout the game.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PlayerId(u32);
 
 impl PlayerId {
