@@ -2,7 +2,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-technical-risks]]
 == Risks and Technical Debts
-Considering the recent loss of a team member, the team's tendency towards end-of-sprint workload accumulation, challenges with branch merging due to testing, and the adoption of new technologies, the following are key risks and potential areas of technical debt that require attention (Relevance from 1(low) to 3(high)):
+Following are stated the key risks and potential areas of technical debt that require attention (Relevance from 1(low) to 3(high)):
 
 [cols="1,1,2,2"]
 |===
