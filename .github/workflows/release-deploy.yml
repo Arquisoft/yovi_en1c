@@ -119,7 +119,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
           workdir: webapp
-          buildargs: VITE_API_URL=http://${{ secrets.DEPLOY_HOST }}:3000
+          buildargs: |
+           VITE_API_URL=http://${{ secrets.DEPLOY_HOST }}:8000
+           VITE_GATEWAY_URL=http://${{ secrets.DEPLOY_HOST }}:8000
 
   docker-push-gamey:
     name: Publish gamey image
