@@ -1,9 +1,8 @@
-import { render, screen,  waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import RegisterForm from '../RegisterForm'
-import { afterEach, describe, expect, test, vi } from 'vitest' 
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import '@testing-library/jest-dom'
-
 
 describe('RegisterForm', () => {
   afterEach(() => {
@@ -11,7 +10,8 @@ describe('RegisterForm', () => {
   })
 
   test('shows validation error when username is empty', async () => {
-    render(<RegisterForm />)
+    const onRegistered = vi.fn()
+    render(<RegisterForm onRegistered={onRegistered} />)
     const user = userEvent.setup()
 
     await waitFor(async () => {
@@ -20,26 +20,17 @@ describe('RegisterForm', () => {
     })
   })
 
-  test('submits username and displays response', async () => {
+  test('submits username and calls onRegistered', async () => {
+    const onRegistered = vi.fn()
     const user = userEvent.setup()
 
-    // Mock fetch to resolve automatically
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Hello Pablo! Welcome to the course!' }),
-    } as Response)
+    render(<RegisterForm onRegistered={onRegistered} />)
 
-    render(<RegisterForm />)
+    await user.type(screen.getByLabelText(/whats your name\?/i), 'Pablo')
+    await user.click(screen.getByRole('button', { name: /lets go!/i }))
 
-    // Wrap interaction + assertion inside waitFor
-    await waitFor(async () => {
-      await user.type(screen.getByLabelText(/whats your name\?/i), 'Pablo')
-      await user.click(screen.getByRole('button', { name: /lets go!/i }))
-
-      // Response message should appear
-      expect(
-        screen.getByText(/hello pablo! welcome to the course!/i)
-      ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(onRegistered).toHaveBeenCalledWith('Pablo')
     })
   })
 })
