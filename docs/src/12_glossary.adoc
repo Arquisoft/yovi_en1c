@@ -66,4 +66,7 @@ endif::arc42help[]
 | React (Vite)
 | The frontend library and build tool used to create the interactive, component-based user interface for the browser.
 
+| Deployment Virtual Machine (Azure VM)
+| The on-demand, scalable computing resource that provides a virtualized Linux environment in the cloud, offering full control over the operating system and hardware configuration.
+
 |===
