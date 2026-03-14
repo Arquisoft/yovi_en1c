@@ -2,7 +2,33 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-technical-risks]]
 == Risks and Technical Debts
+Following are stated the key risks and potential areas of technical debt that require attention (Relevance from 1(low) to 3(high)):
 
+[cols="1,1,2,2"]
+|===
+| Category & Item | Relevance | Considerations | Potential Mitigation
+
+| **Workflow Imbalance** (End-of-sprint rush)
+| 2
+| Concentrating workload at the end of a sprint often leads to rushed implementation, higher defect rates, and technical debt.
+| Maintain strict "Work in Progress" (WIP) limits, ensure continuous integration, and prioritize the completion of tasks early in the cycle.
+
+| **Integration Risk** (Merge conflicts)
+| 2
+| Frequent branch conflicts disrupt development momentum and may indicate gaps in testing or architectural alignment.
+| Require passing tests before merging, follow a consistent branching strategy, and address the root causes of recurring test failures.
+
+| **Technology Adoption** (React, MongoDB, Rust)
+| 2
+| Limited experience with the project stack can result in inefficient code patterns, performance issues, or future maintenance challenges.
+| Share technical knowledge within the team, focus code reviews on framework best practices, and allocate time for researching documentation.
+
+| **Knowledge Silos** (Bus factor)
+| 1
+| Relying on specific individuals for critical system knowledge creates a bottleneck and risks the long-term maintainability of the project.
+| Standardize documentation for core logic, encourage pair programming for complex features, and record all major design decisions in ADRs.
+
+|===
 
 ifdef::arc42help[]
 [role="arc42help"]
