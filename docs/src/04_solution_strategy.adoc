@@ -3,32 +3,27 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
+4.1 Technological decisions
+Here are the key decisions related to the technological aspects of our project. Reasons behind these decisions are described briefly for each solution.
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-A short summary and explanation of the fundamental decisions and solution strategies, that shape system architecture. It includes
+[cols="1,2" options="header"]
+|===
+| **Name** | **Motivation**
+| Rust | An in-demand programming language in the industry and renowned for its performance.Our professors have set this as a so-called constraint. 
+| TypeScript | Better performance and error catching capabilities than its subset JavaScript. Works seamlessly with HTML and CSS.
+| MongoDB | Flexible data storage model fits our project than its relational counterparts.
+| React | Widely used JavaScript framework facilitates user-friendly components for the front-end.
+| Vite | Complements React UI library. Modern industry standard for React projects.
+| Express | Facilitates easy HTTP req/res cycle for the back end of the user creation page.
+| Docker | We can encapsulate different components of our software application into Docker containers which can be hosted on Azure.
+| Azure | Offers an on-demand computing environment over the cloud for our virtual machine that is highly scalable.
+| Github | Easier code management via Git version control. Automatic code deployment to the virtual machine via GitHub Actions.
 
-* technology decisions
-* decisions about the top-level decomposition of the system, e.g. usage of an architectural pattern or design pattern
-* decisions on how to achieve key quality goals
-* relevant organizational decisions, e.g. selecting a development process or delegating certain tasks to third parties.
+|===
 
-.Motivation
-These decisions form the cornerstones for your architecture. They are the foundation for many other detailed decisions or implementation rules.
-
-.Form
-Keep the explanations of such key decisions short.
-
-Motivate what was decided and why it was decided that way,
-based upon problem statement, quality goals and key constraints.
-Refer to details in the following sections.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-4/[Solution Strategy] in the arc42 documentation.
-
+4.2 Achieving key quality goals
+* **Maintainability:** Well structured code along with proper documentation that guides developers to maintain the application
+* **Usability:** Rust provides high-quality performance. UI will be designed to be as intuitive as possible for the game users with React.
+* **Availability:** We are looking to deploy multiple server instances to create redundancy and to avoid single points of failure.
 ****
 endif::arc42help[]
