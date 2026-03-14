@@ -1,17 +1,32 @@
-import { useState} from "react";
+import { useState } from "react";
 import "./App.css";
 import RegisterForm from "./RegisterForm";
+import GameMenu from "./GameMenu";
+import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
+type Screen = 'register' | 'menu' | 'board';
 
 function App() {
-  const [showBoard, setShowBoard] = useState(false);
+  const [screen, setScreen] = useState<Screen>('register');
+  const [userName, setUserName] = useState('');
 
+  if (screen === 'menu') {
+    return (
+      <GameMenu
+        userName={userName}
+        onStartGame={(_config: GameConfig) => setScreen('board')}
+        onLogOut={() => {
+          setUserName('');
+          setScreen('register');
+        }}
+      />
+    );
+  }
 
-  // Once the user registers successfully, go straight to the board
-  if (showBoard) {
-    return <GameBoard onBack={() => setShowBoard(false)} />;
+  if (screen === 'board') {
+    return <GameBoard onBack={() => setScreen('menu')} />;
   }
 
   return (
@@ -24,16 +39,18 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
         <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y"/>
+          <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
         </a>
       </div>
 
       <h2>Welcome to the Software Arquitecture 2025-2026 course</h2>
 
-      
-
-      {/* onSuccess navigates directly to the board — no separate button needed */}
-      <RegisterForm onSuccess={() => setShowBoard(true)} />
+      <RegisterForm
+        onRegistered={(name: string) => {
+          setUserName(name);
+          setScreen('menu');
+        }}
+      />
     </div>
   );
 }
