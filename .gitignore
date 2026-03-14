@@ -6,7 +6,3 @@ docs/build
 .env
 webapp/.env
 .vscode/
-
-# Added by cargo
-
-/target
