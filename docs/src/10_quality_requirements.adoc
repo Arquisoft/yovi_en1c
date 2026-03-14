@@ -29,6 +29,10 @@ endif::arc42help[]
 
 === Quality Tree
 
+The following diagram shows the hierarchical structure of the main non-functional requirements.
+
+image::QualityTree.svg[Quality Tree, align="center", width=800]
+
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -51,6 +55,20 @@ In any case the tree should include links to the scenarios of the following sect
 endif::arc42help[]
 
 === Quality Scenarios
+
+[options="header",cols="1,2"]
+|===
+|Quality Goal|Scenario|Description|Measure
+| Time Behaviour | Fast game action processing | Backend validates player's move and frontend updates the board quickly. | Move is visible to players within a second.
+| Time Behaviour | Page loading | The frontend should load the application and the game lobby without excessive delay. | No longer than five seconds to load the game page.
+| Ease-of-Use | First time user starts a game | A new user opens the app for the first time and wants to start a match. | First time user should be able to start a match within two minutes of opening the app.
+| Ease-of-Use | Intuitive game interface | Players are automatically aware of whose turn it is and how to do their move without thinking. | User testing with new users does not show any signs of struggle with the gameplay use.
+| Attractiveness | Pleasant user interface | Consistent layout and color scheme across the application. | Test users do not complain about annoyance with the application's outlook.
+| Availability | Server stability | Game should be available for players as much as possible. | MTBF goal of over 99%
+| Consistency | Game state tracking | Game state is stored in the backend correctly upon each move. | Final game state stored correctly in the database after each game.
+| Resilience | Handling connection failures | Players should be able to restore the game after losing connection. | Game can be reconnected and continued from the same state within 10 seconds of connection recovery.
+| Modularity | Separate functional units | Modules should be able to be edited in isolation as much as possible, with minimal coupling between the functional units. | Modules can be tested in isolation for their functionalities.
+|===
 
 ifdef::arc42help[]
 [role="arc42help"]

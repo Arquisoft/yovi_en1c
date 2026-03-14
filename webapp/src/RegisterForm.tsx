@@ -1,61 +1,49 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 
-const RegisterForm: React.FC<{ onSuccess: (username: string) => void }> = ({ onSuccess }) => {
-  const [username, setUsername]           = useState("");
-  const [responseMessage, setResponseMessage] = useState<string | null>(null);
-  const [error, setError]                 = useState<string | null>(null);
-  const [loading, setLoading]             = useState(false);
-  const [countdown, setCountdown]         = useState<number | null>(null);
+type Props = {
+  onRegistered: (username: string) => void;
+};
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const RegisterForm: React.FC<Props> = ({ onRegistered }) => {
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      onSuccess(username);
-      return;
-    }
-
-    intervalRef.current = setInterval(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [countdown]);
+  //const mock_mode = true;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setResponseMessage(null);
     setError(null);
 
-    if (!username.trim()) {
+    const trimmed = username.trim();
+
+    if (!trimmed) {
       setError("Please enter a username.");
       return;
     }
 
-    setLoading(true);
+    /*
+    if (mock_mode) {
+      onRegistered(trimmed);
+      return;
+    }
+    */
+
     try {
       const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${API_URL}/users/createuser`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: trimmed }),
       });
 
       const data = await res.json();
-      if (res.ok) {
-        setResponseMessage(data.message);
-        setCountdown(5);
-      } else {
-        setError(data.error || "Server error");
-      }
+
+      if (res.ok) onRegistered(trimmed);
+      else setError(data.error || "Server error");
     } catch (err: any) {
       setError(err.message || "Network error");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -69,20 +57,12 @@ const RegisterForm: React.FC<{ onSuccess: (username: string) => void }> = ({ onS
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="form-input"
-          // Disable input once registration is accepted
-          disabled={countdown !== null}
         />
       </div>
 
-      <button type="submit" className="submit-button" disabled={loading || countdown !== null}>
-        {loading ? "Entering..." : "Lets go!"}
+      <button type="submit" className="submit-button">
+        Lets go!
       </button>
-
-      {responseMessage && countdown !== null && (
-        <div className="success-message" style={{ marginTop: 12, color: "green" }}>
-          {responseMessage} — Entering the board in {countdown}s…
-        </div>
-      )}
 
       {error && (
         <div className="error-message" style={{ marginTop: 12, color: "red" }}>
