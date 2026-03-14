@@ -1,20 +1,36 @@
 services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - monitor-net
+
   users:
     build: ./users
     container_name: users
-    image: ghcr.io/arquisoft/yovi_0-users:latest
+    image: ghcr.io/arquisoft/yovi_en1c-users:latest
     ports:
       - "3000:3000"
     networks:
       - monitor-net
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/yovi
+    depends_on:
+      - mongo
 
   webapp:
     build:
       context: ./webapp
       args:
-        - VITE_API_URL=http://localhost:3000
+        - VITE_API_URL=http://localhost:8000
     container_name: webapp
-    image: ghcr.io/arquisoft/yovi_0-webapp:latest
+    image: ghcr.io/arquisoft/yovi_en1c-webapp:latest
     ports:
       - "80:80"
     depends_on:
@@ -25,11 +41,23 @@ services:
   gamey:
     build: ./gamey
     container_name: gamey
-    image: ghcr.io/arquisoft/yovi_0-gamey:latest
+    image: ghcr.io/arquisoft/yovi_en1c-gamey:latest
     ports:
       - "4000:4000"
     networks:
       - monitor-net
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    image: ghcr.io/arquisoft/yovi_en1c-gateway:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - monitor-net
+    depends_on:
+      - users
+      - gamey
 
   prometheus:
     image: prom/prometheus
@@ -54,3 +82,6 @@ services:
 networks:
   monitor-net:
     driver: bridge
+
+volumes:
+  mongo-data:
