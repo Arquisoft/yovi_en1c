@@ -61,7 +61,7 @@ endif::arc42help[]
 
 
 | TC-04
-| **Use of Arc42 nas documentation standard**
+| **Use of Arc42 as documentation standard**
 | All the documentation must be completed using the standard of the Arc42 documentation template 
 | Creates more unified project making it easier to understand by people not belonoging to the team
 |===
