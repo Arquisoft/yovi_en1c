@@ -2176,89 +2176,71 @@ concrete and measurable.</p>
 <h3 id="_quality_scenarios">10.2. Quality Scenarios</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 50%;">
+<col style="width: 16.6668%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Quality Goal</th>
 <th class="tableblock halign-left valign-top">Scenario</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Measure</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Measure</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Time Behaviour</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Fast game action processing</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Backend validates player&#8217;s move and frontend updates the board quickly.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Move is visible to players within a second.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Time Behaviour</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Page loading</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The frontend should load the application and the game lobby without excessive delay.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No longer than five seconds to load the game page.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Ease-of-Use</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">First time user starts a game</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">A new user opens the app for the first time and wants to start a match.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">First time user should be able to start a match within two minutes of opening the app.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Ease-of-Use</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Intuitive game interface</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Players are automatically aware of whose turn it is and how to do their move without thinking.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">User testing with new users does not show any signs of struggle with the gameplay use.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Attractiveness</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Pleasant user interface</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Consistent layout and color scheme across the application.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Test users do not complain about annoyance with the application&#8217;s outlook.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Server stability</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game should be available for players as much as possible.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MTBF goal of over 99%</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Consistency</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game state tracking</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game state is stored in the backend correctly upon each move.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Final game state stored correctly in the database after each game.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Resilience</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Handling connection failures</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Players should be able to restore the game after losing connection.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game can be reconnected and continued from the same state within 10 seconds of connection recovery.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Modularity</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Separate functional units</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Modules should be able to be edited in isolation as much as possible, with minimal coupling between the functional units.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Modules can be tested in isolation for their functionalities.</p></td>
 </tr>
@@ -2483,7 +2465,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-03-14 19:15:49 +0100
+Last updated 2026-03-15 08:52:53 +0100
 </div>
 </div>
 </body>
