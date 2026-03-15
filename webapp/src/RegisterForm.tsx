@@ -1,43 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const RegisterForm: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [responseMessage, setResponseMessage] = useState<string | null>(null);
+type Props = {
+  onRegistered: (username: string) => void;
+};
+
+const RegisterForm: React.FC<Props> = ({ onRegistered }) => {
+  const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  //const mock_mode = true;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setResponseMessage(null);
     setError(null);
 
-    if (!username.trim()) {
-      setError('Please enter a username.');
+    const trimmed = username.trim();
+
+    if (!trimmed) {
+      setError("Please enter a username.");
       return;
     }
 
-    setLoading(true);
+    /*
+    if (mock_mode) {
+      onRegistered(trimmed);
+      return;
+    }
+    */
+
     try {
-      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
-      const res = await fetch(`${API_URL}/createuser`, {
-        method: 'POST',
+      const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${API_URL}/users/createuser`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username: trimmed }),
       });
 
       const data = await res.json();
-      if (res.ok) {
-        setResponseMessage(data.message);
-        setUsername('');
-      } else {
-        setError(data.error || 'Server error');
-      }
+
+      if (res.ok) onRegistered(trimmed);
+      else setError(data.error || "Server error");
     } catch (err: any) {
-      setError(err.message || 'Network error');
-    } finally {
-      setLoading(false);
+      setError(err.message || "Network error");
     }
   };
 
@@ -53,18 +59,13 @@ const RegisterForm: React.FC = () => {
           className="form-input"
         />
       </div>
-      <button type="submit" className="submit-button" disabled={loading}>
-        {loading ? 'Entering...' : 'Lets go!'}
+
+      <button type="submit" className="submit-button">
+        Lets go!
       </button>
 
-      {responseMessage && (
-        <div className="success-message" style={{ marginTop: 12, color: 'green' }}>
-          {responseMessage}
-        </div>
-      )}
-
       {error && (
-        <div className="error-message" style={{ marginTop: 12, color: 'red' }}>
+        <div className="error-message" style={{ marginTop: 12, color: "red" }}>
           {error}
         </div>
       )}

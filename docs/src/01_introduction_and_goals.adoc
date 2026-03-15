@@ -17,7 +17,14 @@ These include
 ****
 endif::arc42help[]
 
-=== Requirements Overview
+=== Functional requirements
+
+* Publicly accessible application via web which allows users to play matches of Game Y.
+* To offer a possibility to play against the machine.
+* Ability for users to register in the system.
+* Game history for registers users that includes at least the number of matches played, win/loss statistics and other relevant metrics.
+* API through which user info and game data can be managed.
+* Game state should follow YEN notation using JSON messages
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -65,9 +72,17 @@ Make sure to be very concrete about these qualities, avoid buzzwords.
 If you as an architect do not know how the quality of your work will be judged...
 
 .Form
-A table with quality goals and concrete scenarios, ordered by priorities
 ****
 endif::arc42help[]
+
+[options="header",cols="1,2"]
+|===
+|Quality Goal|Description
+| Usability | Intuitive user interface to boost use experience. Logical move suggestions by the bot.
+| Performance efficiency | Game should process moves with minimal response time.
+| Maintainability | Organized and easy-to-read code to facilitate easier modifications and updates in the future.
+| Availability | Having the servers be up with only minimal downtime.
+|===
 
 === Stakeholders
 
@@ -93,9 +108,11 @@ Table with role names, person names, and their expectations with respect to the 
 ****
 endif::arc42help[]
 
-[options="header",cols="1,2,2"]
+[options="header",cols="1,2"]
 |===
-|Role/Name|Contact|Expectations
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+|Role/Name|Expectations
+| Micrati | Top notch user experience to boost engagement with the product. To have the servers up and running as much as possible.
+| End Users | Intuitive and well performing game platform.
+| Course professors | Easy to read documentation which highlights key decisions and how work has been divided.
+| Development team | To create a game which satisfies other stakeholders' expectations.
 |===

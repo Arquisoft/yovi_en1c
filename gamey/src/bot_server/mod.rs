@@ -25,6 +25,7 @@ pub mod state;
 pub mod version;
 use axum::response::IntoResponse;
 use std::sync::Arc;
+use tower_http::cors::CorsLayer;
 pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
@@ -41,6 +42,7 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
+        .layer(CorsLayer::permissive())
         .with_state(state)
 }
 
