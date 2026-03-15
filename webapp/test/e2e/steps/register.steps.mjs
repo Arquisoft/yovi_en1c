@@ -56,7 +56,7 @@ Then(
   "I should see an error message containing {string}",
   async function (expected) {
     const page = this.page;
-    // Wait for the error div you defined in RegisterForm.tsx
+    // Wait for the error div defined in RegisterForm.tsx
     await page.waitForSelector(".error-message", { timeout: 5000 });
     const text = await page.textContent(".error-message");
 
