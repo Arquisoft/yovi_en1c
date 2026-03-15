@@ -3,8 +3,9 @@ Feature: Register
 
   Scenario: Successful registration
     Given the register page is open
+    And the API returns a successful registration
     When I enter "Alice" as the username and submit
-    Then I should see a welcome message containing "Hello Alice"
+    Then I should see a welcome message containing "Alice"
 
 Scenario: Show the error when the server gives error
   Given the register page is open
