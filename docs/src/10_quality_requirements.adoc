@@ -56,7 +56,7 @@ endif::arc42help[]
 
 === Quality Scenarios
 
-[options="header",cols="1,2"]
+[options="header",cols="1,1,3,1"]
 |===
 |Quality Goal|Scenario|Description|Measure
 | Time Behaviour | Fast game action processing | Backend validates player's move and frontend updates the board quickly. | Move is visible to players within a second.
