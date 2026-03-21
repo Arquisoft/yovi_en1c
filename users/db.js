@@ -12,7 +12,7 @@ async function connectDB() {
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected:", mongoUri);
 
-    console.log("Test data inserted for development/testing environment.");
+    console.log("Test data inserted");
     
   } catch (err) {
     console.error("MongoDB connection error:", err);

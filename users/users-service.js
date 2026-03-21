@@ -61,13 +61,15 @@ app.post("/createuser", async (req, res) => {
     const savedUser = await newUser.save();
 
     res.status(200).json({ 
-      message: `Hello ${savedUser.name}! Welcome to the game!`,
+      message: `Hello ${savedUser.name}! Welcome to the course!`,
       id: savedUser._id 
     });
+
   } catch (e) {
     res.status(400).json({ error: "Database error", details: e.message });
   }
 });
+
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
 
