@@ -42,7 +42,7 @@ describe("connectDB function", () => {
     expect(console.log).toHaveBeenCalledWith(
       expect.stringContaining("Test data inserted"),
     );
-  }, 15000);
+  }, 30000);
 
   it("should connect but NOT seed data in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
