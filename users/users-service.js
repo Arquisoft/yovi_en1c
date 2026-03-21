@@ -28,7 +28,7 @@ try {
   console.log("Swagger error:", e.message);
 }
 
-app.get("/test", (req, res) => res.send("User Service is alive!"));
+
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -39,7 +39,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.get("/test", (req, res) => res.send("User Service is alive!"));
 
+app.post("/createuser", (req, res) => res.redirect(307, "/signup"));
 
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
