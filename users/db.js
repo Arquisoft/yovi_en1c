@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("./schema");
 
-const mongoUri = process.env.MONGO_URI || "mongodb://mongo:27017/yovi";
+const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/yovi";
 
 const seedUsers = [
   { name: "Test User 1", email: "test1@example.com", password: "testpassword123" },
