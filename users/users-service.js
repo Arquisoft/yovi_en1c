@@ -43,23 +43,31 @@ app.get("/test", (req, res) => res.send("User Service is alive!"));
 
 app.post("/createuser", async (req, res) => {
   const { username, password, email } = req.body;
+  
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passToHash = password || "testpassword123";
+    const hashedPassword = await bcrypt.hash(passToHash, 10);
+
     const newUser = new User({
       name: username,
       password: hashedPassword,
       email: email || `${username}@example.com`,
     });
+
     const savedUser = await newUser.save();
-    res.json({
-      message: `Hello ${savedUser.name}! Welcome to the game!`, 
-      id: savedUser._id
+
+    res.status(200).json({ 
+      message: `Hello ${savedUser.name}! Welcome to the game!`,
+      id: savedUser._id 
     });
-  } catch (err) {
-    res.status(400).json({ error: "Database error", details: "Database error simulated" });
+  } catch (e) {
+    res.status(400).json({ error: "Database error", details: e.message });
   }
 });
-
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
 
