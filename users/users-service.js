@@ -41,7 +41,24 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.get("/test", (req, res) => res.send("User Service is alive!"));
 
-app.post("/createuser", (req, res) => res.redirect(307, "/signup"));
+app.post("/createuser", async (req, res) => {
+  const { username, password, email } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      name: username,
+      password: hashedPassword,
+      email: email || `${username}@example.com`,
+    });
+    const savedUser = await newUser.save();
+    res.json({
+      message: `Hello ${savedUser.name}! Welcome to the game!`, 
+      id: savedUser._id
+    });
+  } catch (err) {
+    res.status(400).json({ error: "Database error", details: "Database error simulated" });
+  }
+});
 
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
