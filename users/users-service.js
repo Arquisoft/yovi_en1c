@@ -74,7 +74,7 @@ app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
 
   try {
-    const existingUser = await User.findOne({ name: username });
+    const existingUser = await User.findOne({ name: { $eq: username } });
     if(existingUser) {
       return res.status(400).json({ error:"User already exists!" });
     }
@@ -116,7 +116,7 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ name: username });
+    const user = await User.findOne({ name: { $eq: username } });
 
     if (user) {
       const isMatch =await bcrypt.compare(password, user.password);
@@ -143,7 +143,7 @@ app.post("/login", async (req, res) => {
 app.delete('/deleteuser/:username', async (req, res) => {
   const usernameParam = String(req.params.username); 
   try {
-    const result = await User.deleteOne({ name: usernameParam }); 
+    const result = await User.deleteOne({ name: { $eq: usernameParam } }); 
     if (result.deletedCount === 1) {
       res.json({ message: `User ${usernameParam} deleted successfully!` });
     } else {
