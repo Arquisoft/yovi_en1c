@@ -6,8 +6,6 @@ const PORT = 8000;
 
 const commonOptions = {
   changeOrigin: true,
-  xfwd: true, // Adds X-Forwarded-For headers automatically
-  proxyTimeout: 5000, // Wait 5 seconds for the service to respond
   onError: (err, req, res) => {
     res.status(503).json({ error: "Service unreachable" });
   },
@@ -40,7 +38,7 @@ app.use(
   createProxyMiddleware({
     ...commonOptions,
     target: "http://users:3000",
-    pathRewrite: { "^/users": "" },
+    pathRewrite: { "^/api/users": "" },
   }),
 );
 
@@ -50,7 +48,7 @@ app.use(
   createProxyMiddleware({
     ...commonOptions,
     target: "http://gamey:4000",
-    pathRewrite: { "^/gamey": "" },
+    pathRewrite: { "^/api/gamey": "" },
   }),
 );
 

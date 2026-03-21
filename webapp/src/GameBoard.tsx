@@ -206,7 +206,7 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
         const yen = buildYEN(afterPlayer, 1, boardSize);
 
         const res = await fetch(
-          `${API_GATEWAY_URL}/gamey/${GAMEY_API_VERSION}/ybot/choose/${BOT_IDENTIFIER}`,
+          `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${BOT_IDENTIFIER}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
