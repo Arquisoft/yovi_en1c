@@ -12,14 +12,7 @@ const { connectDB, mongoose } = require("./db");
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  email: { type: String, unique: true },
-  createdAt: { type: Date, default: Date.now },
-});
-
-const User = mongoose.model("User", UserSchema);
+const User = require("./schema");
 
 try {
   const swaggerDocument = YAML.load(fs.readFileSync("./openapi.yaml", "utf8"));
