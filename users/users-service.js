@@ -35,20 +35,32 @@ app.get("/test", (req, res) => res.send("User Service is alive!"));
 app.post("/createuser", async (req, res) => {
   const { username, password, email } = req.body;
 
-  if (!username) return res.status(400).json({ error: "Username is required" });
-  if (!password) return res.status(400).json({ error: "Passsword is required" });
-  if (!email) return res.status(400).json({ error: "Email is required "});
-  
+  if (!username){
+     return res.status(400).json({ error: "Username is required" });
+  }
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name: username, password: hashedPassword, email: email });
+    const hashedPassword = await bcrypt.hash(password || "testpassword123", 10);
+    const userEmail = email || `${username}@example.com`;
+
+    const newUser = new User({ 
+      name: username,
+      password: hashedPassword,
+      email: userEmail
+     });
     
     const savedUser = await newUser.save();
 
-    res.status(200).json({ message: `Hello ${savedUser.name}! Welcome to the course!`, id: savedUser._id });
-  } catch (e) {
-    res.status(400).json({ error: "Database error", details: e.message });
-  }
+    return res.status(200).json({ 
+    message: `Hello ${savedUser.name}! Welcome to the course!`, 
+    id: savedUser._id
+   });
+  } catch (err) {
+
+    return res.status(400).json({ 
+      error: "Database error", 
+      details: err.message });
+    }
 });
 
 app.post("/signup", async (req, res) => {
@@ -67,7 +79,7 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({ name: username, password: hashedPassword, email: email });
     const savedUser = await newUser.save();
     const formattedDate = savedUser.createdAt.toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-    res.json({ message: `Hello ${savedUser.name}! Welcome to Game Y! You were registered at ${formattedDate}`, databaseInfo: { id: savedUser._id, registeredAt: formattedDate, status: "Success: Connection verified" } });
+    return res.json({ message: `Hello ${savedUser.name}! Welcome to Game Y! You were registered at ${formattedDate}`, databaseInfo: { id: savedUser._id, registeredAt: formattedDate, status: "Success: Connection verified" } });
   } catch (err) {
     res.status(400).json({ error: "Signup failed", details: err.message });
   }

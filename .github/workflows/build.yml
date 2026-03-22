@@ -27,7 +27,7 @@ jobs:
         mongodb-version: '6.0'
     - name: Wait for MongoDB
       run: |
-        for i in {1..10}; do
+        for i in {1..30}; do
           nc -z localhost 27017 && echo "MongoDB is up" && exit 0
           echo "Waiting for MongoDB..."
           sleep 2

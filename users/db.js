@@ -11,6 +11,7 @@ const seedUsers = [
 async function connectDB() {
   try {
     await mongoose.connect(mongoUri);
+    
     console.log("MongoDB connected:", mongoUri);
 
     if (process.env.NODE_ENV !== "production") {
