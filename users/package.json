@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "express-prom-bundle": "^8.0.0",
     "js-yaml": "^4.1.0",
@@ -19,7 +20,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.15",
-    "supertest": "^7.1.4",
+    "supertest": "^7.2.2",
     "vitest": "^4.0.15"
   }
 }
