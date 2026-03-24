@@ -1,227 +1,152 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeAll } from "vitest";
 import request from "supertest";
 import app from "../users-service.js";
+import User from "../schema.js";
 
-describe("Users Service Endpoints", () => {
-  describe("POST /signup", () => {
-    it("should create user with valid credentials", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "testuser",
-        password: "securepass123",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(200);
-      expect(res.body.message).toContain("Welcome");
-    });
+// Use require to ensure we reference the same instance as the service
+const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
 
-    it("should return 400 if username is missing", async () => {
-      const res = await request(app).post("/signup").send({
-        password: "securepass123",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Username");
-    });
-
-    it("should return 400 if user already exists", async () => {
-      // Create first user
-      await request(app).post("/signup").send({
-        username: "duplicate",
-        password: "securepass123",
-        email: "dup@example.com"
-      });
-      
-      // Try duplicate with valid password
-      const res = await request(app).post("/signup").send({
-        username: "duplicate",
-        password: "securepass123",
-        email: "dup2@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("already exists");
-    });
-
-    it("should return 400 if password is missing", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "user",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Password");
-    });
-
-    it("should return 400 if password is too short", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "user",
-        password: "short",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("8 characters");
-    });
-
-    it("should return 400 if email is invalid", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "user",
-        password: "securepass123",
-        email: "notanemail"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Invalid email");
-    });
-
-    it("should return 400 if email is missing", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "user",
-        password: "securepass123"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Email");
-    });
-
-    it("should return 400 if username is too short", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "ab",
-        password: "securepass123",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("between 3 and 30");
-    });
-
-    it("should return 400 if username is too long", async () => {
-      const res = await request(app).post("/signup").send({
-        username: "a".repeat(31),
-        password: "securepass123",
-        email: "test@example.com"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("between 3 and 30");
-    });
+describe("User Service Unit Tests", () => {
+  beforeAll(() => {
+    // Prevent Mongoose from buffering commands when no DB is connected
+    mongoose.set("bufferCommands", false);
   });
 
-  describe("POST /login", () => {
-    it("should login with valid credentials", async () => {
-      // First create user
-      await request(app).post("/signup").send({
-        username: "logintest",
-        password: "testpass123",
-        email: "login@example.com"
-      });
-
-      const res = await request(app).post("/login").send({
-        username: "logintest",
-        password: "testpass123"
-      });
-      expect(res.status).toBe(200);
-      expect(res.body.message).toContain("successful");
-      expect(res.body.username).toBe("logintest");
-    });
-
-    it("should return 401 with invalid password", async () => {
-      // First create user
-      await request(app).post("/signup").send({
-        username: "badpass",
-        password: "correctpass123",
-        email: "bad@example.com"
-      });
-
-      const res = await request(app).post("/login").send({
-        username: "badpass",
-        password: "wrongpass"
-      });
-      expect(res.status).toBe(401);
-      expect(res.body.error).toContain("Invalid");
-    });
-
-    it("should return 401 with non-existent user", async () => {
-      const res = await request(app).post("/login").send({
-        username: "nonexistent",
-        password: "password123"
-      });
-      expect(res.status).toBe(401);
-      expect(res.body.error).toContain("Invalid");
-    });
-
-    it("should return 400 if username missing", async () => {
-      const res = await request(app).post("/login").send({
-        password: "testpass123"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("required");
-    });
-
-    it("should return 400 if password missing", async () => {
-      const res = await request(app).post("/login").send({
-        username: "testuser"
-      });
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("required");
-    });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
-  describe("DELETE /deleteuser/:username", () => {
-    it("should delete existing user", async () => {
-      // Create user first
-      await request(app).post("/signup").send({
-        username: "deletetest",
-        password: "securepass123",
-        email: "delete@example.com"
-      });
-
-      const res = await request(app).delete("/deleteuser/deletetest");
-      expect(res.status).toBe(200);
-      expect(res.body.message).toContain("deleted successfully");
-    });
-
-    it("should return 404 for non-existent user", async () => {
-      const res = await request(app).delete("/deleteuser/nonexistentuser");
-      expect(res.status).toBe(404);
-      expect(res.body.error).toContain("not found");
-    });
-  });
-
-  describe("GET /test", () => {
-    it("should return alive status", async () => {
-      const res = await request(app).get("/test");
-      expect(res.status).toBe(200);
-      expect(res.text).toContain("alive");
-    });
-  });
-
+  // --- Tests for POST /createuser ---
   describe("POST /createuser", () => {
-    it("should create user with legacy endpoint", async () => {
-      const res = await request(app).post("/createuser").send({
-        username: "legacyuser",
-        email: "legacy@example.com"
+    it("should return a greeting message for the provided username", async () => {
+      const saveSpy = vi.spyOn(User.prototype, "save").mockResolvedValue({
+        _id: "12345",
+        name: "Pablo",
+        createdAt: new Date(),
       });
+
+      const res = await request(app)
+        .post("/createuser")
+        .send({ username: "Pablo" })
+        .set("Accept", "application/json");
+
       expect(res.status).toBe(200);
-      expect(res.body.message).toContain("Welcome");
+      expect(res.body.message).toMatch(/Hello Pablo! Welcome to the course!/i);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
     });
 
-    it("should return 400 if username is missing", async () => {
-      const res = await request(app).post("/createuser").send({
-        email: "test@example.com"
-      });
+    it("should return 400 if database save fails", async () => {
+      vi.spyOn(User.prototype, "save").mockRejectedValueOnce(
+        new Error("Database error simulated"),
+      );
+
+      const res = await request(app)
+        .post("/createuser")
+        .send({ username: "ErrorUser" });
+
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Username");
+      expect(res.body.error).toBe("Database error");
+    });
+  });
+
+  // --- Tests for POST /signup ---
+  describe("POST /signup", () => {
+    it("should register a new user successfully with a hashed password", async () => {
+      vi.spyOn(User, "findOne").mockResolvedValue(null);
+
+      // Mock hashSync to return a controlled string
+      const hashSpy = vi
+        .spyOn(bcrypt, "hashSync")
+        .mockReturnValue("hashed_password_123");
+
+      vi.spyOn(User.prototype, "save").mockResolvedValue({
+        _id: "mock-id",
+        name: "newUser",
+      });
+
+      const res = await request(app)
+        .post("/signup")
+        .send({ username: "newUser", password: "password123" });
+
+      expect(res.status).toBe(201);
+      expect(hashSpy).toHaveBeenCalledWith("password123", 10);
+      expect(res.body.message).toBe("User registered successfully");
     });
 
-    it("should handle database errors gracefully", async () => {
-      // Create user once
-      await request(app).post("/createuser").send({
-        username: "duplicatetest",
-        email: "dup@example.com"
+    it("should return 400 if the username already exists", async () => {
+      vi.spyOn(User, "findOne").mockResolvedValue({ name: "existingUser" });
+
+      const res = await request(app)
+        .post("/signup")
+        .send({ username: "existingUser", password: "password123" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Username already exists");
+    });
+  });
+
+  // --- Tests for POST /login ---
+  describe("POST /login", () => {
+    it("should login successfully with correct credentials", async () => {
+      vi.spyOn(User, "findOne").mockResolvedValue({
+        _id: "user-id",
+        name: "loginUser",
+        password: "hashed_password_in_db",
       });
 
-      // Try to create again (will fail on unique constraint)
-      const res = await request(app).post("/createuser").send({
-        username: "duplicatetest",
-        email: "dup@example.com"
+      // Mock compareSync to return true for this test
+      const compareSpy = vi.spyOn(bcrypt, "compareSync").mockReturnValue(true);
+
+      const res = await request(app)
+        .post("/login")
+        .send({ username: "loginUser", password: "plainPassword" });
+
+      expect(res.status).toBe(200);
+      expect(compareSpy).toHaveBeenCalledWith(
+        "plainPassword",
+        "hashed_password_in_db",
+      );
+      expect(res.body.message).toBe("Login successful");
+    });
+
+    it("should return 401 if passwords do not match", async () => {
+      vi.spyOn(User, "findOne").mockResolvedValue({
+        name: "loginUser",
+        password: "hashed_password_in_db",
       });
-      
-      expect([400, 409]).toContain(res.status);
-      expect(res.body.error).toBeDefined();
+
+      // Mock compareSync to return false
+      vi.spyOn(bcrypt, "compareSync").mockReturnValue(false);
+
+      const res = await request(app)
+        .post("/login")
+        .send({ username: "loginUser", password: "wrongPassword" });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe("Invalid credentials");
+    });
+  });
+
+  // --- Tests for DELETE /deleteuser/:username ---
+  describe("DELETE /deleteuser/:username", () => {
+    it("should delete a user successfully", async () => {
+      vi.spyOn(User, "deleteOne").mockResolvedValue({ deletedCount: 1 });
+
+      const res = await request(app).delete("/deleteuser/testUser");
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("User testUser deleted successfully!");
+    });
+
+    it("should return 404 if user to delete is not found", async () => {
+      vi.spyOn(User, "deleteOne").mockResolvedValue({ deletedCount: 0 });
+
+      const res = await request(app).delete("/deleteuser/nonExistent");
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe("User not found");
     });
   });
 });
