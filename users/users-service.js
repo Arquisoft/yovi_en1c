@@ -37,16 +37,20 @@ app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
 
   try {
-    const existingUser = await User.findOne({ name: username });
+    // 1. Sanitize input: Force 'username' to be a string
+    // This prevents passing an object like { "$gt": "" }
+    const safeUsername = String(username);
+
+    const existingUser = await User.findOne({ name: { $eq: safeUsername } });
+
     if (existingUser) {
       return res.status(400).json({ error: "Username already exists" });
     }
 
     const newUser = new User({
-      name: username,
-      // Hashing the password synchronously with a salt round of 10
-      password: bcrypt.hashSync(password, 10),
-      email: email || `${username}@example.com`,
+      name: safeUsername,
+      password: bcrypt.hashSync(String(password), 10),
+      email: email || `${safeUsername}@example.com`,
     });
 
     const savedUser = await newUser.save();
@@ -64,15 +68,15 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ name: username });
+    // Sanitize: ensure it's a string and use the $eq operator
+    const safeUsername = String(username);
+    const user = await User.findOne({ name: { $eq: safeUsername } });
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Compare the plain text password with the stored hash
-    // We return 401 if they do NOT match
-    if (!bcrypt.compareSync(password, user.password)) {
+    if (!bcrypt.compareSync(String(password), user.password)) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -85,10 +89,7 @@ app.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({
-      error: "Server error during login",
-      details: err.message,
-    });
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
@@ -154,7 +155,7 @@ async function startServer() {
   }
 }
 
-if (require.main === module) {
+if (require.main == module) {
   await startServer();
 }
 
