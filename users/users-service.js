@@ -84,6 +84,43 @@ app.delete("/deleteuser/:username", async (req, res) => {
   }
 });
 
+const GameSchema = new mongoose.Schema({
+  username: { type: String, required: true }, // ← añadir
+  result: { type: String, enum: ["player_won", "bot_won"], required: true },
+  board: { type: Object, required: true },
+  totalMoves: { type: Number },
+  playedAt: { type: Date, default: Date.now },
+});
+
+const Game = mongoose.model("Game", GameSchema);
+
+app.post("/savegame", async (req, res) => {
+  const { result, board, totalMoves, username } = req.body;
+  try {
+    const game = new Game({ result, board, totalMoves, username });
+    const saved = await game.save();
+    res.json({ message: "Game saved!", id: saved._id });
+  } catch (err) {
+    res
+      .status(400)
+      .json({ error: "Could not save game", details: err.message });
+  }
+});
+
+app.get("/games/list", async (req, res) => {
+  const usernameParam = String(req.query.username);
+  try {
+    const games = await Game.find({ username: usernameParam })
+      .sort({ playedAt: -1 })
+      .limit(50);
+    res.json(games);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Could not fetch games", details: err.message });
+  }
+});
+
 //API endpoints (UNDER DEVELOPMENT)
 app.get("/api/play", (req, res) => {
   res.json({ message: "[UNDER DEVELOPMENT]: User is playing!" });

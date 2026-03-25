@@ -3,30 +3,36 @@ import "./App.css";
 import RegisterForm from "./RegisterForm";
 import GameMenu from "./GameMenu";
 import type { GameConfig } from "./GameMenu";
+import GameHistory from "./GameHistory";
 import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
-type Screen = 'register' | 'menu' | 'board';
+type Screen = "register" | "menu" | "board" | "history";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('register');
-  const [userName, setUserName] = useState('');
+  const [screen, setScreen] = useState<Screen>("register");
+  const [userName, setUserName] = useState("");
 
-  if (screen === 'menu') {
+  if (screen === "menu") {
     return (
       <GameMenu
         userName={userName}
-        onStartGame={(_config: GameConfig) => setScreen('board')}
+        onStartGame={(_config: GameConfig) => setScreen("board")}
         onLogOut={() => {
-          setUserName('');
-          setScreen('register');
+          setUserName("");
+          setScreen("register");
         }}
+        onViewHistory={() => setScreen("history")}
       />
     );
   }
 
-  if (screen === 'board') {
-    return <GameBoard onBack={() => setScreen('menu')} />;
+  if (screen === "board") {
+    return <GameBoard onBack={() => setScreen("menu")} userName={userName} />;
+  }
+
+  if (screen === "history") {
+    return <GameHistory onBack={() => setScreen("menu")} userName={userName} />;
   }
 
   return (
@@ -48,7 +54,7 @@ function App() {
       <RegisterForm
         onRegistered={(name: string) => {
           setUserName(name);
-          setScreen('menu');
+          setScreen("menu");
         }}
       />
     </div>

@@ -9,6 +9,7 @@ describe("GameMenu", () => {
     userName: "Pablo",
     onStartGame: vi.fn(),
     onLogOut: vi.fn(),
+    onViewHistory: vi.fn(),
   };
 
   it("renders the welcome message with the correct username", () => {

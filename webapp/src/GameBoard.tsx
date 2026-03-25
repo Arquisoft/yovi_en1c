@@ -105,6 +105,16 @@ function checkWin(boardMap: BoardMap, player: Player): boolean {
   return false;
 }
 
+// Cambiar la firma de saveGame (línea ~100):
+async function saveGame(result: GameStatus, board: BoardMap, username: string) {
+  const totalMoves = Object.keys(board).length;
+  await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ result, board, totalMoves, username }),
+  }).catch(console.error);
+}
+
 /**
  * Build YEN (Y-game Exchange Notation) from current board state.
  * Layout rows are separated by '/', row 0 is the apex (1 cell).
@@ -148,7 +158,13 @@ function hexPoints(cx: number, cy: number, r: number): string {
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-export default function GameBoard({ onBack }: { onBack: () => void }) {
+export default function GameBoard({
+  onBack,
+  userName,
+}: {
+  onBack: () => void;
+  userName: string;
+}) {
   const boardSize = GAME_BOARD_SIZE;
 
   const hexRadius = HEX_RADIUS;
@@ -196,6 +212,7 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
 
       if (checkWin(afterPlayer, 0)) {
         setGameStatus("player_won");
+        saveGame("player_won", afterPlayer, userName);
         return;
       }
 
@@ -231,6 +248,7 @@ export default function GameBoard({ onBack }: { onBack: () => void }) {
 
         if (checkWin(afterBot, 1)) {
           setGameStatus("bot_won");
+          saveGame("bot_won", afterBot, userName);
         } else {
           setCurrentTurn(0);
         }
