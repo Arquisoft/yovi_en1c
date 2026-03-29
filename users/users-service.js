@@ -104,8 +104,13 @@ app.post("/createuser", async (req, res) => {
     });
     const savedUser = await newUser.save();
 
+<<<<<<< HEAD
     const formattedDate = savedUser.createdAt.toLocaleString("en-US", {
       timeZone: "UTC",
+=======
+    const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
+      timeZone: "Europe/Madrid",
+>>>>>>> dev
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -129,7 +134,10 @@ app.post("/createuser", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // --- DELETE USER ENDPOINT ---
+=======
+>>>>>>> dev
 app.delete("/deleteuser/:username", async (req, res) => {
   const usernameParam = String(req.params.username);
   try {
@@ -143,6 +151,17 @@ app.delete("/deleteuser/:username", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//API endpoints (UNDER DEVELOPMENT)
+app.get("/api/play", (req, res) => {
+  res.json({ message: "[UNDER DEVELOPMENT]: User is playing!" });
+});
+
+app.post("/api/login", (req, res) => {
+  res.json({ status: "[UNDER DEVELOPMENT]: Users is logged in" });
+});
+
+//API END
 
 async function startServer() {
   try {
