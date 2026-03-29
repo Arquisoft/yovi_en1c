@@ -166,8 +166,8 @@ async function startServer() {
   }
 }
 
-if (require.main === module) {
-  startServer()
+if (require.main == module) {
+  await startServer();
 }
 
 module.exports = app;
