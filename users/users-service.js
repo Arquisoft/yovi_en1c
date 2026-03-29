@@ -168,13 +168,6 @@ async function startServer() {
 
 if (require.main === module) {
   startServer()
-    .then(() => {
-      console.log("Service startup sequence completed.");
-    })
-    .catch((err) => {
-      console.error("Failed to start service:", err);
-      process.exit(1);
-    });
 }
 
 module.exports = app;
