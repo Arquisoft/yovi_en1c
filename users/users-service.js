@@ -104,13 +104,8 @@ app.post("/createuser", async (req, res) => {
     });
     const savedUser = await newUser.save();
 
-<<<<<<< HEAD
-    const formattedDate = savedUser.createdAt.toLocaleString("en-US", {
-      timeZone: "UTC",
-=======
     const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
       timeZone: "Europe/Madrid",
->>>>>>> dev
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -134,10 +129,6 @@ app.post("/createuser", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// --- DELETE USER ENDPOINT ---
-=======
->>>>>>> dev
 app.delete("/deleteuser/:username", async (req, res) => {
   const usernameParam = String(req.params.username);
   try {
