@@ -32,7 +32,6 @@ app.use((req, res, next) => {
   next();
 });
 
-<<<<<<< HEAD
 const verifyToken = (req, res, next) =>{
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -50,9 +49,6 @@ const verifyToken = (req, res, next) =>{
   });
 };
 
-=======
-//API GATEWAY: Routes and Proxies
->>>>>>> dev
 
 // ─── Proxy: Users service ─────────────────────────────────────────────────────
 app.use(
@@ -66,12 +62,8 @@ app.use(
 
 // ─── Proxy: Gamey service ─────────────────────────────────────────────────────
 app.use(
-<<<<<<< HEAD
   "/gamey",
   verifyToken,
-=======
-  "/api/gamey",
->>>>>>> dev
   createProxyMiddleware({
     ...commonOptions,
     target: "http://gamey:4000",
