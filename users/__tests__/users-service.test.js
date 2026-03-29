@@ -109,6 +109,8 @@ describe("User Service Unit Tests", () => {
         "hashed_password_in_db",
       );
       expect(res.body.message).toBe("Login successful");
+
+      expect(res.body).toHaveProperty("token");
     });
 
     it("should return 401 if passwords do not match", async () => {

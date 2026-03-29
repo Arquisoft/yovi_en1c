@@ -1,5 +1,7 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
 
 const app = express();
 const PORT = 8000;
@@ -23,6 +25,24 @@ app.use((req, res, next) => {
   next();
 });
 
+const verifyToken = (req, res, next) =>{
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided. Access denied!" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token!" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+
 // ─── Proxy: Users service ─────────────────────────────────────────────────────
 app.use(
   "/users",
@@ -36,6 +56,7 @@ app.use(
 // ─── Proxy: Gamey service ─────────────────────────────────────────────────────
 app.use(
   "/gamey",
+  verifyToken,
   createProxyMiddleware({
     target: "http://gamey:4000",
     changeOrigin: true,

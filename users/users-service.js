@@ -7,6 +7,9 @@ const YAML = require("js-yaml");
 const promBundle = require("express-prom-bundle");
 const bcrypt = require("bcryptjs");
 
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
+
 const { connectDB, mongoose } = require("./db");
 const User = require("./schema");
 
@@ -68,28 +71,26 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Sanitize: ensure it's a string and use the $eq operator
     const safeUsername = String(username);
     const user = await User.findOne({ name: { $eq: safeUsername } });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (user && bcrypt.compareSync(String(password), user.password)) {
 
-    if (!bcrypt.compareSync(String(password), user.password)) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+      const token = jwt.sign(
+        { userId: user._id, username: user.name },
+        JWT_SECRET,
+        { expiresIn: '2h' } 
+      );
 
-    res.json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        username: user.name,
-        email: user.email,
-      },
-    });
+      return res.json({
+        message: "Login successful",
+        token: token, 
+        user: { id: user._id, username: user.name }
+      });
+    }
+    res.status(401).json({ error: "Invalid credentials" });
   } catch (err) {
-    res.status(500).json({ error: "Server error", details: err.message });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
