@@ -44,7 +44,7 @@ app.post("/createuser", async (req, res) => {
       email: email || `${username}@example.com`,
     });
     const savedUser = await newUser.save();
-    
+
     const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
       timeZone: "Europe/Madrid",
       day: "2-digit",
@@ -70,10 +70,10 @@ app.post("/createuser", async (req, res) => {
   }
 });
 
-app.delete('/deleteuser/:username', async (req, res) => {
-  const usernameParam = String(req.params.username); 
+app.delete("/deleteuser/:username", async (req, res) => {
+  const usernameParam = String(req.params.username);
   try {
-    const result = await User.deleteOne({ name: { $eq: usernameParam } }); 
+    const result = await User.deleteOne({ name: { $eq: usernameParam } });
     if (result.deletedCount === 1) {
       res.json({ message: `User ${usernameParam} deleted successfully!` });
     } else {
@@ -83,6 +83,17 @@ app.delete('/deleteuser/:username', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//API endpoints (UNDER DEVELOPMENT)
+app.get("/api/play", (req, res) => {
+  res.json({ message: "[UNDER DEVELOPMENT]: User is playing!" });
+});
+
+app.post("/api/login", (req, res) => {
+  res.json({ status: "[UNDER DEVELOPMENT]: Users is logged in" });
+});
+
+//API END
 
 async function startServer() {
   try {

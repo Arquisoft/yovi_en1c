@@ -4,6 +4,13 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const app = express();
 const PORT = 8000;
 
+const commonOptions = {
+  changeOrigin: true,
+  onError: (err, req, res) => {
+    res.status(503).json({ error: "Service unreachable" });
+  },
+};
+
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 // Implemented with plain Express middleware so no extra npm package is needed. It was giving some problems
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
@@ -23,23 +30,25 @@ app.use((req, res, next) => {
   next();
 });
 
+//API GATEWAY: Routes and Proxies
+
 // ─── Proxy: Users service ─────────────────────────────────────────────────────
 app.use(
-  "/users",
+  "/api/users",
   createProxyMiddleware({
+    ...commonOptions,
     target: "http://users:3000",
-    changeOrigin: true,
-    pathRewrite: { "^/users": "" },
+    pathRewrite: { "^/api/users": "" },
   }),
 );
 
 // ─── Proxy: Gamey service ─────────────────────────────────────────────────────
 app.use(
-  "/gamey",
+  "/api/gamey",
   createProxyMiddleware({
+    ...commonOptions,
     target: "http://gamey:4000",
-    changeOrigin: true,
-    pathRewrite: { "^/gamey": "" },
+    pathRewrite: { "^/api/gamey": "" },
   }),
 );
 
