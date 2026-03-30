@@ -22,7 +22,7 @@ describe("GameMenu", () => {
 
     // 1. Select 'Small' board size
     const smallBoardBtn = screen.getByRole("button", {
-      name: /small quick match/i,
+      name: /Small/i,
     });
     await user.click(smallBoardBtn);
     expect(smallBoardBtn).toHaveClass("selected");
