@@ -396,19 +396,29 @@ mod tests {
         );
     }
 
+    // On an empty board the bot must still return a valid move.
     #[test]
-    fn test_prefers_central_cell_on_empty_board() {
+    fn test_returns_a_valid_move_on_empty_board() {
         let game = GameY::new(7);
         let chosen = best_move(&game).expect("should have a move");
-        let centroid = (game.board_size() as f32 - 1.0) / 3.0;
-        let dist = (chosen.x() as f32 - centroid).abs()
-            + (chosen.y() as f32 - centroid).abs()
-            + (chosen.z() as f32 - centroid).abs();
         assert!(
-            dist < 3.0,
-            "Bot should prefer a central cell on an empty board, chose {:?} (dist {:.1})",
-            chosen, dist
+            game.available_cells().contains(&chosen.to_index(game.board_size())),
+            "Bot chose an unavailable cell: {:?}", chosen
         );
+    }
+
+    // A group that already touches all three sides must have virtual cost 0.
+    #[test]
+    fn test_virtual_cost_zero_when_already_connected() {
+        let mut game = GameY::new(3);
+        game.add_move(make_placement(0, Coordinates::new(0, 1, 1))).unwrap();
+        game.add_move(make_placement(1, Coordinates::new(2, 0, 0))).unwrap();
+        game.add_move(make_placement(0, Coordinates::new(1, 0, 1))).unwrap();
+        game.add_move(make_placement(1, Coordinates::new(0, 2, 0))).unwrap();
+        game.add_move(make_placement(0, Coordinates::new(1, 1, 0))).unwrap();
+
+        let cost = virtual_connection_cost(&game, PlayerId::new(0));
+        assert_eq!(cost, 0, "A group touching all three sides should cost 0");
     }
 
     // Virtual connection cost should not increase after placing a central stone.

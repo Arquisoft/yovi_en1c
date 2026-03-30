@@ -28,7 +28,6 @@ describe("GameMenu", () => {
     expect(smallBoardBtn).toHaveClass("selected");
 
     // 2. Select 'Master Y' game mode
-    // The accessible name is built from both spans: "Master Y Advanced variant"
     const masterYBtn = screen.getByRole("button", {
       name: /master y.*advanced variant/i,
     });
