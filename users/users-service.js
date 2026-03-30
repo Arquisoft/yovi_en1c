@@ -7,8 +7,8 @@ const YAML = require("js-yaml");
 const promBundle = require("express-prom-bundle");
 const bcrypt = require("bcryptjs");
 
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
 
 const { connectDB, mongoose } = require("./db");
 const User = require("./schema");
@@ -75,17 +75,16 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ name: { $eq: safeUsername } });
 
     if (user && bcrypt.compareSync(String(password), user.password)) {
-
       const token = jwt.sign(
         { userId: user._id, username: user.name },
         JWT_SECRET,
-        { expiresIn: '2h' } 
+        { expiresIn: "2h" },
       );
 
       return res.json({
         message: "Login successful",
-        token: token, 
-        user: { id: user._id, username: user.name }
+        token: token,
+        user: { id: user._id, username: user.name },
       });
     }
     res.status(401).json({ error: "Invalid credentials" });
@@ -167,7 +166,14 @@ async function startServer() {
 }
 
 if (require.main == module) {
-  await startServer();
+  startServer()
+    .then(() => {
+      console.log("Service startup sequence completed.");
+    })
+    .catch((err) => {
+      console.error("Failed to start service:", err);
+      process.exit(1);
+    });
 }
 
 module.exports = app;
