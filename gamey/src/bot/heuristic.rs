@@ -2,7 +2,7 @@
 //!
 //! This module provides two bots:
 //! - [`HeuristicBot`]: Always picks the best move using a heuristic evaluation function.
-//! - [`EasyBot`]: Plays heuristically 20% of the time, randomly the other 80%.
+//! - [`EasyBot`]: Plays heuristically 60% of the time, randomly the other 80%.
 //!
 //! ## Decision priority (HeuristicBot)
 //! 1. **Immediate win** – if any move wins the game right now, take it.
@@ -101,7 +101,7 @@ fn score_placement(board: &GameY, coords: Coordinates, player: PlayerId) -> i32 
         + (coords.y() as f32 - centroid).abs()
         + (coords.z() as f32 - centroid).abs()) as i32;
 
-    sides * 100 + friendly_neighbours * 10 - centrality_dist
+    sides * 15 + friendly_neighbours * 15 - centrality_dist * 10
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ impl YBot for EasyBot {
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
         std::thread::sleep(std::time::Duration::from_millis(500));
 
-        let use_heuristic: bool = rand::random::<f32>() < 0.20;
+        let use_heuristic: bool = rand::random::<f32>() < 0.60;
 
         if use_heuristic {
             best_move(board)
@@ -303,23 +303,21 @@ mod tests {
         );
     }
 
-    /// On an empty board the heuristic should prefer cells touching more sides.
-    /// Cells touching 2 sides (corners) score higher than cells touching 1 side,
-    /// which score higher than interior cells — this is correct for Y since all
-    /// three sides must be connected to win.
+    /// Assert it picks a cell near the centroid instead
     #[test]
-    fn test_prefers_side_touching_cells_on_empty_board() {
+    fn test_prefers_central_cell_on_empty_board() {
         let game = GameY::new(7);
         let chosen = best_move(&game).expect("should have a move");
-        let touches_any_side = chosen.touches_side_a()
-            || chosen.touches_side_b()
-            || chosen.touches_side_c();
+        let centroid = (game.board_size() as f32 - 1.0) / 3.0;
+        let dist = (chosen.x() as f32 - centroid).abs()
+            + (chosen.y() as f32 - centroid).abs()
+            + (chosen.z() as f32 - centroid).abs();
         assert!(
-            touches_any_side,
-            "Bot picked an interior cell on an empty board: {:?}",
-            chosen
+            dist < 3.0,
+            "Bot should prefer a central cell on an empty board, chose {:?} (dist {:.1})",
+            chosen, dist
         );
-    }
+}
 
     /// Cells adjacent to friendly pieces should score higher than isolated ones
     /// when side-touching is equal (tests the friendly_neighbours bonus).
