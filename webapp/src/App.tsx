@@ -28,11 +28,21 @@ function App() {
   }
 
   if (screen === "board") {
-    return <GameBoard onBack={() => setScreen("menu")} userName={userName} />;
+    return (
+      <GameBoard
+        onBack={() => setScreen("menu")}
+        userName={userName}
+      />
+    );
   }
 
   if (screen === "history") {
-    return <GameHistory onBack={() => setScreen("menu")} userName={userName} />;
+    return (
+      <GameHistory
+        onBack={() => setScreen("menu")}
+        userName={userName}
+      />
+    );
   }
 
   return (

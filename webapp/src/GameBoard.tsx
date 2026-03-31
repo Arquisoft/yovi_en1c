@@ -31,9 +31,6 @@ function coordKey(x: number, y: number, z: number): string {
   return `${x},${y},${z}`;
 }
 
-/**
- * Converts a board key ("x,y,z") back into numeric coordinates.
- */
 function parseKey(key: string): [number, number, number] {
   const [x, y, z] = key.split(",").map(Number);
   return [x, y, z];
@@ -64,10 +61,6 @@ function getNeighbors(
   return neighbors;
 }
 
-/**
- * BFS win check: a player wins if they have a connected group
- * that simultaneously touches all three sides (A: x=0, B: y=0, C: z=0).
- */
 function checkWin(boardMap: BoardMap, player: Player): boolean {
   const visited = new Set<string>();
 
@@ -105,7 +98,6 @@ function checkWin(boardMap: BoardMap, player: Player): boolean {
   return false;
 }
 
-// Cambiar la firma de saveGame (línea ~100):
 async function saveGame(result: GameStatus, board: BoardMap, username: string) {
   const totalMoves = Object.keys(board).length;
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
@@ -115,10 +107,6 @@ async function saveGame(result: GameStatus, board: BoardMap, username: string) {
   }).catch(console.error);
 }
 
-/**
- * Build YEN (Y-game Exchange Notation) from current board state.
- * Layout rows are separated by '/', row 0 is the apex (1 cell).
- */
 function buildYEN(boardMap: BoardMap, nextTurn: Player, size: number): YEN {
   let layout = "";
 
@@ -146,9 +134,6 @@ function buildYEN(boardMap: BoardMap, nextTurn: Player, size: number): YEN {
   };
 }
 
-/**
- * Compute SVG polygon points for a flat-top hexagon centered at (cx, cy).
- */
 function hexPoints(cx: number, cy: number, r: number): string {
   return Array.from({ length: 6 }, (_, sideIndex) => {
     const angleInRadians = (Math.PI / 180) * (60 * sideIndex + 30);
@@ -260,7 +245,7 @@ export default function GameBoard({
         setLoading(false);
       }
     },
-    [boardMap, currentTurn, gameStatus, loading, boardSize],
+    [boardMap, currentTurn, gameStatus, loading, boardSize, userName],
   );
 
   const statusLabel =

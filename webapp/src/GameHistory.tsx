@@ -46,7 +46,7 @@ export default function GameHistory({ onBack, userName }: Props) {
     };
 
     fetchGames();
-  }, []);
+  }, [userName]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
