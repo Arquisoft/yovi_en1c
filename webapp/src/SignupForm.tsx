@@ -21,7 +21,6 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setError(null);
-
         const trimmedUsername = username.trim();
         const trimmedEmail = email.trim();
 
@@ -127,7 +126,7 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
                 Sign Up
             </button>
 
-            <p className="switch-text">
+            <p style={{ marginTop: 16 }}>
                 Already have an account?{" "}
                 <button
                     type="button"

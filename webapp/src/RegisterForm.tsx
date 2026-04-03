@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import "./RegisterForm.css";
 
+// React hooks for managing form state and error handling
+// Using onGoToLogin and onGoToSignUp callbacks to navigate
+//  between login and signup forms without using react-router
+
 type Props = {
   onLoggedIn: (username: string) => void;
   onGoToSignUp: () => void;
@@ -82,14 +86,29 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
         Lets go!
       </button>
 
-      <p className="switch-text">
-        Don't have an account?
-        <button type="button" onClick={onGoToSignUp}>
+      <p style={{ marginTop: 16 }}>
+        Don't have an account?{" "}
+        <button
+          type="button"
+          onClick={onGoToSignUp}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            color: "#4f46e5",
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+        >
           Sign up here
         </button>
       </p>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+          {error}
+        </div>
+      )}
     </form>
   );
 };
