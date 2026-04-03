@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import './GameMenu.css';
 
-export type BoardSize = 'small' | 'medium' | 'large';
-export type GameMode = 'standard' | 'standard_pie' | 'master_y';
-export type LayoutStyle = 'classic' | 'futuristic' | 'wooden';
+export type BoardSize = 'medium';
+export type GameMode = 'standard';
+export type LayoutStyle = 'classic';
 
 // This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
@@ -18,30 +18,36 @@ type Props = {
     onLogOut: () => void;
 };
 
-const boardSizes: { value: BoardSize; title: string; description: string }[] = [
-    { value: 'small', title: 'Small', description: 'Quick match' },
-    { value: 'medium', title: 'Medium', description: 'Balanced board' },
-    { value: 'large', title: 'Large', description: '93 playable nodes' },
+const boardSizes = [
+    { value: 'medium' as BoardSize, title: 'Medium', description: 'Balanced board' },
 ];
 
-const gameModes: { value: GameMode; title: string; description: string }[] = [
-    { value: 'standard', title: 'Standard', description: 'Classic Y rules' },
-    { value: 'standard_pie', title: 'Standard Pie', description: 'Includes pie rule' },
-    { value: 'master_y', title: 'Master Y', description: 'More advanced variant' },
+const gameModes = [
+    { value: 'standard' as GameMode, title: 'Standard', description: 'Classic Y rules' },
 ];
 
-const layouts: { value: LayoutStyle; title: string; description: string }[] = [
-    { value: 'classic', title: 'Classic', description: 'Clean tournament look' },
-    { value: 'futuristic', title: 'Futuristic', description: 'Neon sci-fi style' },
-    { value: 'wooden', title: 'Wooden', description: 'Board-game table feel' },
+const layouts = [
+    { value: 'classic' as LayoutStyle, title: 'Classic', description: 'Clean tournament look' },
 ];
 
 export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
-    const [config, setConfig] = useState<GameConfig>({
-        boardSize: 'large',
-        mode: 'standard',
-        layout: 'classic',
-    });
+    const [boardIndex, setBoardIndex] = useState(0);
+    const [modeIndex, setModeIndex] = useState(0);
+    const [layoutIndex, setLayoutIndex] = useState(0);
+
+    const config: GameConfig = {
+        boardSize: boardSizes[boardIndex].value,
+        mode: gameModes[modeIndex].value,
+        layout: layouts[layoutIndex].value,
+    };
+
+    const goPrev = (index: number, length: number) => {
+        return (index - 1 + length) % length;
+    };
+
+    const goNext = (index: number, length: number) => {
+        return (index + 1) % length;
+    };
 
     return (
         <div className="menu">
@@ -53,58 +59,85 @@ export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
 
                 <section className="menuSection">
                     <h3 className="sectionTitle">Board size</h3>
-                    <div className="optionGrid">
-                        {boardSizes.map((option) => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                className={`optionCard ${config.boardSize === option.value ? 'selected' : ''}`}
-                                onClick={() =>
-                                    setConfig((current) => ({ ...current, boardSize: option.value }))
-                                }
-                            >
-                                <span className="optionTitle">{option.title}</span>
-                                <span className="optionDescription">{option.description}</span>
-                            </button>
-                        ))}
+                    <div className="carousel">
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setBoardIndex(goPrev(boardIndex, boardSizes.length))}
+                            aria-label="Previous board size"
+                        >
+                            ‹
+                        </button>
+
+                        <div className="carouselCard">
+                            <span className="optionTitle">{boardSizes[boardIndex].title}</span>
+                            <span className="optionDescription">{boardSizes[boardIndex].description}</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setBoardIndex(goNext(boardIndex, boardSizes.length))}
+                            aria-label="Next board size"
+                        >
+                            ›
+                        </button>
                     </div>
                 </section>
 
                 <section className="menuSection">
                     <h3 className="sectionTitle">Game mode</h3>
-                    <div className="optionGrid">
-                        {gameModes.map((option) => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                className={`optionCard ${config.mode === option.value ? 'selected' : ''}`}
-                                onClick={() =>
-                                    setConfig((current) => ({ ...current, mode: option.value }))
-                                }
-                            >
-                                <span className="optionTitle">{option.title}</span>
-                                <span className="optionDescription">{option.description}</span>
-                            </button>
-                        ))}
+                    <div className="carousel">
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setModeIndex(goPrev(modeIndex, gameModes.length))}
+                            aria-label="Previous game mode"
+                        >
+                            ‹
+                        </button>
+
+                        <div className="carouselCard">
+                            <span className="optionTitle">{gameModes[modeIndex].title}</span>
+                            <span className="optionDescription">{gameModes[modeIndex].description}</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setModeIndex(goNext(modeIndex, gameModes.length))}
+                            aria-label="Next game mode"
+                        >
+                            ›
+                        </button>
                     </div>
                 </section>
 
                 <section className="menuSection">
                     <h3 className="sectionTitle">Layout style</h3>
-                    <div className="optionGrid">
-                        {layouts.map((option) => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                className={`optionCard ${config.layout === option.value ? 'selected' : ''}`}
-                                onClick={() =>
-                                    setConfig((current) => ({ ...current, layout: option.value }))
-                                }
-                            >
-                                <span className="optionTitle">{option.title}</span>
-                                <span className="optionDescription">{option.description}</span>
-                            </button>
-                        ))}
+                    <div className="carousel">
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setLayoutIndex(goPrev(layoutIndex, layouts.length))}
+                            aria-label="Previous layout"
+                        >
+                            ‹
+                        </button>
+
+                        <div className="carouselCard">
+                            <span className="optionTitle">{layouts[layoutIndex].title}</span>
+                            <span className="optionDescription">{layouts[layoutIndex].description}</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="carouselButton"
+                            onClick={() => setLayoutIndex(goNext(layoutIndex, layouts.length))}
+                            aria-label="Next layout"
+                        >
+                            ›
+                        </button>
                     </div>
                 </section>
 
