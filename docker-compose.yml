@@ -3,8 +3,8 @@ services:
     image: mongo
     container_name: mongo
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    #ports:
+    #  - "27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
@@ -14,8 +14,8 @@ services:
     build: ./users
     container_name: users
     image: ghcr.io/arquisoft/yovi_en1c-users:latest
-    ports:
-      - "3000:3000"
+    #ports:
+    #  - "3000:3000"
     networks:
       - monitor-net
     environment:
@@ -43,8 +43,8 @@ services:
     build: ./gamey
     container_name: gamey
     image: ghcr.io/arquisoft/yovi_en1c-gamey:latest
-    ports:
-      - "4000:4000"
+    #ports:
+    #  - "4000:4000"
     networks:
       - monitor-net
 

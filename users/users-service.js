@@ -56,10 +56,9 @@ app.post("/createuser", async (req, res) => {
       name: username,
       email: email || `${username}@example.com`,
     });
-    const savedUser = await newUser.save(); // Saves to database
-    
-    // Converts timestamp into Spanish format.
-    const formattedDate = savedUser.createdAt.toLocaleString("es-ES", { 
+    const savedUser = await newUser.save();
+
+    const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
       timeZone: "Europe/Madrid",
       day: "2-digit",
       month: "2-digit",
