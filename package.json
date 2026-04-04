@@ -3,5 +3,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitest/coverage-v8": "^4.0.18"
+  },
+  "dependencies": {
+    "uuid": "^13.0.0"
   }
 }

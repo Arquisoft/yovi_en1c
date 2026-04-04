@@ -1,5 +1,7 @@
-import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
-const { connectDB, mongoose } = require("../db.js"); // Adjust path if necessary
+// Unit tests for the database connector behavior in db.js.
+// Verifies connection open, seeding behavior, and error handling.
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest"; // Vitest is the testing framework
+const { connectDB, mongoose, User } = require("../db.js"); // Adjust path if necessary
 
 describe("connectDB function", () => {
   beforeEach(() => {
@@ -14,28 +16,20 @@ describe("connectDB function", () => {
   });
 
   it("should connect and seed data if NOT in production", async () => {
-    // 1. Set up the environment
+    // Simulate non-production mode to enable seed path.
     vi.stubEnv("NODE_ENV", "development");
 
-    // 2. Mock Mongoose behavior
+    // Ensure mongoose.connect() is invoked and does not actually connect during the test.
     const connectSpy = vi
       .spyOn(mongoose, "connect")
       .mockResolvedValue(mongoose);
 
-    // Mock model methods (deleteMany and insertMany)
-    const deleteManySpy = vi.fn().mockResolvedValue({});
-    const insertManySpy = vi.fn().mockResolvedValue([]);
+    // Ensure seed methods are called as part of non-prod initialization.
+    const deleteManySpy = vi.spyOn(User, "deleteMany").mockResolvedValue({});
+    const insertManySpy = vi.spyOn(User, "insertMany").mockResolvedValue([]);
 
-    // Mock mongoose.model to return our fake model object
-    vi.spyOn(mongoose, "model").mockReturnValue({
-      deleteMany: deleteManySpy,
-      insertMany: insertManySpy,
-    });
-
-    // 3. Execute the function
     await connectDB();
 
-    // 4. Assertions
     expect(connectSpy).toHaveBeenCalled();
     expect(deleteManySpy).toHaveBeenCalled();
     expect(insertManySpy).toHaveBeenCalled();
@@ -50,14 +44,17 @@ describe("connectDB function", () => {
     const connectSpy = vi
       .spyOn(mongoose, "connect")
       .mockResolvedValue(mongoose);
-    const modelSpy = vi.spyOn(mongoose, "model");
+    const deleteManySpy = vi.spyOn(User, "deleteMany");
+    const insertManySpy = vi.spyOn(User, "insertMany");
 
     await connectDB();
 
     expect(connectSpy).toHaveBeenCalled();
-    // Verify that seeding logic was NOT called
-    expect(modelSpy).not.toHaveBeenCalled();
-    expect(console.log).not.toContain("Database cleared");
+    expect(deleteManySpy).not.toHaveBeenCalled();
+    expect(insertManySpy).not.toHaveBeenCalled();
+    expect(console.log).not.toHaveBeenCalledWith(
+      expect.stringContaining("Database cleared"),
+    );
   });
 
   it("should throw and log an error if connection fails", async () => {
