@@ -48,6 +48,28 @@ app.use((req, res, next) => { // This middleware runs for every request.
 // Without this, req.body would be undefined.
 app.use(express.json());
 
+// Helper functions for match save endpoint
+async function checkIdempotency(player_id, idempotency_key) {
+  return await Match.findOne({ 
+    player_id: new mongoose.Types.ObjectId(player_id), 
+    idempotency_key 
+  });
+}
+
+async function saveMatchWithRetry(createFn) {
+  try {
+    return await createFn();
+  } catch (err) {
+    console.error('Match save failed on first attempt:', err);
+    try {
+      return await createFn();
+    } catch (retryErr) {
+      console.error('Match save failed on retry:', retryErr);
+      throw retryErr;
+    }
+  }
+}
+
 // Create User endpoint
 app.post("/createuser", async (req, res) => { 
   const { username, email } = req.body; // Extracts data
@@ -164,30 +186,27 @@ app.post('/users/match/save', async (req, res) => {
   const botDifficulty = opponent_type === 'bot' ? opponent_id : undefined;
   const playedAtDate = played_at ? new Date(played_at) : undefined;
 
-  try {
-    if (idempotency_key) {
-      // Validate inputs to prevent NoSQL injection
-      if (typeof player_id !== 'string' || !mongoose.Types.ObjectId.isValid(player_id)) {
-        return res.status(400).json({ error: 'Invalid player_id' });
-      }
-      if (typeof idempotency_key !== 'string') {
-        return res.status(400).json({ error: 'Invalid idempotency_key' });
-      }
-      // Prevent NoSQL injection by checking for MongoDB operators
-      if (idempotency_key.includes('$') || idempotency_key.includes('{') || idempotency_key.includes('}')) {
-        return res.status(400).json({ error: 'Invalid idempotency_key' });
-      }
-      const existingMatch = await Match.findOne({ 
-        player_id: new mongoose.Types.ObjectId(player_id), 
-        idempotency_key 
-      });
-      if (existingMatch) {
-        return res.json({ message: 'Match already saved', match: existingMatch });
-      }
+  if (idempotency_key) {
+    // Validate inputs to prevent NoSQL injection
+    if (typeof player_id !== 'string' || !mongoose.Types.ObjectId.isValid(player_id)) {
+      return res.status(400).json({ error: 'Invalid player_id' });
     }
-  } catch (findErr) {
-    console.error('Match lookup failed:', findErr);
-    return res.status(500).json({ error: 'Database query failed', details: findErr.message });
+    if (typeof idempotency_key !== 'string') {
+      return res.status(400).json({ error: 'Invalid idempotency_key' });
+    }
+    // Prevent NoSQL injection by checking for MongoDB operators
+    if (idempotency_key.includes('$') || idempotency_key.includes('{') || idempotency_key.includes('}')) {
+      return res.status(400).json({ error: 'Invalid idempotency_key' });
+    }
+    try {
+      const existing = await checkIdempotency(player_id, idempotency_key);
+      if (existing) {
+        return res.json({ message: 'Match already saved', match: existing });
+      }
+    } catch (err) {
+      console.error('Match lookup failed:', err);
+      return res.status(500).json({ error: 'Database query failed', details: err.message });
+    }
   }
 
   const createMatchRecord = async () => {
@@ -207,17 +226,10 @@ app.post('/users/match/save', async (req, res) => {
   };
 
   try {
-    const savedMatch = await createMatchRecord();
+    const savedMatch = await saveMatchWithRetry(createMatchRecord);
     return res.json({ message: 'Match saved', match: savedMatch });
   } catch (err) {
-    console.error('Match save failed on first attempt:', err);
-    try {
-      const savedMatch = await createMatchRecord();
-      return res.json({ message: 'Match saved', match: savedMatch });
-    } catch (retryErr) {
-      console.error('Match save failed on retry:', retryErr);
-      return res.status(500).json({ error: 'Database save failed', details: retryErr.message });
-    }
+    return res.status(500).json({ error: 'Database save failed', details: err.message });
   }
 });
 
@@ -292,7 +304,7 @@ app.post('/users/match/forfeit', async (req, res) => {
         // Don't fail the forfeit if opponent record fails
       }
     } else if (opponent_type === 'bot') {
-      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason.replace(/\n/g, '\\n').replace(/\r/g, '\\r')}`);
+      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason.replaceAll('\n', '\\n').replaceAll('\r', '\\r')}`);
     }
 
     return res.json({
