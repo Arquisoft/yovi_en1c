@@ -196,7 +196,7 @@ describe("POST /createuser", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("message", "Match saved");
     expect(res.body.match).toHaveProperty("_id", "new-id");
-    expect(findOneSpy).toHaveBeenCalledWith({ player_id: playerId, idempotency_key: "abc123" });
+    expect(findOneSpy).toHaveBeenCalledWith({ player_id: new mongoose.Types.ObjectId(playerId), idempotency_key: "abc123" });
     expect(saveSpy).toHaveBeenCalled();
 
     findOneSpy.mockRestore();

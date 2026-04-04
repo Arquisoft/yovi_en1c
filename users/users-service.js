@@ -167,7 +167,17 @@ app.post('/users/match/save', async (req, res) => {
 
   try {
     if (idempotency_key) {
-      const existingMatch = await Match.findOne({ player_id, idempotency_key });
+      // Validate inputs to prevent NoSQL injection
+      if (typeof player_id !== 'string' || !mongoose.Types.ObjectId.isValid(player_id)) {
+        return res.status(400).json({ error: 'Invalid player_id' });
+      }
+      if (typeof idempotency_key !== 'string') {
+        return res.status(400).json({ error: 'Invalid idempotency_key' });
+      }
+      const existingMatch = await Match.findOne({ 
+        player_id: new mongoose.Types.ObjectId(player_id), 
+        idempotency_key 
+      });
       if (existingMatch) {
         return res.json({ message: 'Match already saved', match: existingMatch });
       }
@@ -279,7 +289,7 @@ app.post('/users/match/forfeit', async (req, res) => {
         // Don't fail the forfeit if opponent record fails
       }
     } else if (opponent_type === 'bot') {
-      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason}`);
+      console.log('Match forfeit recorded: player', player_id, 'lost to bot by', JSON.stringify(forfeit_reason));
     }
 
     return res.json({
