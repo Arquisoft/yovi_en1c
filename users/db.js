@@ -63,6 +63,15 @@ const MatchSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
+  status: { // Track if match is still ongoing or finished
+    type: String,
+    enum: ["ongoing", "finished"],
+    default: "ongoing",
+  },
+  forfeit_reason: { // Reason for forfeit if applicable (e.g., "user_disconnect")
+    type: String,
+    default: null,
+  },
 });
 
 // Pre-save hook ensures DB consistency: bots should have no opponent_id.

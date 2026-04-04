@@ -131,7 +131,7 @@ app.post('/creatematch', async (req, res) => {
   }
 });
 
-// Secures match save endpoint
+// Secures match save endpoint - only saves finished matches
 app.post('/users/match/save', async (req, res) => {
   const loggedInUserId = req.header('x-user-id') || req.body.logged_in_user_id; // Identifies logged-in user
 
@@ -148,10 +148,17 @@ app.post('/users/match/save', async (req, res) => {
     score_opponent,
     played_at,
     idempotency_key,
+    status = "finished", // Default to finished, but validate it
   } = req.body;
 
   if (!player_id || player_id !== loggedInUserId) { // Prevents users for saving matches for others
     return res.status(403).json({ error: 'Forbidden: player_id does not match logged-in user' });
+  }
+
+  // Only allow saving finished matches
+  if (status !== "finished") {
+    return res.status(400).json({ error: 'Bad request: match must be finished to save'
+      , details: 'Only matches with status "finished" can be saved to the database' });
   }
 
   const normalizedOpponentId = opponent_type === 'bot' ? null : opponent_id;
@@ -180,6 +187,7 @@ app.post('/users/match/save', async (req, res) => {
       score_player,
       score_opponent,
       played_at: playedAtDate,
+      status: "finished",
       idempotency_key,
     });
     return match.save();
@@ -197,6 +205,153 @@ app.post('/users/match/save', async (req, res) => {
       console.error('Match save failed on retry:', retryErr);
       return res.status(500).json({ error: 'Database save failed', details: retryErr.message });
     }
+  }
+});
+
+// Handle match forfeit when a user disconnects/closes browser mid-game
+app.post('/users/match/forfeit', async (req, res) => {
+  const loggedInUserId = req.header('x-user-id') || req.body.logged_in_user_id; // Identifies logged-in user
+
+  if (!loggedInUserId) {
+    return res.status(401).json({ error: 'Unauthorized: missing user session' });
+  }
+
+  const {
+    match_id,
+    player_id,
+    opponent_type,
+    opponent_id,
+    forfeit_reason = "user_disconnect",
+  } = req.body;
+
+  if (!player_id || player_id !== loggedInUserId) {
+    return res.status(403).json({ error: 'Forbidden: player_id does not match logged-in user' });
+  }
+
+  if (!match_id) {
+    return res.status(400).json({ error: 'Bad request: match_id is required' });
+  }
+
+  const normalizedOpponentId = opponent_type === 'bot' ? null : opponent_id;
+
+  try {
+    // Find the match
+    const match = await Match.findById(match_id);
+    if (!match) {
+      return res.status(404).json({ error: 'Match not found' });
+    }
+
+    // Verify the match belongs to the player
+    if (match.player_id.toString() !== player_id) {
+      return res.status(403).json({ error: 'Forbidden: match does not belong to this player' });
+    }
+
+    // Only allow forfeit for ongoing matches
+    if (match.status === "finished") {
+      return res.status(400).json({ error: 'Bad request: match is already finished' });
+    }
+
+    // Update match: player loses by forfeit
+    match.result = "loss";
+    match.status = "finished";
+    match.forfeit_reason = forfeit_reason;
+    // Scores remain as they were at disconnect time
+    
+    await match.save();
+
+    // Create a corresponding win record for the opponent (if player vs player, not bot)
+    if (opponent_type === 'user' && opponent_id) {
+      try {
+        const opponentMatch = new Match({
+          player_id: normalizedOpponentId,
+          opponent_type: 'user',
+          opponent_id: player_id,
+          result: 'win', // Opponent wins by forfeit
+          score_player: (match.score_opponent || 0),
+          score_opponent: (match.score_player || 0),
+          status: 'finished',
+          forfeit_reason: forfeit_reason,
+          played_at: match.played_at,
+        });
+        await opponentMatch.save();
+      } catch (opponentErr) {
+        console.error('Failed to create opponent win record:', opponentErr);
+        // Don't fail the forfeit if opponent record fails
+      }
+    } else if (opponent_type === 'bot') {
+      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason}`);
+    }
+
+    return res.json({
+      message: 'Match forfeit recorded',
+      match: {
+        _id: match._id,
+        result: match.result,
+        status: match.status,
+        forfeit_reason: match.forfeit_reason,
+        score_player: match.score_player,
+        score_opponent: match.score_opponent,
+      },
+    });
+  } catch (err) {
+    console.error('Match forfeit failed:', err);
+    return res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Create an ongoing match record
+app.post('/users/match/create', async (req, res) => {
+  const loggedInUserId = req.header('x-user-id') || req.body.logged_in_user_id; // Identifies logged-in user
+
+  if (!loggedInUserId) {
+    return res.status(401).json({ error: 'Unauthorized: missing user session' });
+  }
+
+  const {
+    player_id,
+    opponent_type,
+    opponent_id,
+    idempotency_key,
+  } = req.body;
+
+  if (!player_id || player_id !== loggedInUserId) {
+    return res.status(403).json({ error: 'Forbidden: player_id does not match logged-in user' });
+  }
+
+  const normalizedOpponentId = opponent_type === 'bot' ? null : opponent_id;
+  const botDifficulty = opponent_type === 'bot' ? opponent_id : undefined;
+
+  const createMatchRecord = async () => {
+    const match = new Match({
+      player_id,
+      opponent_type,
+      opponent_id: normalizedOpponentId,
+      bot_difficulty: botDifficulty,
+      result: 'draw', // Temporary placeholder, will be updated when match finishes
+      score_player: 0,
+      score_opponent: 0,
+      status: 'ongoing',
+      played_at: new Date(),
+      idempotency_key,
+    });
+    return match.save();
+  };
+
+  try {
+    const savedMatch = await createMatchRecord();
+    return res.json({
+      message: 'Match created',
+      match: {
+        _id: savedMatch._id,
+        status: savedMatch.status,
+        player_id: savedMatch.player_id,
+        opponent_type: savedMatch.opponent_type,
+        opponent_id: savedMatch.opponent_id,
+      },
+    });
+  } catch (err) {
+    console.error('Match creation failed:', err);
+    return res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 

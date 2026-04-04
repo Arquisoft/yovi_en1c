@@ -310,4 +310,293 @@ describe("POST /createuser", () => {
     expect(saveSpy).toHaveBeenCalledTimes(2);
     saveSpy.mockRestore();
   });
+
+  it("rejects saving a match with status 'ongoing'", async () => {
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+    const res = await request(app)
+      .post("/users/match/save")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: playerId,
+        opponent_type: "user",
+        opponent_id: new mongoose.Types.ObjectId().toHexString(),
+        result: "win",
+        score_player: 10,
+        score_opponent: 2,
+        status: "ongoing", // Trying to save an ongoing match
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error", "Bad request: match must be finished to save");
+  });
+
+  it("saves a match with status 'finished'", async () => {
+    const Match = mongoose.model("Match");
+    const saveSpy = vi
+      .spyOn(Match.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve({
+          _id: "saved-finished-match",
+          ...this.toObject(),
+        });
+      });
+
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+    const res = await request(app)
+      .post("/users/match/save")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: playerId,
+        opponent_type: "user",
+        opponent_id: new mongoose.Types.ObjectId().toHexString(),
+        result: "win",
+        score_player: 10,
+        score_opponent: 2,
+        status: "finished",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message", "Match saved");
+    expect(res.body.match).toHaveProperty("status", "finished");
+    saveSpy.mockRestore();
+  });
+});
+
+describe("POST /users/match/forfeit", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns 401 when no user session is provided", async () => {
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .send({
+        match_id: "some-id",
+        player_id: new mongoose.Types.ObjectId().toHexString(),
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty("error", "Unauthorized: missing user session");
+  });
+
+  it("returns 403 when player_id doesn't match logged-in user", async () => {
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+    const otherId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .set("x-user-id", playerId)
+      .send({
+        match_id: "some-id",
+        player_id: otherId,
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toHaveProperty("error", "Forbidden: player_id does not match logged-in user");
+  });
+
+  it("returns 400 when match_id is missing", async () => {
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: playerId,
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error", "Bad request: match_id is required");
+  });
+
+  it("returns 404 when match is not found", async () => {
+    const Match = mongoose.model("Match");
+    vi.spyOn(Match, "findById").mockResolvedValueOnce(null);
+
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .set("x-user-id", playerId)
+      .send({
+        match_id: new mongoose.Types.ObjectId().toHexString(),
+        player_id: playerId,
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(404);
+    expect(res.body).toHaveProperty("error", "Match not found");
+  });
+
+  it("records forfeit for ongoing match and creates opponent win record", async () => {
+    const Match = mongoose.model("Match");
+    const playerId = new mongoose.Types.ObjectId();
+    const opponentId = new mongoose.Types.ObjectId();
+    const matchId = new mongoose.Types.ObjectId();
+
+    const mockMatch = {
+      _id: matchId,
+      player_id: playerId,
+      opponent_type: "user",
+      opponent_id: opponentId,
+      status: "ongoing",
+      result: "draw",
+      score_player: 5,
+      score_opponent: 3,
+      played_at: new Date(),
+      save: vi.fn().mockResolvedValue({}),
+    };
+
+    const findByIdSpy = vi.spyOn(Match, "findById").mockResolvedValueOnce(mockMatch);
+    const saveSpy = vi
+      .spyOn(Match.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve({
+          _id: this._id || "new-match",
+          ...this.toObject(),
+        });
+      });
+
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .set("x-user-id", playerId.toHexString())
+      .send({
+        match_id: matchId.toHexString(),
+        player_id: playerId.toHexString(),
+        opponent_type: "user",
+        opponent_id: opponentId.toHexString(),
+        forfeit_reason: "user_disconnect",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message", "Match forfeit recorded");
+    expect(res.body.match).toHaveProperty("result", "loss");
+    expect(res.body.match).toHaveProperty("status", "finished");
+    expect(res.body.match).toHaveProperty("forfeit_reason", "user_disconnect");
+    expect(findByIdSpy).toHaveBeenCalledWith(matchId.toHexString());
+  });
+
+  it("returns 400 when trying to forfeit an already finished match", async () => {
+    const Match = mongoose.model("Match");
+    const playerId = new mongoose.Types.ObjectId();
+    const matchId = new mongoose.Types.ObjectId();
+
+    const mockMatch = {
+      _id: matchId,
+      player_id: playerId,
+      status: "finished",
+      result: "win",
+    };
+
+    vi.spyOn(Match, "findById").mockResolvedValueOnce(mockMatch);
+
+    const res = await request(app)
+      .post("/users/match/forfeit")
+      .set("x-user-id", playerId.toHexString())
+      .send({
+        match_id: matchId.toHexString(),
+        player_id: playerId.toHexString(),
+        opponent_type: "user",
+        opponent_id: new mongoose.Types.ObjectId().toHexString(),
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error", "Bad request: match is already finished");
+  });
+});
+
+describe("POST /users/match/create", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns 401 when no user session is provided", async () => {
+    const res = await request(app)
+      .post("/users/match/create")
+      .send({
+        player_id: new mongoose.Types.ObjectId().toHexString(),
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty("error", "Unauthorized: missing user session");
+  });
+
+  it("returns 403 when player_id doesn't match logged-in user", async () => {
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+    const otherId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/create")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: otherId,
+        opponent_type: "user",
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toHaveProperty("error", "Forbidden: player_id does not match logged-in user");
+  });
+
+  it("creates an ongoing match with status 'ongoing'", async () => {
+    const Match = mongoose.model("Match");
+    const saveSpy = vi
+      .spyOn(Match.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve({
+          _id: "new-ongoing-match",
+          ...this.toObject(),
+        });
+      });
+
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+    const opponentId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/create")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: playerId,
+        opponent_type: "user",
+        opponent_id: opponentId,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message", "Match created");
+    expect(res.body.match).toHaveProperty("status", "ongoing");
+    expect(res.body.match).toHaveProperty("_id");
+    expect(res.body.match).toHaveProperty("player_id");
+    saveSpy.mockRestore();
+  });
+
+  it("creates an ongoing match with bot opponent", async () => {
+    const Match = mongoose.model("Match");
+    const saveSpy = vi
+      .spyOn(Match.prototype, "save")
+      .mockImplementation(function () {
+        return Promise.resolve({
+          _id: "bot-match-id",
+          ...this.toObject(),
+        });
+      });
+
+    const playerId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post("/users/match/create")
+      .set("x-user-id", playerId)
+      .send({
+        player_id: playerId,
+        opponent_type: "bot",
+        opponent_id: "random_bot",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message", "Match created");
+    expect(res.body.match).toHaveProperty("status", "ongoing");
+    saveSpy.mockRestore();
+  });
 });
