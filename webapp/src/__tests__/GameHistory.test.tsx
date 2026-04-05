@@ -41,7 +41,7 @@ describe("GameHistory", () => {
   // ─── Loading & fetching ────────────────────────────────────────────────────
 
   test("shows spinner while loading", () => {
-    global.fetch = vi.fn().mockReturnValueOnce(new Promise(() => {})); 
+    global.fetch = vi.fn().mockReturnValueOnce(new Promise(() => {}));
 
     render(<GameHistory {...defaultProps} />);
 
@@ -101,9 +101,7 @@ describe("GameHistory", () => {
     render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/no games played yet/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/no games played yet/i)).toBeInTheDocument();
     });
   });
 
@@ -115,13 +113,19 @@ describe("GameHistory", () => {
       json: async () => mockGames,
     } as Response);
 
-    render(<GameHistory {...defaultProps} />);
+    const { container } = render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("3")).toBeInTheDocument(); 
-      expect(screen.getByText("2")).toBeInTheDocument(); 
-      expect(screen.getByText("1")).toBeInTheDocument(); 
-      expect(screen.getByText("67%")).toBeInTheDocument(); 
+      // FIX: We use a standard querySelectorAll on the container to safely find elements by class
+      const statValues = container.querySelectorAll(".statValue");
+      const valuesText = Array.from(statValues).map((el) =>
+        el.textContent?.trim(),
+      );
+
+      expect(valuesText).toContain("3");
+      expect(valuesText).toContain("2");
+      expect(valuesText).toContain("1");
+      expect(valuesText).toContain("67%");
     });
   });
 
@@ -136,8 +140,14 @@ describe("GameHistory", () => {
     render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      const winBadges = screen.getAllByText(/🏆 Win/i);
-      const lossBadges = screen.getAllByText(/🤖 Loss/i);
+      // FIX: Filter out upper filter tab buttons to prevent false positives
+      const winBadges = screen
+        .getAllByText(/🏆 Win/i)
+        .filter((el) => el.tagName !== "BUTTON");
+      const lossBadges = screen
+        .getAllByText(/🤖 Loss/i)
+        .filter((el) => el.tagName !== "BUTTON");
+
       expect(winBadges).toHaveLength(2);
       expect(lossBadges).toHaveLength(1);
     });
@@ -152,9 +162,15 @@ describe("GameHistory", () => {
     render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("10")).toBeInTheDocument();
-      expect(screen.getByText("8")).toBeInTheDocument();
-      expect(screen.getByText("15")).toBeInTheDocument();
+      // FIX: Narrow down the search to specific cells that contain the "tdMoves" class
+      const moveCells = screen
+        .getAllByRole("cell")
+        .filter((cell) => cell.className.includes("tdMoves"));
+      const moves = moveCells.map((cell) => cell.textContent);
+
+      expect(moves).toContain("10");
+      expect(moves).toContain("8");
+      expect(moves).toContain("15");
     });
   });
 
@@ -169,12 +185,19 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
-    await waitFor(() => screen.getByText(/🏆 Wins/i));
-    await user.click(screen.getByText(/🏆 Wins/i));
+    await waitFor(() => screen.getByRole("button", { name: /🏆 Wins/i }));
+    await user.click(screen.getByRole("button", { name: /🏆 Wins/i }));
 
     await waitFor(() => {
-      expect(screen.getAllByText(/🏆 Win/i).filter(el => el.tagName !== "BUTTON")).toHaveLength(2);
-      expect(screen.queryByText(/🤖 Loss/i)).not.toBeInTheDocument();
+      expect(
+        screen.getAllByText(/🏆 Win/i).filter((el) => el.tagName !== "BUTTON"),
+      ).toHaveLength(2);
+
+      const tableCells = screen.getAllByRole("cell");
+      const hasLosses = tableCells.some((cell) =>
+        cell.textContent?.includes("Loss"),
+      );
+      expect(hasLosses).toBe(false);
     });
   });
 
@@ -187,12 +210,19 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
-    await waitFor(() => screen.getByText(/🤖 Losses/i));
-    await user.click(screen.getByText(/🤖 Losses/i));
+    await waitFor(() => screen.getByRole("button", { name: /🤖 Losses/i }));
+    await user.click(screen.getByRole("button", { name: /🤖 Losses/i }));
 
     await waitFor(() => {
-      expect(screen.getAllByText(/🤖 Loss/i).filter(el => el.tagName !== "BUTTON")).toHaveLength(1);
-      expect(screen.queryByText(/🏆 Win/i)).not.toBeInTheDocument();
+      expect(
+        screen.getAllByText(/🤖 Loss/i).filter((el) => el.tagName !== "BUTTON"),
+      ).toHaveLength(1);
+
+      const tableCells = screen.getAllByRole("cell");
+      const hasWins = tableCells.some((cell) =>
+        cell.textContent?.includes("Win"),
+      );
+      expect(hasWins).toBe(false);
     });
   });
 
@@ -205,13 +235,17 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
-    await waitFor(() => screen.getByText(/🏆 Wins/i));
-    await user.click(screen.getByText(/🏆 Wins/i));
-    await user.click(screen.getByText(/^All$/i));
+    await waitFor(() => screen.getByRole("button", { name: /🏆 Wins/i }));
+    await user.click(screen.getByRole("button", { name: /🏆 Wins/i }));
+    await user.click(screen.getByRole("button", { name: /^All$/i }));
 
     await waitFor(() => {
-      expect(screen.getAllByText(/🏆 Win/i).filter(el => el.tagName !== "BUTTON")).toHaveLength(2);
-      expect(screen.getAllByText(/🤖 Loss/i).filter(el => el.tagName !== "BUTTON")).toHaveLength(1);
+      expect(
+        screen.getAllByText(/🏆 Win/i).filter((el) => el.tagName !== "BUTTON"),
+      ).toHaveLength(2);
+      expect(
+        screen.getAllByText(/🤖 Loss/i).filter((el) => el.tagName !== "BUTTON"),
+      ).toHaveLength(1);
     });
   });
 
@@ -226,13 +260,14 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
-    await waitFor(() => screen.getByText(/Moves/i));
+    // FIX: Using findByText to implicitly wait for the initial load to finish before user interaction
+    const movesHeader = await screen.findByText(/Moves/i);
 
-    await user.click(screen.getByText(/Moves/i));
-    expect(screen.getByText("↓")).toBeInTheDocument();
+    await user.click(movesHeader);
+    await waitFor(() => expect(screen.getByText("↓")).toBeInTheDocument());
 
-    await user.click(screen.getByText(/Moves/i));
-    expect(screen.getByText("↑")).toBeInTheDocument();
+    await user.click(movesHeader);
+    await waitFor(() => expect(screen.getByText("↑")).toBeInTheDocument());
   });
 
   test("shows sort arrow only on the active column", async () => {
@@ -244,11 +279,13 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
-    await waitFor(() => screen.getByText(/Moves/i));
-    await user.click(screen.getByText(/Moves/i));
+    const movesHeader = await screen.findByText(/Moves/i);
+    await user.click(movesHeader);
 
-    expect(screen.queryByText("↕")).not.toBeInTheDocument(); // inactive icons gone from Moves col
-    expect(screen.getByText("↓")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByText("↕")).toHaveLength(4);
+      expect(screen.getByText("↓")).toBeInTheDocument();
+    });
   });
 
   // ─── Navigation ───────────────────────────────────────────────────────────
@@ -263,8 +300,8 @@ describe("GameHistory", () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} onBack={onBack} />);
 
-    await waitFor(() => screen.getByText(/← Back/i));
-    await user.click(screen.getByText(/← Back/i));
+    const backButton = await screen.findByRole("button", { name: /← Back/i });
+    await user.click(backButton);
 
     expect(onBack).toHaveBeenCalledOnce();
   });

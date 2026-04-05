@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./GameHistory.css";
+import type { Difficulty, BoardSize } from "./GameMenu";
 
 const API_GATEWAY_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -11,9 +12,16 @@ interface GameRecord {
   totalMoves: number;
   playedAt: string;
   board: Record<string, 0 | 1>;
+  difficulty?: Difficulty;
+  boardSize?: BoardSize; // Added boardSize to the record type
 }
 
-type SortField = "playedAt" | "totalMoves" | "result";
+type SortField =
+  | "playedAt"
+  | "totalMoves"
+  | "result"
+  | "difficulty"
+  | "boardSize";
 type SortDir = "asc" | "desc";
 
 interface Props {
@@ -75,6 +83,14 @@ export default function GameHistory({ onBack, userName }: Props) {
       cmp = (a.totalMoves ?? 0) - (b.totalMoves ?? 0);
     } else if (sortField === "result") {
       cmp = a.result.localeCompare(b.result);
+    } else if (sortField === "difficulty") {
+      const diffA = a.difficulty ?? "";
+      const diffB = b.difficulty ?? "";
+      cmp = diffA.localeCompare(diffB);
+    } else if (sortField === "boardSize") {
+      const sizeA = a.boardSize ?? "";
+      const sizeB = b.boardSize ?? "";
+      cmp = sizeA.localeCompare(sizeB);
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
@@ -94,10 +110,22 @@ export default function GameHistory({ onBack, userName }: Props) {
       minute: "2-digit",
     });
 
+  const difficultyLabel: Record<Difficulty, string> = {
+    random: "🎲 Random",
+    easy: "😊 Easy",
+    hard: "🔥 Hard",
+  };
+
+  // Map boardSize to its string representation
+  const boardSizeLabel: Record<BoardSize, string> = {
+    small: "5×5",
+    medium: "7×7",
+    large: "9×9",
+  };
+
   return (
     <div className="history">
       <div className="historyCard">
-        {/* Header */}
         <div className="historyHeader">
           <button className="btn" type="button" onClick={onBack}>
             ← Back
@@ -106,7 +134,6 @@ export default function GameHistory({ onBack, userName }: Props) {
           <div style={{ width: 80 }} />
         </div>
 
-        {/* Stats bar */}
         {!loading && !error && games.length > 0 && (
           <div className="statsBar">
             <div className="statItem">
@@ -131,7 +158,6 @@ export default function GameHistory({ onBack, userName }: Props) {
           </div>
         )}
 
-        {/* Filter tabs */}
         {!loading && !error && games.length > 0 && (
           <div className="filterTabs">
             {(["all", "player_won", "bot_won"] as const).map((f) => (
@@ -151,7 +177,6 @@ export default function GameHistory({ onBack, userName }: Props) {
           </div>
         )}
 
-        {/* Content */}
         {loading && (
           <div className="historyCenter">
             <div className="spinner" />
@@ -185,6 +210,19 @@ export default function GameHistory({ onBack, userName }: Props) {
                   </th>
                   <th
                     className="sortable"
+                    onClick={() => handleSort("difficulty")}
+                  >
+                    Difficulty {sortIcon("difficulty")}
+                  </th>
+                  {/* New Board Size header */}
+                  <th
+                    className="sortable"
+                    onClick={() => handleSort("boardSize")}
+                  >
+                    Size {sortIcon("boardSize")}
+                  </th>
+                  <th
+                    className="sortable"
                     onClick={() => handleSort("totalMoves")}
                   >
                     Moves {sortIcon("totalMoves")}
@@ -212,6 +250,13 @@ export default function GameHistory({ onBack, userName }: Props) {
                       >
                         {game.result === "player_won" ? "🏆 Win" : "🤖 Loss"}
                       </span>
+                    </td>
+                    <td className="tdDifficulty">
+                      {game.difficulty ? difficultyLabel[game.difficulty] : "—"}
+                    </td>
+                    {/* New Board Size cell */}
+                    <td className="tdBoardSize">
+                      {game.boardSize ? boardSizeLabel[game.boardSize] : "—"}
                     </td>
                     <td className="tdMoves">{game.totalMoves ?? "—"}</td>
                     <td className="tdDate">{formatDate(game.playedAt)}</td>

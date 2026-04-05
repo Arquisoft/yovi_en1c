@@ -109,12 +109,25 @@ function checkWin(boardMap: BoardMap, player: Player): boolean {
   return false;
 }
 
-async function saveGame(result: GameStatus, board: BoardMap, username: string) {
+async function saveGame(
+  result: GameStatus,
+  board: BoardMap,
+  username: string,
+  difficulty: Difficulty,
+  boardSize: GameConfig["boardSize"],
+) {
   const totalMoves = Object.keys(board).length;
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ result, board, totalMoves, username }),
+    body: JSON.stringify({
+      result,
+      board,
+      totalMoves,
+      username,
+      difficulty,
+      boardSize,
+    }),
   }).catch(console.error);
 }
 
@@ -191,7 +204,13 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
       if (checkWin(afterPlayer, 0)) {
         setGameStatus("player_won");
-        saveGame("player_won", afterPlayer, userName);
+        saveGame(
+          "player_won",
+          afterPlayer,
+          userName,
+          config.difficulty,
+          config.boardSize,
+        );
         return;
       }
 
@@ -224,7 +243,13 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
         if (checkWin(afterBot, 1)) {
           setGameStatus("bot_won");
-          saveGame("bot_won", afterBot, userName);
+          saveGame(
+            "bot_won",
+            afterBot,
+            userName,
+            config.difficulty,
+            config.boardSize,
+          );
         } else {
           setCurrentTurn(0);
         }

@@ -25,6 +25,8 @@ const GameSchema = new mongoose.Schema({
   result: { type: String, enum: ["player_won", "bot_won"], required: true },
   board: { type: Object, required: true },
   totalMoves: { type: Number },
+  difficulty: { type: String, required: true },
+  boardSize: { type: String, required: true },
   playedAt: { type: Date, default: Date.now },
 });
 const Game = mongoose.model("Game", GameSchema);
@@ -100,13 +102,23 @@ app.delete("/deleteuser/:username", async (req, res) => {
 // ─── Games ────────────────────────────────────────────────────────────────────
 
 app.post("/savegame", async (req, res) => {
-  const { result, board, totalMoves, username } = req.body;
+  const { result, board, totalMoves, username, difficulty, boardSize } =
+    req.body;
   try {
-    const game = new Game({ result, board, totalMoves, username });
+    const game = new Game({
+      result,
+      board,
+      totalMoves,
+      username,
+      difficulty,
+      boardSize,
+    });
     const saved = await game.save();
     res.json({ message: "Game saved!", id: saved._id });
   } catch (err) {
-    res.status(400).json({ error: "Could not save game", details: err.message });
+    res
+      .status(400)
+      .json({ error: "Could not save game", details: err.message });
   }
 });
 
@@ -118,7 +130,9 @@ app.get("/games/list", async (req, res) => {
       .limit(20);
     res.json(games);
   } catch (err) {
-    res.status(500).json({ error: "Could not fetch games", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Could not fetch games", details: err.message });
   }
 });
 

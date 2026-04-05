@@ -148,6 +148,11 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
+.tdBoardSize {
+  text-align: center;
+  font-weight: 500;
+}
+
 .sortIcon {
   margin-left: 0.3rem;
   font-size: 0.75rem;
