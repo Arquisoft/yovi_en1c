@@ -14,7 +14,7 @@ describe("Gateway Service Health and Routing", () => {
   it("should have the /users route configured", async () => {
     // We don't need to check if it actually connects to the users service
     // in a unit test, just that the proxy middleware doesn't crash the request.
-    const res = await request(app).get("/users/health");
+    const res = await request(app).get("/api/users/health");
 
     // If the users service is down during this local test,
     // the gateway might return a 504 or 500, which is expected behavior.
