@@ -1,14 +1,38 @@
 import { useState, useCallback } from "react";
 import "./GameBoard.css";
+import type { GameConfig, Difficulty } from "./GameMenu";
 
-const GAME_BOARD_SIZE = 7;
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const API_GATEWAY_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
-const BOT_IDENTIFIER = "random_bot";
 const GAMEY_API_VERSION = "v1";
 const HEX_RADIUS = 30;
 const HEX_HORIZONTAL_SPACING = HEX_RADIUS * Math.sqrt(3);
 const HEX_VERTICAL_SPACING = HEX_RADIUS * 1.5;
 const BOARD_MARGIN = HEX_RADIUS * 3;
+
+// Map the menu option to the actual board size number
+const BOARD_SIZE_MAP: Record<GameConfig["boardSize"], number> = {
+  small: 5,
+  medium: 7,
+  large: 9,
+};
+
+// Map the difficulty option to the bot identifier registered in the Rust registry
+const BOT_ID_MAP: Record<Difficulty, string> = {
+  random: "random_bot",
+  easy: "easy_bot",
+  hard: "heuristic_bot",
+};
+
+// Map layout style to CSS class applied to the SVG wrapper
+const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
+  classic: "layout-classic",
+  futuristic: "layout-futuristic",
+  wooden: "layout-wooden",
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Player = 0 | 1;
 type BoardMap = Record<string, Player>;
@@ -27,6 +51,8 @@ interface BotResponse {
   coords: { x: number; y: number; z: number };
 }
 
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
 function coordKey(x: number, y: number, z: number): string {
   return `${x},${y},${z}`;
 }
@@ -42,59 +68,44 @@ function getNeighbors(
   z: number,
 ): [number, number, number][] {
   const neighbors: [number, number, number][] = [];
-
   if (x > 0) {
     neighbors.push([x - 1, y + 1, z]);
     neighbors.push([x - 1, y, z + 1]);
   }
-
   if (y > 0) {
     neighbors.push([x + 1, y - 1, z]);
     neighbors.push([x, y - 1, z + 1]);
   }
-
   if (z > 0) {
     neighbors.push([x + 1, y, z - 1]);
     neighbors.push([x, y + 1, z - 1]);
   }
-
   return neighbors;
 }
 
 function checkWin(boardMap: BoardMap, player: Player): boolean {
   const visited = new Set<string>();
-
   for (const key of Object.keys(boardMap)) {
     if (boardMap[key] !== player || visited.has(key)) continue;
-
     let touchA = false,
       touchB = false,
       touchC = false;
     const queue: string[] = [key];
-
     while (queue.length > 0) {
       const cur = queue.pop()!;
       if (visited.has(cur)) continue;
-
       visited.add(cur);
-
       const [x, y, z] = parseKey(cur);
-
       if (x === 0) touchA = true;
       if (y === 0) touchB = true;
       if (z === 0) touchC = true;
-
       if (touchA && touchB && touchC) return true;
-
       for (const [nx, ny, nz] of getNeighbors(x, y, z)) {
         const nkey = coordKey(nx, ny, nz);
-        if (!visited.has(nkey) && boardMap[nkey] === player) {
-          queue.push(nkey);
-        }
+        if (!visited.has(nkey) && boardMap[nkey] === player) queue.push(nkey);
       }
     }
   }
-
   return false;
 }
 
@@ -109,61 +120,47 @@ async function saveGame(result: GameStatus, board: BoardMap, username: string) {
 
 function buildYEN(boardMap: BoardMap, nextTurn: Player, size: number): YEN {
   let layout = "";
-
   for (let r = 0; r < size; r++) {
     for (let c = 0; c <= r; c++) {
       const x = size - 1 - r;
       const y = c;
       const z = r - c;
-
       const key = coordKey(x, y, z);
-
       if (boardMap[key] === 0) layout += "B";
       else if (boardMap[key] === 1) layout += "R";
       else layout += ".";
     }
-
     if (r < size - 1) layout += "/";
   }
-
-  return {
-    size,
-    turn: nextTurn,
-    players: ["B", "R"],
-    layout,
-  };
+  return { size, turn: nextTurn, players: ["B", "R"], layout };
 }
 
 function hexPoints(cx: number, cy: number, r: number): string {
-  return Array.from({ length: 6 }, (_, sideIndex) => {
-    const angleInRadians = (Math.PI / 180) * (60 * sideIndex + 30);
-    return `${(cx + r * Math.cos(angleInRadians)).toFixed(2)},${(cy + r * Math.sin(angleInRadians)).toFixed(2)}`;
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 180) * (60 * i + 30);
+    return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
   }).join(" ");
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
-export default function GameBoard({
-  onBack,
-  userName,
-}: {
+interface Props {
+  config: GameConfig;
   onBack: () => void;
-  userName: string;
-}) {
-  const boardSize = GAME_BOARD_SIZE;
+  userName: string; // Se agregó para poder usarlo en saveGame
+}
 
-  const hexRadius = HEX_RADIUS;
-  const hexHorizontalSpacing = HEX_HORIZONTAL_SPACING;
-  const hexVerticalSpacing = HEX_VERTICAL_SPACING;
-  const boardMargin = BOARD_MARGIN;
+export default function GameBoard({ config, onBack, userName }: Props) {
+  const boardSize = BOARD_SIZE_MAP[config.boardSize];
+  const botId = BOT_ID_MAP[config.difficulty];
+  const layoutClass = LAYOUT_CLASS_MAP[config.layout];
 
   const svgWidth =
-    boardMargin * 2 +
-    (boardSize - 1) * hexHorizontalSpacing +
-    hexHorizontalSpacing;
-
+    BOARD_MARGIN * 2 +
+    (boardSize - 1) * HEX_HORIZONTAL_SPACING +
+    HEX_HORIZONTAL_SPACING;
   const svgHeight =
-    boardMargin * 2 + (boardSize - 1) * hexVerticalSpacing + hexRadius * 2;
+    BOARD_MARGIN * 2 + (boardSize - 1) * HEX_VERTICAL_SPACING + HEX_RADIUS * 2;
 
   const [boardMap, setBoardMap] = useState<BoardMap>({});
   const [currentTurn, setCurrentTurn] = useState<Player>(0);
@@ -184,14 +181,11 @@ export default function GameBoard({
 
   const handleCellClick = useCallback(
     async (x: number, y: number, z: number) => {
-      if (gameStatus !== "ongoing") return;
-      if (currentTurn !== 0 || loading) return;
-
+      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
       const key = coordKey(x, y, z);
       if (boardMap[key] !== undefined) return;
 
       setErrorMsg(null);
-
       const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
       setBoardMap(afterPlayer);
 
@@ -206,9 +200,8 @@ export default function GameBoard({
 
       try {
         const yen = buildYEN(afterPlayer, 1, boardSize);
-
         const res = await fetch(
-          `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${BOT_IDENTIFIER}`,
+          `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -223,12 +216,10 @@ export default function GameBoard({
 
         const data: BotResponse = await res.json();
         const { x: bx, y: by, z: bz } = data.coords;
-
         const botKey = coordKey(bx, by, bz);
-
         const afterBot: BoardMap = { ...afterPlayer, [botKey]: 1 };
-        setBoardMap(afterBot);
 
+        setBoardMap(afterBot);
         setLastBotMove(botKey);
 
         if (checkWin(afterBot, 1)) {
@@ -238,15 +229,24 @@ export default function GameBoard({
           setCurrentTurn(0);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error";
-        setErrorMsg(`Bot error: ${msg}`);
+        setErrorMsg(
+          `Bot error: ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
         setCurrentTurn(0);
       } finally {
         setLoading(false);
       }
     },
-    [boardMap, currentTurn, gameStatus, loading, boardSize, userName],
+    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId],
   );
+
+  // ─── Labels ───────────────────────────────────────────────────────────────
+
+  const difficultyLabel: Record<Difficulty, string> = {
+    random: "🎲 Random",
+    easy: "😊 Easy",
+    hard: "🤖 Hard",
+  };
 
   const statusLabel =
     gameStatus === "player_won"
@@ -270,6 +270,8 @@ export default function GameBoard({
             ? "status-player"
             : "status-bot";
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
     <div className="board">
       <div className="boardCard">
@@ -277,14 +279,25 @@ export default function GameBoard({
           <button className="btn" type="button" onClick={onBack}>
             ← Back
           </button>
-          <h2>Yovi - Y Game</h2>
+          <h2>Yovi — Y Game</h2>
           <div style={{ width: 80 }} />
         </div>
 
         <div className="boardMeta">
-          <span className="infoTag">Size: small (7)</span>
+          <span className="infoTag">
+            {config.boardSize.charAt(0).toUpperCase() +
+              config.boardSize.slice(1)}{" "}
+            ({boardSize}×{boardSize})
+          </span>
+          <span className="infoTag">
+            {config.mode === "standard"
+              ? "Standard"
+              : config.mode === "standard_pie"
+                ? "Pie rule"
+                : "Master Y"}
+          </span>
+          <span className="infoTag">{difficultyLabel[config.difficulty]}</span>
           <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
-
           {gameStatus !== "ongoing" && (
             <button className="btn resetBtn" onClick={resetGame}>
               New game
@@ -294,7 +307,7 @@ export default function GameBoard({
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
-        <div className="svgWrapper">
+        <div className={`svgWrapper ${layoutClass}`}>
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
             style={{ display: "block", width: "100%", height: "auto" }}
@@ -304,7 +317,6 @@ export default function GameBoard({
                 const x = boardSize - 1 - row;
                 const y = col;
                 const z = row - col;
-
                 const key = coordKey(x, y, z);
 
                 const occupied = boardMap[key];
@@ -312,12 +324,12 @@ export default function GameBoard({
                 const isLastBot = lastBotMove === key;
 
                 const cx =
-                  boardMargin +
-                  ((boardSize - 1 - row) * hexHorizontalSpacing) / 2 +
-                  col * hexHorizontalSpacing +
-                  hexHorizontalSpacing / 2;
-
-                const cy = boardMargin + row * hexVerticalSpacing + hexRadius;
+                  BOARD_MARGIN +
+                  ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
+                  col * HEX_HORIZONTAL_SPACING +
+                  HEX_HORIZONTAL_SPACING / 2;
+                const cy =
+                  BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
                 let fill: string;
                 let stroke: string;
@@ -351,7 +363,7 @@ export default function GameBoard({
                 return (
                   <polygon
                     key={key}
-                    points={hexPoints(cx, cy, hexRadius - 1)}
+                    points={hexPoints(cx, cy, HEX_RADIUS - 1)}
                     fill={fill}
                     stroke={stroke}
                     strokeWidth={strokeW}
@@ -375,12 +387,10 @@ export default function GameBoard({
           <span className="legendItem">
             <span className="dot dotBlue" /> You (Blue)
           </span>
-
           <span className="legendItem">
             <span className="dot dotRed" /> Bot (Red)
           </span>
         </div>
-
         <p className="rulesHint">
           Connect all three sides of the triangle with your pieces to win.
         </p>
