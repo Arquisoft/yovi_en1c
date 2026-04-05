@@ -22,21 +22,21 @@ describe("GameMenu", () => {
 
     // 1. Select 'Small' board size
     const smallBoardBtn = screen.getByRole("button", {
-      name: /small quick match/i,
+      name: /small/i,
     });
     await user.click(smallBoardBtn);
     expect(smallBoardBtn).toHaveClass("selected");
 
     // 2. Select 'Master Y' game mode
     const masterYBtn = screen.getByRole("button", {
-      name: /master y more advanced variant/i,
+      name: /master y.*advanced variant/i,
     });
     await user.click(masterYBtn);
     expect(masterYBtn).toHaveClass("selected");
 
     // 3. Select 'Wooden' layout style
     const woodenLayoutBtn = screen.getByRole("button", {
-      name: /wooden board-game table feel/i,
+      name: /wooden.*board-game table feel/i,
     });
     await user.click(woodenLayoutBtn);
     expect(woodenLayoutBtn).toHaveClass("selected");
@@ -45,11 +45,11 @@ describe("GameMenu", () => {
     const startBtn = screen.getByRole("button", { name: /start game/i });
     await user.click(startBtn);
 
-    // Verify the callback was called with the exact updated state
     expect(mockProps.onStartGame).toHaveBeenCalledWith({
       boardSize: "small",
       mode: "master_y",
       layout: "wooden",
+      difficulty: "hard",
     });
   });
 
