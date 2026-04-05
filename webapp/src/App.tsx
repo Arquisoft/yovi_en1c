@@ -27,6 +27,7 @@ function App() {
           setConfig(null);
           setScreen("register");
         }}
+        onViewHistory={() => setScreen("history")}
       />
     );
   }

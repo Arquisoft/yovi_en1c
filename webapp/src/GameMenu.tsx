@@ -69,27 +69,36 @@ export default function GameMenu({
     difficulty: "hard",
   });
 
-  // Función auxiliar para actualizar el estado limpiamente
   const set = <K extends keyof GameConfig>(key: K, value: GameConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
 
   return (
     <div className="menu">
       <div className="menuCard">
-        {/* Cabecera con Log out e History para conservar tu diseño */}
-        <div className="menuHeader">
-          <button className="btn" type="button" onClick={onLogOut}>
+        {/* CABECERA: Ahora el Log Out se queda arriba a la derecha */}
+        <div
+          className="menuHeader"
+          style={{ position: "relative", paddingTop: "10px" }}
+        >
+          <h2
+            className="menuTitle"
+            style={{ textAlign: "center", width: "100%" }}
+          >
+            Game Lobby
+          </h2>
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={onLogOut}
+            style={{ position: "absolute", right: "10px", top: "5px" }}
+          >
             Log out
-          </button>
-          <h2 className="menuTitle">Game Lobby</h2>
-          <button className="btn" type="button" onClick={onViewHistory}>
-            History
           </button>
         </div>
 
         <p
           className="menuSubtitle"
-          style={{ textAlign: "center", marginBottom: "15px" }}
+          style={{ textAlign: "center", marginBottom: "25px" }}
         >
           Welcome, <strong>{userName}</strong>. Choose your setup for Y.
         </p>
@@ -166,21 +175,33 @@ export default function GameMenu({
           </div>
         </section>
 
-        {/* Botón de acción principal al fondo */}
+        {/* ACCIONES: Botones agrupados al fondo con buen espaciado */}
         <div
           className="actions"
           style={{
             display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "12px",
+            marginTop: "30px",
           }}
         >
           <button
             className="btn btnPrimary btnLarge"
             type="button"
             onClick={() => onStartGame(config)}
+            style={{ width: "250px" }}
           >
             Start game
+          </button>
+
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={onViewHistory}
+            style={{ width: "180px" }}
+          >
+            View History
           </button>
         </div>
       </div>
