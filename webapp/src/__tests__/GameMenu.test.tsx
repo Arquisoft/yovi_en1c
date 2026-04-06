@@ -9,11 +9,27 @@ describe("GameMenu", () => {
     userName: "Pablo",
     onStartGame: vi.fn(),
     onLogOut: vi.fn(),
+    onViewHistory: vi.fn(),
   };
 
   it("renders the welcome message with the correct username", () => {
     render(<GameMenu {...mockProps} />);
-    expect(screen.getByText(/welcome, pablo/i)).toBeInTheDocument();
+
+    // FIX: Using a custom text matcher function because 'Pablo' is wrapped in a <strong> tag,
+    // which breaks the default string/regex matching of getByText.
+    expect(
+      screen.getByText((content, element) => {
+        const hasText =
+          element?.textContent?.toLowerCase().includes("welcome, pablo") ||
+          false;
+        // This ensures we only select the node that does NOT have children that also match
+        const hasNoChildrenWithText = Array.from(element?.children || []).every(
+          (child) =>
+            !child.textContent?.toLowerCase().includes("welcome, pablo"),
+        );
+        return hasText && hasNoChildrenWithText;
+      }),
+    ).toBeInTheDocument();
   });
 
   it("updates state and calls onStartGame with selected configuration", async () => {

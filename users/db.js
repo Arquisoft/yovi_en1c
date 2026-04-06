@@ -27,6 +27,13 @@ async function connectDB() {
           }),
         );
 
+      const Game =
+        mongoose.models.Game ||
+        mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
+
+      await Game.deleteMany({});
+      console.log("Game history cleared!");
+
       await User.deleteMany({});
       console.log("Database cleared");
 
