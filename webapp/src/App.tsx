@@ -3,26 +3,44 @@ import "./App.css";
 import LoginForm from "./RegisterForm";
 import SignUpForm from "./SignupForm";
 import GameMenu from "./GameMenu";
+import GameHistory from "./GameHistory";
 import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
-type Screen = 'login' | 'signup' | 'menu' | 'board';
+
+type Screen = 'login' | 'signup' | 'menu' | 'board' | 'history';
+
 function App() {
   const [screen, setScreen] = useState<Screen>('login');
   const [userName, setUserName] = useState('');
+  const [config, setConfig] = useState<GameConfig | null>(null);
+
   if (screen === 'menu') {
     return (
-      <GameMenu userName={userName}
-        onStartGame={(_config: GameConfig) => setScreen('board')}
+      <GameMenu
+        userName={userName}
+        onStartGame={(cfg: GameConfig) => {
+          setConfig(cfg);
+          setScreen('board');
+        }}
         onLogOut={() => {
           setUserName("");
+          setConfig(null);
           setScreen('login');
         }}
+
+        onViewHistory={() => setScreen("history")}
       />
     );
   }
   if (screen === 'board') {
-    return <GameBoard onBack={() => setScreen('menu')}
+    return <GameBoard
+      onBack={() => setScreen('menu')}
+      config={config!}
     />;
+  }
+
+  if (screen === 'history') {
+    return <GameHistory onBack={() => setScreen('menu')} userName={userName} />;
   }
 
   return (<div className="App">
@@ -33,7 +51,7 @@ function App() {
       </a>
     </div>
 
-    <h2>Welcome to the Software Arquitecture 2025-2026 course</h2>
+    <h2>Welcome to play the game of Y</h2>
 
     {screen === "login" && (
       <LoginForm

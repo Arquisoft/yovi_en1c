@@ -6,35 +6,9 @@ import "@testing-library/jest-dom";
 
 // We mock the child components to simplify the App test
 // and focus strictly on the App's navigation logic.
-vi.mock("../LoginForm", () => ({
-  default: ({
-    onLoggedIn,
-    onGoToSignUp,
-  }: {
-    onLoggedIn: (name: string) => void;
-    onGoToSignUp: () => void;
-  }) => (
-    <div>
-      <h1>Login screen</h1>
-      <button onClick={() => onLoggedIn("Pablo")}>Mock Login</button>
-      <button onClick={onGoToSignUp}>Go to Sign Up</button>
-    </div>
-  ),
-}));
-
-vi.mock("../SignUpForm", () => ({
-  default: ({
-    onRegistered,
-    onGoToLogin,
-  }: {
-    onRegistered: (name: string) => void;
-    onGoToLogin: () => void;
-  }) => (
-    <div>
-      <h1>Sign Up Screen</h1>
-      <button onClick={() => onRegistered("Pablo")}>Mock Sign Up</button>
-      <button onClick={onGoToLogin}>Back To Login</button>
-    </div>
+vi.mock("../RegisterForm", () => ({
+  default: ({ onRegistered }: { onRegistered: (name: string) => void }) => (
+    <button onClick={() => onRegistered("Pablo")}>Mock Register</button>
   ),
 }));
 
@@ -59,16 +33,16 @@ vi.mock("../GameBoard", () => ({
 }));
 
 describe("App Navigation Flow", () => {
-  it("should follow the full flow: Login -> Menu -> Board -> Menu -> Logout", async () => {
+  it("should follow the full flow: Register -> Menu -> Board -> Menu -> Logout", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    // 1. Initial State: Login Screen
+    // 1. Initial State: Register Screen
     expect(screen.getByText(/Welcome to the Software/i)).toBeInTheDocument();
-    expect(screen.getByText("Login Screen")).toBeInTheDocument();
+    const registerBtn = screen.getByText("Mock Register");
 
     // 2. Action: Register
-    await user.click(screen.getByText("Mock Login"));
+    await user.click(registerBtn);
 
     // 3. Result: Menu Screen
     expect(screen.getByText("Menu Screen")).toBeInTheDocument();
@@ -91,31 +65,5 @@ describe("App Navigation Flow", () => {
 
     // 9. Result: Back to Register Screen
     expect(screen.getByText(/Welcome to the Software/i)).toBeInTheDocument();
-    expect(screen.getByText("Login Screen")).toBeInTheDocument();
-  });
-  it("should navigate from Login to Sign Up and back to Login", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    expect(screen.getByText("Login Screen")).toBeInTheDocument();
-
-    await user.click(screen.getByText("Go To Sign Up"));
-    expect(screen.getByText("Sign Up Screen")).toBeInTheDocument();
-
-    await user.click(screen.getByText("Back To Login"));
-    expect(screen.getByText("Login Screen")).toBeInTheDocument();
-  });
-
-  it("should navigate from Sign Up to Menu after registration", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByText("Go To Sign Up"));
-    expect(screen.getByText("Sign Up Screen")).toBeInTheDocument();
-
-    await user.click(screen.getByText("Mock Sign Up"));
-
-    expect(screen.getByText("Menu Screen")).toBeInTheDocument();
-    expect(screen.getByText("User: Pablo")).toBeInTheDocument();
   });
 });

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import './GameMenu.css';
 
-export type BoardSize = 'medium';
+export type BoardSize = 'small' | 'medium' | 'large';
 export type GameMode = 'standard';
+export type Difficulty = 'random' | 'easy' | 'hard';
 export type LayoutStyle = 'classic';
 
 // This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
     boardSize: BoardSize;
     mode: GameMode;
+    difficulty: Difficulty;
     layout: LayoutStyle;
 }
 
@@ -16,29 +18,41 @@ type Props = {
     userName: string;
     onStartGame: (config: GameConfig) => void;
     onLogOut: () => void;
+    onViewHistory: () => void;
 };
 
 const boardSizes = [
-    { value: 'medium' as BoardSize, title: 'Medium', description: 'Balanced board' },
+    {
+        value: 'small' as BoardSize, title: 'Small', description: '5x5 board, suitable for quick games'
+    },
+    {
+        value: 'medium' as BoardSize, title: 'Medium', description: '7x7 board, classic Y experience'
+    },
+    {
+        value: 'large' as BoardSize, title: 'Large', description: '9x9 board, extensive Y gameplay'
+    }
 ];
 
 const gameModes = [
     { value: 'standard' as GameMode, title: 'Standard', description: 'Classic Y rules' },
 ];
 
-const layouts = [
-    { value: 'classic' as LayoutStyle, title: 'Classic', description: 'Clean tournament look' },
+const difficulties = [
+    { value: 'random' as Difficulty, title: 'Random', description: 'Random difficulty' },
+    { value: 'easy' as Difficulty, title: 'Easy', description: 'Bit more difficult' },
+    { value: 'hard' as Difficulty, title: 'Hard', description: 'Clean tournament look' },
 ];
 
-export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
+export default function GameMenu({ userName, onStartGame, onLogOut, onViewHistory }: Props) {
     const [boardIndex, setBoardIndex] = useState(0);
     const [modeIndex, setModeIndex] = useState(0);
-    const [layoutIndex, setLayoutIndex] = useState(0);
+    const [difficultyIndex, setDifficultyIndex] = useState(0);
 
     const config: GameConfig = {
         boardSize: boardSizes[boardIndex].value,
         mode: gameModes[modeIndex].value,
-        layout: layouts[layoutIndex].value,
+        difficulty: difficulties[difficultyIndex].value,
+        layout: 'classic',
     };
 
     const goPrev = (index: number, length: number) => {
@@ -51,6 +65,17 @@ export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
 
     return (
         <div className="menu">
+            <div className="historyButtonWrapper">
+                <button
+                    className="btn btnSecondary"
+                    type="button"
+                    onClick={onViewHistory}
+                >
+                    Game history
+                </button>
+            </div>
+
+
             <div className="menuCard">
                 <div className="menuHeader">
                     <h2 className="menuTitle">Game Lobby</h2>
@@ -119,22 +144,22 @@ export default function GameMenu({ userName, onStartGame, onLogOut }: Props) {
                         <button
                             type="button"
                             className="carouselButton"
-                            onClick={() => setLayoutIndex(goPrev(layoutIndex, layouts.length))}
-                            aria-label="Previous layout"
+                            onClick={() => setDifficultyIndex(goPrev(difficultyIndex, difficulties.length))}
+                            aria-label="Previous difficulty"
                         >
                             ‹
                         </button>
 
                         <div className="carouselCard">
-                            <span className="optionTitle">{layouts[layoutIndex].title}</span>
-                            <span className="optionDescription">{layouts[layoutIndex].description}</span>
+                            <span className="optionTitle">{difficulties[difficultyIndex].title}</span>
+                            <span className="optionDescription">{difficulties[difficultyIndex].description}</span>
                         </div>
 
                         <button
                             type="button"
                             className="carouselButton"
-                            onClick={() => setLayoutIndex(goNext(layoutIndex, layouts.length))}
-                            aria-label="Next layout"
+                            onClick={() => setDifficultyIndex(goNext(difficultyIndex, difficulties.length))}
+                            aria-label="Next difficulty"
                         >
                             ›
                         </button>
