@@ -129,10 +129,13 @@ app.get("/games/list", async (req, res) => {
     return res.status(400).json({ error: "Invalid username parameter" });
   }
 
-  const usernameParam = raw;
+  const USERNAME_RE = /^[a-zA-Z0-9_]{1,32}$/;
+  if (!USERNAME_RE.test(raw)) {
+    return res.status(400).json({ error: "Invalid username format" });
+  }
 
   try {
-    const games = await Game.find({ username: usernameParam })
+    const games = await Game.find({ username: raw })
       .sort({ playedAt: -1 })
       .limit(20);
     res.json(games);
