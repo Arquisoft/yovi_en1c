@@ -25,8 +25,8 @@ type SortField =
 type SortDir = "asc" | "desc";
 
 interface Props {
-  onBack: () => void;
-  userName: string;
+  readonly onBack: () => void;
+  readonly userName: string;
 }
 
 export default function GameHistory({ onBack, userName }: Props) {

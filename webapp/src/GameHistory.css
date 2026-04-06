@@ -101,13 +101,13 @@
 
 .filterTab:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .filterTab.activeTab {
   background: rgba(99, 102, 241, 0.2);
   border-color: rgba(99, 102, 241, 0.5);
-  color: #a5b4fc;
+  color: #c4b5fd;
 }
 
 /* ── Table ───────────────────────────────────────────────────────────────── */

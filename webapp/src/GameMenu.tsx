@@ -14,10 +14,10 @@ export interface GameConfig {
 }
 
 type Props = {
-  userName: string;
-  onStartGame: (config: GameConfig) => void;
-  onLogOut: () => void;
-  onViewHistory: () => void;
+  readonly userName: string;
+  readonly onStartGame: (config: GameConfig) => void;
+  readonly onLogOut: () => void;
+  readonly onViewHistory: () => void;
 };
 
 const boardSizes: { value: BoardSize; title: string; description: string }[] = [

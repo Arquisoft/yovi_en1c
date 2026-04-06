@@ -123,7 +123,14 @@ app.post("/savegame", async (req, res) => {
 });
 
 app.get("/games/list", async (req, res) => {
-  const usernameParam = String(req.query.username);
+  const raw = req.query.username;
+
+  if (!raw || Array.isArray(raw)) {
+    return res.status(400).json({ error: "Invalid username parameter" });
+  }
+
+  const usernameParam = raw;
+
   try {
     const games = await Game.find({ username: usernameParam })
       .sort({ playedAt: -1 })
