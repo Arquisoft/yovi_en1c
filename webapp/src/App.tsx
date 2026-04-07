@@ -3,30 +3,47 @@ import "./App.css";
 import RegisterForm from "./RegisterForm";
 import GameMenu from "./GameMenu";
 import type { GameConfig } from "./GameMenu";
+import GameHistory from "./GameHistory";
 import GameBoard from "./GameBoard";
 import reactLogo from "./assets/react.svg";
 
-type Screen = 'register' | 'menu' | 'board';
+type Screen = "register" | "menu" | "board" | "history";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('register');
-  const [userName, setUserName] = useState('');
+  const [screen, setScreen] = useState<Screen>("register");
+  const [userName, setUserName] = useState("");
+  const [config, setConfig] = useState<GameConfig | null>(null);
 
-  if (screen === 'menu') {
+  if (screen === "menu") {
     return (
       <GameMenu
         userName={userName}
-        onStartGame={(_config: GameConfig) => setScreen('board')}
-        onLogOut={() => {
-          setUserName('');
-          setScreen('register');
+        onStartGame={(cfg: GameConfig) => {
+          setConfig(cfg);
+          setScreen("board");
         }}
+        onLogOut={() => {
+          setUserName("");
+          setConfig(null);
+          setScreen("register");
+        }}
+        onViewHistory={() => setScreen("history")}
       />
     );
   }
 
-  if (screen === 'board') {
-    return <GameBoard onBack={() => setScreen('menu')} />;
+  if (screen === "board") {
+    return (
+      <GameBoard
+        onBack={() => setScreen("menu")}
+        userName={userName}
+        config={config!}
+      />
+    );
+  }
+
+  if (screen === "history") {
+    return <GameHistory onBack={() => setScreen("menu")} userName={userName} />;
   }
 
   return (
@@ -42,13 +59,12 @@ function App() {
           <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
         </a>
       </div>
-
-      <h2>Welcome to the Software Arquitecture 2025-2026 course</h2>
+      <h2>Welcome to the Software Architecture 2025-2026 course</h2>
 
       <RegisterForm
         onRegistered={(name: string) => {
           setUserName(name);
-          setScreen('menu');
+          setScreen("menu");
         }}
       />
     </div>

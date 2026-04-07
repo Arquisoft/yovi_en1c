@@ -96,6 +96,25 @@ async function connectDB() {
 
     // Seed logic: Only run if not in production. This supports automated tests and local development.
     if (process.env.NODE_ENV !== "production") {
+      // Check if the model already exists before defining it
+      const User =
+        mongoose.models.User ||
+        mongoose.model(
+          "User",
+          new mongoose.Schema({
+            name: String,
+            email: { type: String, unique: true },
+            createdAt: { type: Date, default: Date.now },
+          }),
+        );
+
+      const Game =
+        mongoose.models.Game ||
+        mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
+
+      await Game.deleteMany({});
+      console.log("Game history cleared!");
+
       await User.deleteMany({});
       console.log("Database cleared");
 

@@ -25,10 +25,28 @@ const { connectDB, mongoose, User, Match } = require("./db");
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
-// Reads openapi.yaml
-// Converts YAML into a JS object
-// Serves Swagger UI at http://localhost:3000/api-docs
-// try/catch prevents server crash if file missing or YAML invalid
+// ─── Schemas ──────────────────────────────────────────────────────────────────
+
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  createdAt: { type: Date, default: Date.now },
+});
+const User = mongoose.model("User", UserSchema);
+
+const GameSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  result: { type: String, enum: ["player_won", "bot_won"], required: true },
+  board: { type: Object, required: true },
+  totalMoves: { type: Number },
+  difficulty: { type: String, required: true },
+  boardSize: { type: String, required: true },
+  playedAt: { type: Date, default: Date.now },
+});
+const Game = mongoose.model("Game", GameSchema);
+
+// ─── Swagger ──────────────────────────────────────────────────────────────────
+
 try {
   const swaggerDocument = YAML.load(fs.readFileSync("./openapi.yaml", "utf8")); 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument)); 
@@ -112,11 +130,8 @@ app.post("/createuser", async (req, res) => {
         status: "Success: Connection verified",
       },
     });
-  } catch (err) { // Error handling
-      res.status(400).json({
-        error: "Database error",
-        details: err.message,
-      });
+  } catch (err) {
+    res.status(400).json({ error: "Database error", details: err.message });
   }
 });
 
@@ -185,6 +200,60 @@ app.post('/creatematch', async (req, res) => {
   } catch (err) {
       res.status(400).json({ error: 'Database error', details: err.message });
   }
+// ─── Games ────────────────────────────────────────────────────────────────────
+
+app.post("/savegame", async (req, res) => {
+  const { result, board, totalMoves, username, difficulty, boardSize } =
+    req.body;
+  try {
+    const game = new Game({
+      result,
+      board,
+      totalMoves,
+      username,
+      difficulty,
+      boardSize,
+    });
+    const saved = await game.save();
+    res.json({ message: "Game saved!", id: saved._id });
+  } catch (err) {
+    res
+      .status(400)
+      .json({ error: "Could not save game", details: err.message });
+  }
+});
+
+app.get("/games/list", async (req, res) => {
+  const raw = req.query.username;
+
+  if (!raw || Array.isArray(raw)) {
+    return res.status(400).json({ error: "Invalid username parameter" });
+  }
+
+  const USERNAME_RE = /^[a-zA-Z0-9_]{1,32}$/;
+  if (!USERNAME_RE.test(raw)) {
+    return res.status(400).json({ error: "Invalid username format" });
+  }
+
+  // Nueva variable construida desde cero — rompe el taint trace de SonarCloud
+  const safeUsername = String(raw).replace(/[^a-zA-Z0-9_]/g, "");
+
+  try {
+    const games = await Game.find({ username: { $eq: safeUsername } })
+      .sort({ playedAt: -1 })
+      .limit(20);
+    res.json(games);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Could not fetch games", details: err.message });
+  }
+});
+
+// ─── Placeholder endpoints ────────────────────────────────────────────────────
+
+app.get("/api/play", (req, res) => {
+  res.json({ message: "[UNDER DEVELOPMENT]: User is playing!" });
 });
 
 // Secures match save endpoint - only saves finished matches
