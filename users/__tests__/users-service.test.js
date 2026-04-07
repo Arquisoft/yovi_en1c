@@ -3,9 +3,9 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import request from "supertest";
 import app from "../users-service.js";
-
 // Import Mongoose model definitions for mocking save operations by prototype.
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+
 const User = mongoose.model("User");
 const Game = mongoose.model("Game");
 
@@ -172,7 +172,6 @@ describe("Users Service Tests", () => {
 
   it("creates a match with valid request", async () => {
     // Validate /creatematch endpoint can save match obj and return it.
-    const mongoose = require("mongoose");
     const Match = mongoose.model("Match");
 
     // Mock the save operation to avoid real DB write and return predictable result.

@@ -3,7 +3,7 @@
 // Handles the database connection
 // Seeds testing data
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // Use environment variable if provided, otherwise default for Docker networking.
 const mongoUri = process.env.MONGO_URI || "mongodb://mongo:27017/yovi";

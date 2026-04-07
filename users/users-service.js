@@ -1,23 +1,23 @@
 // Imports Express, a minimal web framework for Node.js.
 // It simplifies creating HTTP servers and defining routes like GET, POST, etc.
-const express = require("express");
+import express from "express";
+
+// Shows interactive API documents in the browser.
+import swaggerUi from "swagger-ui-express";
+// Reads files from disk.
+import fs from "node:fs";
+// Converts YAML into a JavaScript object
+import YAML from "js-yaml";
+// Middleware for monitoring the API.
+// Tracks things like request count, response times and HTTP methods used
+import promBundle from "express-prom-bundle";
+
+const require = createRequire(import.meta.url);
 // Creates the Express application instance
 // Is the main object used to define endpoints (app.post, app.delete), add middleware (app.use) and start the server (app.listen)
 const app = express();
 // Defines the port where the server will run (http://localhost:3000) 
 const port = 3000;
-// Shows interactive API documents in the browser.
-const swaggerUi = require("swagger-ui-express");
-// Reads files from disk.
-const fs = require("node:fs");
-// Converts YAML into a JavaScript object
-const YAML = require("js-yaml");
-// Middleware for monitoring the API.
-// Tracks things like request count, response times and HTTP methods used
-const promBundle = require("express-prom-bundle");
-
-// Imports the connection to MongoDB, the MongoDB ODM library and User and Match models.
-const { connectDB, mongoose, User, Match } = require("./db");
 
 // Adds monitoring to all routes.
 // includeMethod: true → distinguishes GET vs POST vs DELETE.
@@ -26,13 +26,6 @@ const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
-
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  createdAt: { type: Date, default: Date.now },
-});
-const User = mongoose.model("User", UserSchema);
 
 const GameSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -200,6 +193,7 @@ app.post('/creatematch', async (req, res) => {
   } catch (err) {
       res.status(400).json({ error: 'Database error', details: err.message });
   }
+});
 // ─── Games ────────────────────────────────────────────────────────────────────
 
 app.post("/savegame", async (req, res) => {
@@ -511,12 +505,13 @@ async function startServer() {
       console.log(`User Service listening at http://localhost:${port}`);
     });
   } catch (error) {
-      console.error("Critical error during startup:", error);
-      process.exit(1);
+    console.error("Critical error during startup:", error);
+    process.exit(1);
   }
 }
 
-if (require.main == module) 
+if (process.argv[1] === new URL(import.meta.url).pathname)
   startServer();
 
-module.exports = app;
+
+export default app;
