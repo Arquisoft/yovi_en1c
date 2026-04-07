@@ -82,6 +82,7 @@ describe("POST /createuser", () => {
 
     const res = await request(app)
       .post("/creatematch")
+      .set("x-user-id", playerId.toHexString())
       .send({
         player_id: playerId.toHexString(),
         opponent_type: "user",
