@@ -3,6 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
 import GameBoard from "../GameBoard";
+import type { GameConfig } from "../GameMenu";
+
+// ─── Default config ───────────────────────────────────────────────────────────
+// medium = 7×7 board (28 cells), random_bot matches the existing API URL tests
+
+const defaultConfig: GameConfig = {
+  boardSize: "medium",
+  mode: "standard",
+  layout: "classic",
+  difficulty: "random",
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -29,50 +40,105 @@ describe("GameBoard – rendering", () => {
   afterEach(() => vi.restoreAllMocks());
 
   test("renders the game title", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.getByText(/yovi/i)).toBeInTheDocument();
   });
 
   test("renders the back button", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
   });
 
   test("renders size info tag", () => {
-    render(<GameBoard onBack={() => {}} />);
-    expect(screen.getByText(/size: small/i)).toBeInTheDocument();
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    // Usamos medium en el defaultConfig, por lo que debe buscar "medium"
+    expect(screen.getByText(/medium/i)).toBeInTheDocument();
   });
 
   test("renders the legend with player entries", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.getByText(/you \(blue\)/i)).toBeInTheDocument();
     expect(screen.getByText(/bot \(red\)/i)).toBeInTheDocument();
   });
 
   test("renders the rules hint", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.getByText(/connect all three sides/i)).toBeInTheDocument();
   });
 
   test("renders 28 hexagonal cells for a size-7 board", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(getPolygons()).toHaveLength(28);
   });
 
   test("shows 'Your turn' status badge at the start", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.getByText(/your turn/i)).toBeInTheDocument();
   });
 
   test("does not show 'New game' button while game is ongoing", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(
       screen.queryByRole("button", { name: /new game/i }),
     ).not.toBeInTheDocument();
   });
 
   test("does not show error banner on initial render", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(document.querySelector(".errorBanner")).not.toBeInTheDocument();
   });
 });
@@ -84,7 +150,9 @@ describe("GameBoard – navigation", () => {
 
   test("calls onBack when the back button is clicked", async () => {
     const onBack = vi.fn();
-    render(<GameBoard onBack={onBack} />);
+    render(
+      <GameBoard config={defaultConfig} onBack={onBack} userName="testUser" />,
+    );
     await userEvent.click(screen.getByRole("button", { name: /back/i }));
     expect(onBack).toHaveBeenCalledOnce();
   });
@@ -99,7 +167,13 @@ describe("GameBoard – turn flow", () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
     global.fetch = fetchMock;
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -114,7 +188,13 @@ describe("GameBoard – turn flow", () => {
   test("sends a valid YEN body to the bot API", async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -134,7 +214,13 @@ describe("GameBoard – turn flow", () => {
   test("shows 'Bot thinking' status while waiting for the API response", async () => {
     global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     expect(screen.getByText(/bot thinking/i)).toBeInTheDocument();
@@ -143,7 +229,13 @@ describe("GameBoard – turn flow", () => {
   test("returns turn to player after bot responds", async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -154,7 +246,13 @@ describe("GameBoard – turn flow", () => {
   test("does not call the API again when clicking while bot is thinking", async () => {
     global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
     await userEvent.click(getPolygons()[1]);
 
@@ -164,7 +262,13 @@ describe("GameBoard – turn flow", () => {
   test("does not call the API when clicking an already occupied cell", async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/your turn/i));
 
@@ -186,7 +290,13 @@ describe("GameBoard – error handling", () => {
       json: async () => ({ message: "Bot not found" }),
     } as Response);
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -198,7 +308,13 @@ describe("GameBoard – error handling", () => {
   test("shows error banner when the network call fails", async () => {
     global.fetch = vi.fn().mockRejectedValueOnce(new Error("Network error"));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -210,7 +326,13 @@ describe("GameBoard – error handling", () => {
   test("shows 'Unknown error' when fetch rejects with a non-Error value", async () => {
     global.fetch = vi.fn().mockRejectedValueOnce("plain string error");
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -221,7 +343,13 @@ describe("GameBoard – error handling", () => {
   test("gives the turn back to the player after a failed API call", async () => {
     global.fetch = vi.fn().mockRejectedValueOnce(new Error("Network error"));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
 
     await waitFor(() => {
@@ -235,7 +363,13 @@ describe("GameBoard – error handling", () => {
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValueOnce(botResponse(0, 1, 0));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
 
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/bot error/i));
@@ -253,7 +387,13 @@ describe("GameBoard – win / lose state", () => {
   afterEach(() => vi.restoreAllMocks());
 
   test("does not show win/lose state on initial render", () => {
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     expect(screen.queryByText(/you win/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/bot wins/i)).not.toBeInTheDocument();
     expect(
@@ -264,7 +404,13 @@ describe("GameBoard – win / lose state", () => {
   test("board still has 28 cells after a move", async () => {
     global.fetch = vi.fn().mockResolvedValue(botResponse(0, 6, 0));
 
-    render(<GameBoard onBack={() => {}} />);
+    render(
+      <GameBoard
+        config={defaultConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
     await userEvent.click(getPolygons()[0]);
     await waitFor(() => screen.getByText(/your turn/i));
 

@@ -10,6 +10,25 @@ async function connectDB() {
     console.log("MongoDB connected:", mongoUri);
 
     if (process.env.NODE_ENV !== "production") {
+      // Check if the model already exists before defining it
+      const User =
+        mongoose.models.User ||
+        mongoose.model(
+          "User",
+          new mongoose.Schema({
+            name: String,
+            email: { type: String, unique: true },
+            createdAt: { type: Date, default: Date.now },
+          }),
+        );
+
+      const Game =
+        mongoose.models.Game ||
+        mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
+
+      await Game.deleteMany({});
+      console.log("Game history cleared!");
+
       await User.deleteMany({});
 
       const seedUsers = [
