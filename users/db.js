@@ -127,4 +127,4 @@ async function connectDB() {
   }
 }
 
-module.exports = { connectDB, mongoose, User, Match };
+export { connectDB, mongoose, User, Match };
