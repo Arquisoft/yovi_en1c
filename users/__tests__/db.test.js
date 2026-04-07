@@ -1,14 +1,12 @@
-// Unit tests for the database connector behavior in db.js.
-// Verifies connection open, seeding behavior, and error handling.
 import { describe, it, expect, afterEach, vi, beforeEach, beforeAll } from "vitest";
-// ✅ Eliminado el import estático de arriba, usamos solo el beforeAll dinámico
 
 let connectDB, mongoose, User;
 
 describe("connectDB function", () => {
 
-  beforeAll(async () => {
-    const db = await import("../db.js");
+  beforeAll(() => {
+    // ✅ FIX: db.js usa module.exports (CJS), require() es la forma correcta
+    const db = require("../db.js");
     connectDB = db.connectDB;
     mongoose = db.mongoose;
     User = db.User;
