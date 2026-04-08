@@ -1,17 +1,41 @@
-import { describe, it, expect, afterEach, vi, beforeEach, beforeAll } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 
-let connectDB, mongoose, User;
+const mockConnect = vi.fn();
+const mockDeleteMany = vi.fn();
+const mockInsertMany = vi.fn();
+
+vi.mock("mongoose", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    default: {
+      ...actual.default,
+      connect: mockConnect,
+      models: {},
+      Schema: actual.default.Schema,
+      Types: actual.default.Types,
+      model: vi.fn().mockReturnValue({
+        deleteMany: mockDeleteMany,
+        insertMany: mockInsertMany,
+      }),
+    },
+  };
+});
+
+let connectDB;
+
+beforeEach(async () => {
+  vi.resetModules();
+  mockConnect.mockReset();
+  mockDeleteMany.mockReset();
+  mockInsertMany.mockReset();
+  mockConnect.mockResolvedValue({});
+  mockDeleteMany.mockResolvedValue({});
+  mockInsertMany.mockResolvedValue([]);
+  const db = await import("../db.js");
+  connectDB = db.connectDB;
+});
 
 describe("connectDB function", () => {
-
-  beforeAll(() => {
-    // ✅ FIX: db.js usa module.exports (CJS), require() es la forma correcta
-    const db = require("../db.js");
-    connectDB = db.connectDB;
-    mongoose = db.mongoose;
-    User = db.User;
-  });
-
   beforeEach(() => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -25,18 +49,11 @@ describe("connectDB function", () => {
   it("should connect and seed data if NOT in production", async () => {
     vi.stubEnv("NODE_ENV", "development");
 
-    const connectSpy = vi
-      .spyOn(mongoose, "connect")
-      .mockResolvedValue(mongoose);
-
-    const deleteManySpy = vi.spyOn(User, "deleteMany").mockResolvedValue({});
-    const insertManySpy = vi.spyOn(User, "insertMany").mockResolvedValue([]);
-
     await connectDB();
 
-    expect(connectSpy).toHaveBeenCalled();
-    expect(deleteManySpy).toHaveBeenCalled();
-    expect(insertManySpy).toHaveBeenCalled();
+    expect(mockConnect).toHaveBeenCalled();
+    expect(mockDeleteMany).toHaveBeenCalled();
+    expect(mockInsertMany).toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith(
       expect.stringContaining("Test data inserted"),
     );
@@ -45,17 +62,11 @@ describe("connectDB function", () => {
   it("should connect but NOT seed data in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
 
-    const connectSpy = vi
-      .spyOn(mongoose, "connect")
-      .mockResolvedValue(mongoose);
-    const deleteManySpy = vi.spyOn(User, "deleteMany");
-    const insertManySpy = vi.spyOn(User, "insertMany");
-
     await connectDB();
 
-    expect(connectSpy).toHaveBeenCalled();
-    expect(deleteManySpy).not.toHaveBeenCalled();
-    expect(insertManySpy).not.toHaveBeenCalled();
+    expect(mockConnect).toHaveBeenCalled();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockInsertMany).not.toHaveBeenCalled();
     expect(console.log).not.toHaveBeenCalledWith(
       expect.stringContaining("Database cleared"),
     );
@@ -63,7 +74,7 @@ describe("connectDB function", () => {
 
   it("should throw and log an error if connection fails", async () => {
     const simulatedError = new Error("Connection failed");
-    vi.spyOn(mongoose, "connect").mockRejectedValue(simulatedError);
+    mockConnect.mockRejectedValueOnce(simulatedError);
 
     await expect(connectDB()).rejects.toThrow("Connection failed");
 

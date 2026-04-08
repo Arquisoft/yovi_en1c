@@ -87,6 +87,9 @@ MatchSchema.pre("validate", function (next) {
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
 const Match = mongoose.models.Match || mongoose.model("Match", MatchSchema);
 
+const Game = mongoose.models.Game ||
+  mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
+
 // connectDB() is used by server startup and tests to initialize the MongoDB connection.
 // It also conditionally seeds data when not in production.
 async function connectDB() {
@@ -94,24 +97,8 @@ async function connectDB() {
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected:", mongoUri);
 
-    // Seed logic: Only run if not in production. This supports automated tests and local development.
     if (process.env.NODE_ENV !== "production") {
-      // Check if the model already exists before defining it
-      const User =
-        mongoose.models.User ||
-        mongoose.model(
-          "User",
-          new mongoose.Schema({
-            name: String,
-            email: { type: String, unique: true },
-            createdAt: { type: Date, default: Date.now },
-          }),
-        );
-
-      const Game =
-        mongoose.models.Game ||
-        mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
-
+      // ✅ Usa User y Game del scope externo, no redefiniciones locales
       await Game.deleteMany({});
       console.log("Game history cleared!");
 

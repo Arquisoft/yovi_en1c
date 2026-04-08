@@ -12,6 +12,8 @@ import YAML from "js-yaml";
 // Tracks things like request count, response times and HTTP methods used
 import promBundle from "express-prom-bundle";
 
+import { connectDB, mongoose, User, Match } from "./db.js";
+
 // Creates the Express application instance
 // Is the main object used to define endpoints (app.post, app.delete), add middleware (app.use) and start the server (app.listen)
 const app = express();
@@ -35,7 +37,7 @@ const GameSchema = new mongoose.Schema({
   boardSize: { type: String, required: true },
   playedAt: { type: Date, default: Date.now },
 });
-const Game = mongoose.model("Game", GameSchema);
+const Game = mongoose.models.Game || mongoose.model("Game", GameSchema);
 
 // ─── Swagger ──────────────────────────────────────────────────────────────────
 
