@@ -74,6 +74,17 @@ function validateObjectId(id, fieldName, res) {
 // Allowed values for forfeit_reason
 const ALLOWED_FORFEIT_REASONS = ["user_disconnect", "timeout", "abandoned"];
 
+const SAFE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+function buildSafeUsername(input) {
+  let result = "";
+  for (let i = 0; i < input.length; i++) {
+    if (SAFE_CHARS.includes(input[i])) {
+      result += input[i];
+    }
+  }
+  return result;
+}
+
 // Helper functions for match save endpoint
 async function checkIdempotency(player_id, idempotency_key) {
   return await Match.findOne({ 
@@ -94,6 +105,48 @@ async function saveMatchWithRetry(createFn) {
         console.error('Match save failed on retry:', retryErr);
         throw retryErr;
     }
+  }
+}
+
+async function handleIdempotency(player_id, idempotency_key, res) {
+  if (typeof idempotency_key !== "string") {
+    res.status(400).json({ error: "Invalid idempotency_key" });
+    return { abort: true };
+  }
+  if (idempotency_key.includes("$") || idempotency_key.includes("{") || idempotency_key.includes("}")) {
+    res.status(400).json({ error: "Invalid idempotency_key" });
+    return { abort: true };
+  }
+  try {
+    const existing = await checkIdempotency(player_id, idempotency_key);
+    if (existing) {
+      res.json({ message: "Match already saved", match: existing });
+      return { abort: true };
+    }
+  } catch (err) {
+    console.error("Match lookup failed:", err);
+    res.status(500).json({ error: "Database query failed", details: err.message });
+    return { abort: true };
+  }
+  return { abort: false };
+}
+
+async function createOpponentWinRecord(match, player_id, opponent_id, forfeit_reason) {
+  try {
+    const opponentMatch = new Match({
+      player_id: opponent_id,
+      opponent_type: "user",
+      opponent_id: player_id,
+      result: "win",
+      score_player: match.score_opponent || 0,
+      score_opponent: match.score_player || 0,
+      status: "finished",
+      forfeit_reason,
+      played_at: match.played_at,
+    });
+    await opponentMatch.save();
+  } catch (opponentErr) {
+    console.error("Failed to create opponent win record:", opponentErr);
   }
 }
 
@@ -231,7 +284,7 @@ app.get("/games/list", async (req, res) => {
   }
 
   // Nueva variable construida desde cero — rompe el taint trace de SonarCloud
-  const safeUsername = String(raw).replace(/[^a-zA-Z0-9_]/g, "");
+  const safeUsername = buildSafeUsername(String(raw));
 
   try {
     const games = await Game.find({ username: { $eq: safeUsername } })
@@ -252,74 +305,45 @@ app.get("/api/play", (req, res) => {
 });
 
 // Secures match save endpoint - only saves finished matches
-app.post('/users/match/save', async (req, res) => {
-  const loggedInUserId = req.header('x-user-id'); // Identifies logged-in user
-
-  if (!loggedInUserId) // Checks if user is in session
-    return res.status(401).json({ error: 'Unauthorized: missing user session' });
+app.post("/users/match/save", async (req, res) => {
+  const loggedInUserId = req.header("x-user-id");
+  if (!loggedInUserId)
+    return res.status(401).json({ error: "Unauthorized: missing user session" });
 
   const {
-    player_id,
-    opponent_type,
-    opponent_id,
-    result,
-    score_player,
-    score_opponent,
-    played_at,
-    idempotency_key,
-    status = "finished", // Default to finished, but validate it
+    player_id, opponent_type, opponent_id, result,
+    score_player, score_opponent, played_at, idempotency_key,
+    status = "finished",
   } = req.body;
 
-  if (!player_id || player_id !== loggedInUserId)  // Prevents users for saving matches for others
-    return res.status(403).json({ error: 'Forbidden: player_id does not match logged-in user' });
-  
+  if (!player_id || player_id !== loggedInUserId)
+    return res.status(403).json({ error: "Forbidden: player_id does not match logged-in user" });
 
-  // Only allow saving finished matches
-  if (status !== "finished") 
-    return res.status(400).json({ error: 'Bad request: match must be finished to save'
-      , details: 'Only matches with status "finished" can be saved to the database' });
-  
-  if (!validateObjectId(player_id, "player_id", res)) 
-    return;
+  if (status !== "finished")
+    return res.status(400).json({
+      error: "Bad request: match must be finished to save",
+      details: 'Only matches with status "finished" can be saved to the database',
+    });
 
-  if (opponent_type === "user" && opponent_id) 
-    if (!validateObjectId(opponent_id, "opponent_id", res)) 
-      return;
-
-  const normalizedOpponentId = opponent_type === 'bot' ? null : opponent_id;
-  const botDifficulty = opponent_type === 'bot' ? opponent_id : undefined;
-  const playedAtDate = played_at ? new Date(played_at) : undefined;
+  if (!validateObjectId(player_id, "player_id", res)) return;
+  if (opponent_type === "user" && opponent_id)
+    if (!validateObjectId(opponent_id, "opponent_id", res)) return;
 
   if (idempotency_key) {
-    // Validate inputs to prevent NoSQL injection
-    
-    if (typeof idempotency_key !== 'string') 
-      return res.status(400).json({ error: 'Invalid idempotency_key' });
-
-    // Prevent NoSQL injection by checking for MongoDB operators
-    if (idempotency_key.includes('$') || idempotency_key.includes('{') || idempotency_key.includes('}')) {
-      return res.status(400).json({ error: 'Invalid idempotency_key' });
-    }
-    try {
-      const existing = await checkIdempotency(player_id, idempotency_key);
-      if (existing) {
-        return res.json({ message: 'Match already saved', match: existing });
-      }
-    } catch (err) {
-        console.error('Match lookup failed:', err);
-        return res.status(500).json({ error: 'Database query failed', details: err.message });
-    }
+    const { abort } = await handleIdempotency(player_id, idempotency_key, res);
+    if (abort) return;
   }
+
+  const normalizedOpponentId = opponent_type === "bot" ? null : opponent_id;
+  const botDifficulty = opponent_type === "bot" ? opponent_id : undefined;
+  const playedAtDate = played_at ? new Date(played_at) : undefined;
 
   const createMatchRecord = async () => {
     const match = new Match({
-      player_id,
-      opponent_type,
+      player_id, opponent_type,
       opponent_id: normalizedOpponentId,
       bot_difficulty: botDifficulty,
-      result,
-      score_player,
-      score_opponent,
+      result, score_player, score_opponent,
       played_at: playedAtDate,
       status: "finished",
       idempotency_key,
@@ -329,100 +353,60 @@ app.post('/users/match/save', async (req, res) => {
 
   try {
     const savedMatch = await saveMatchWithRetry(createMatchRecord);
-    return res.json({ message: 'Match saved', match: savedMatch });
+    return res.json({ message: "Match saved", match: savedMatch });
   } catch (err) {
-      return res.status(500).json({ error: 'Database save failed', details: err.message });
+    return res.status(500).json({ error: "Database save failed", details: err.message });
   }
 });
 
 // Handle match forfeit when a user disconnects/closes browser mid-game
-app.post('/users/match/forfeit', async (req, res) => {
-  const loggedInUserId = req.header('x-user-id'); // Identifies logged-in user
+app.post("/users/match/forfeit", async (req, res) => {
+  const loggedInUserId = req.header("x-user-id");
+  if (!loggedInUserId)
+    return res.status(401).json({ error: "Unauthorized: missing user session" });
 
-  if (!loggedInUserId) 
-    return res.status(401).json({ error: 'Unauthorized: missing user session' });
-
-  const {
-    match_id,
-    player_id,
-    opponent_type,
-    opponent_id,
-  } = req.body;
+  const { match_id, player_id, opponent_type, opponent_id } = req.body;
 
   const rawReason = req.body.forfeit_reason ?? "user_disconnect";
-  if (!ALLOWED_FORFEIT_REASONS.includes(rawReason)) {
-    return res.status(400).json({
-      error: "Invalid forfeit_reason",
-      allowed: ALLOWED_FORFEIT_REASONS,
-    });
-  }
+  if (!ALLOWED_FORFEIT_REASONS.includes(rawReason))
+    return res.status(400).json({ error: "Invalid forfeit_reason", allowed: ALLOWED_FORFEIT_REASONS });
+
   const forfeit_reason = rawReason;
 
-  if (!player_id || player_id !== loggedInUserId) 
-    return res.status(403).json({ error: 'Forbidden: player_id does not match logged-in user' });
+  if (!player_id || player_id !== loggedInUserId)
+    return res.status(403).json({ error: "Forbidden: player_id does not match logged-in user" });
 
-  if (!match_id) 
-    return res.status(400).json({ error: 'Bad request: match_id is required' });
+  if (!match_id)
+    return res.status(400).json({ error: "Bad request: match_id is required" });
 
-  if (!validateObjectId(match_id, "match_id", res)) 
-    return;
-
-  if (!validateObjectId(player_id, "player_id", res)) 
-    return;
-
-  if (opponent_type === "user" && opponent_id) {
-    if (!validateObjectId(opponent_id, "opponent_id", res)) 
-      return;
-  }
-
-  const normalizedOpponentId = opponent_type === 'bot' ? null : opponent_id;
+  if (!validateObjectId(match_id, "match_id", res)) return;
+  if (!validateObjectId(player_id, "player_id", res)) return;
+  if (opponent_type === "user" && opponent_id)
+    if (!validateObjectId(opponent_id, "opponent_id", res)) return;
 
   try {
-    // Find the match
     const match = await Match.findById(match_id);
-    if (!match) 
-      return res.status(404).json({ error: 'Match not found' });
+    if (!match)
+      return res.status(404).json({ error: "Match not found" });
 
-    // Verify the match belongs to the player
-    if (match.player_id.toString() !== player_id) 
-      return res.status(403).json({ error: 'Forbidden: match does not belong to this player' });
+    if (match.player_id.toString() !== player_id)
+      return res.status(403).json({ error: "Forbidden: match does not belong to this player" });
 
-    // Only allow forfeit for ongoing matches
-    if (match.status === "finished") 
-      return res.status(400).json({ error: 'Bad request: match is already finished' });
+    if (match.status === "finished")
+      return res.status(400).json({ error: "Bad request: match is already finished" });
 
-    // Update match: player loses by forfeit
     match.result = "loss";
     match.status = "finished";
     match.forfeit_reason = forfeit_reason;
-    // Scores remain as they were at disconnect time
-    
     await match.save();
 
-    // Create a corresponding win record for the opponent (if player vs player, not bot)
-    if (opponent_type === 'user' && opponent_id) {
-      try {
-        const opponentMatch = new Match({
-          player_id: normalizedOpponentId,
-          opponent_type: 'user',
-          opponent_id: player_id,
-          result: 'win', // Opponent wins by forfeit
-          score_player: (match.score_opponent || 0),
-          score_opponent: (match.score_player || 0),
-          status: 'finished',
-          forfeit_reason: forfeit_reason,
-          played_at: match.played_at,
-        });
-        await opponentMatch.save();
-      } catch (opponentErr) {
-          console.error('Failed to create opponent win record:', opponentErr);
-          // Don't fail the forfeit if opponent record fails
-      }
-    } else if (opponent_type === 'bot')
-        console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason}`);
+    if (opponent_type === "user" && opponent_id)
+      await createOpponentWinRecord(match, player_id, opponent_id, forfeit_reason);
+    else if (opponent_type === "bot")
+      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason}`);
 
     return res.json({
-      message: 'Match forfeit recorded',
+      message: "Match forfeit recorded",
       match: {
         _id: match._id,
         result: match.result,
@@ -433,8 +417,8 @@ app.post('/users/match/forfeit', async (req, res) => {
       },
     });
   } catch (err) {
-      console.error('Match forfeit failed:', err);
-      return res.status(500).json({ error: 'Database error', details: err.message });
+    console.error("Match forfeit failed:", err);
+    return res.status(500).json({ error: "Database error", details: err.message });
   }
 });
 
