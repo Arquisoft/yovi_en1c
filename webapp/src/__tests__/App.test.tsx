@@ -1,4 +1,4 @@
-import { render, screen} from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import App from "../App";
@@ -38,7 +38,7 @@ describe("App Navigation Flow", () => {
     render(<App />);
 
     // 1. Initial State: Register Screen
-    expect(screen.getByText(/Welcome to the Software/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to play the game of Y/i)).toBeInTheDocument();
     const registerBtn = screen.getByText("Mock Register");
 
     // 2. Action: Register
