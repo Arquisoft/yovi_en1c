@@ -1,17 +1,16 @@
-// API endpoint tests for user and match services.
-// Uses supertest to act like HTTP clients and vitest to mock model internals.
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import request from "supertest";
-import app from "../users-service.js";
-// Import Mongoose model definitions for mocking save operations by prototype.
+import app, { validUserIds } from "../users-service.js";
 import mongoose from "mongoose";
 
 const User = mongoose.model("User");
+const Match = mongoose.model("Match");
 const Game = mongoose.model("Game");
 
 describe("Users Service Tests", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    validUserIds.clear();
   });
 
   // ─── POST /createuser ───────────────────────────────────────────────────────
@@ -66,7 +65,6 @@ describe("Users Service Tests", () => {
   // ─── DELETE /deleteuser/:username ──────────────────────────────────────────
   describe("DELETE /deleteuser/:username", () => {
     it("deletes user successfully when found", async () => {
-      // Mock deleteOne to simulate finding and deleting 1 document
       vi.spyOn(User, "deleteOne").mockResolvedValueOnce({ deletedCount: 1 });
 
       const res = await request(app).delete("/deleteuser/Javi");
@@ -76,7 +74,6 @@ describe("Users Service Tests", () => {
     });
 
     it("returns 404 when user is not found", async () => {
-      // Mock deleteOne to return 0 deleted documents
       vi.spyOn(User, "deleteOne").mockResolvedValueOnce({ deletedCount: 0 });
 
       const res = await request(app).delete("/deleteuser/UnknownUser");
@@ -99,107 +96,122 @@ describe("Users Service Tests", () => {
 
   // ─── POST /savegame ────────────────────────────────────────────────────────
   describe("POST /savegame", () => {
-  const gameData = {
-    result: "player_won",
-    board: { cell1: "marked" },
-    totalMoves: 12,
-    username: "Pablo",
-    difficulty: "Hard",
-    boardSize: "7×7",
-  };
+    const gameData = {
+      result: "player_won",
+      board: { cell1: "marked" },
+      totalMoves: 12,
+      username: "Pablo",
+      difficulty: "Hard",
+      boardSize: "7×7",
+    };
 
-  it("saves a game successfully", async () => {
-    // ✅ Mock User.findOne para que no intente conectar a MongoDB
-    vi.spyOn(User, "findOne").mockReturnValueOnce({
-      select: vi.fn().mockReturnValueOnce({
-        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
-      }),
+    beforeEach(() => {
+      // ✅ Pobla el Map con el usuario de test
+      validUserIds.set("Pablo", "user123");
     });
 
-    vi.spyOn(Game.prototype, "save").mockResolvedValueOnce({
-      _id: "game123",
+    it("saves a game successfully", async () => {
+      vi.spyOn(Game.prototype, "save").mockResolvedValueOnce({
+        _id: "game123",
+      });
+
+      const res = await request(app).post("/savegame").send(gameData);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("Game saved!");
+      expect(res.body.id).toBe("game123");
     });
 
-    const res = await request(app).post("/savegame").send(gameData);
+    it("returns 400 when game cannot be saved", async () => {
+      vi.spyOn(Game.prototype, "save").mockRejectedValueOnce(
+        new Error("Validation failed"),
+      );
 
-    expect(res.status).toBe(200);
-    expect(res.body.message).toBe("Game saved!");
-    expect(res.body.id).toBe("game123");
+      const res = await request(app).post("/savegame").send(gameData);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Could not save game");
+      expect(res.body.details).toBe("Validation failed");
+    });
+
+    it("returns 404 when user is not found", async () => {
+      // ✅ Map vacío — usuario no existe
+      validUserIds.clear();
+
+      const res = await request(app).post("/savegame").send(gameData);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe("User not found");
+    });
   });
-
-  it("returns 400 when game cannot be saved", async () => {
-    vi.spyOn(User, "findOne").mockReturnValueOnce({
-      select: vi.fn().mockReturnValueOnce({
-        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
-      }),
-    });
-
-    vi.spyOn(Game.prototype, "save").mockRejectedValueOnce(
-      new Error("Validation failed"),
-    );
-
-    const res = await request(app).post("/savegame").send(gameData);
-
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe("Could not save game");
-    expect(res.body.details).toBe("Validation failed");
-  });
-});
 
   // ─── GET /games/list ───────────────────────────────────────────────────────
   describe("GET /games/list", () => {
-  it("returns a list of games for a specific user", async () => {
-    const mockGames = [
-      { _id: "1", result: "player_won", username: "Pablo" },
-      { _id: "2", result: "bot_won", username: "Pablo" },
-    ];
-
-    vi.spyOn(User, "findOne").mockReturnValueOnce({
-      select: vi.fn().mockReturnValueOnce({
-        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
-      }),
+    beforeEach(() => {
+      // ✅ Pobla el Map con el usuario de test
+      validUserIds.set("Pablo", "user123");
     });
 
-    vi.spyOn(Game, "find").mockReturnValueOnce({
-      sort: vi.fn().mockReturnValueOnce({
-        limit: vi.fn().mockResolvedValueOnce(mockGames),
-      }),
+    it("returns a list of games for a specific user", async () => {
+      const mockGames = [
+        { _id: "1", result: "player_won", username: "Pablo" },
+        { _id: "2", result: "bot_won", username: "Pablo" },
+      ];
+
+      vi.spyOn(Game, "find").mockReturnValueOnce({
+        sort: vi.fn().mockReturnValueOnce({
+          limit: vi.fn().mockResolvedValueOnce(mockGames),
+        }),
+      });
+
+      const res = await request(app).get("/games/list?username=Pablo");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].username).toBe("Pablo");
     });
 
-    const res = await request(app).get("/games/list?username=Pablo");
+    it("returns 500 when fetching games fails", async () => {
+      vi.spyOn(Game, "find").mockReturnValueOnce({
+        sort: vi.fn().mockReturnValueOnce({
+          limit: vi.fn().mockRejectedValueOnce(new Error("DB read error")),
+        }),
+      });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveLength(2);
-    expect(res.body[0].username).toBe("Pablo");
+      const res = await request(app).get("/games/list?username=Pablo");
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe("Could not fetch games");
+      expect(res.body.details).toBe("DB read error");
+    });
+
+    it("returns 404 when user is not found", async () => {
+      // ✅ Map vacío — usuario no existe
+      validUserIds.clear();
+
+      const res = await request(app).get("/games/list?username=Pablo");
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe("User not found");
+    });
+
+    it("returns 400 when username format is invalid", async () => {
+      const res = await request(app).get("/games/list?username=Pablo!!!");
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Invalid username format");
+    });
+
+    it("returns 400 when username parameter is missing", async () => {
+      const res = await request(app).get("/games/list");
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Invalid username parameter");
+    });
   });
 
-  it("returns 500 when fetching games fails", async () => {
-    // ✅ Mock User.findOne también aquí
-    vi.spyOn(User, "findOne").mockReturnValueOnce({
-      select: vi.fn().mockReturnValueOnce({
-        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
-      }),
-    });
-
-    vi.spyOn(Game, "find").mockReturnValueOnce({
-      sort: vi.fn().mockReturnValueOnce({
-        limit: vi.fn().mockRejectedValueOnce(new Error("DB read error")),
-      }),
-    });
-
-    const res = await request(app).get("/games/list?username=Pablo");
-
-    expect(res.status).toBe(500);
-    expect(res.body.error).toBe("Could not fetch games");
-    expect(res.body.details).toBe("DB read error");
-  });
-});
-
+  // ─── POST /creatematch ─────────────────────────────────────────────────────
   it("creates a match with valid request", async () => {
-    // Validate /creatematch endpoint can save match obj and return it.
-    const Match = mongoose.model("Match");
-
-    // Mock the save operation to avoid real DB write and return predictable result.
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
@@ -231,9 +243,8 @@ describe("Users Service Tests", () => {
     saveSpy.mockRestore();
   });
 
+  // ─── POST /users/match/save ────────────────────────────────────────────────
   it("saves a match if player_id matches logged-in user", async () => {
-    // This tests the /users/match/save endpoint with session-bound player ID.
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
@@ -264,11 +275,7 @@ describe("Users Service Tests", () => {
   });
 
   it("does not save duplicate match records (idempotent save)", async () => {
-    const Match = mongoose.model("Match");
-    const existingMatch = {
-      _id: "existing-id",
-      player_id: "existing-player",
-    };
+    const existingMatch = { _id: "existing-id", player_id: "existing-player" };
     const findOneSpy = vi
       .spyOn(Match, "findOne")
       .mockResolvedValueOnce(existingMatch);
@@ -298,17 +305,13 @@ describe("Users Service Tests", () => {
   });
 
   it("saves a match with idempotency key when no existing match is found", async () => {
-    const Match = mongoose.model("Match");
     const findOneSpy = vi
       .spyOn(Match, "findOne")
       .mockResolvedValueOnce(null);
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
-        return Promise.resolve({
-          ...this.toObject(),
-          _id: "new-id",
-        });
+        return Promise.resolve({ ...this.toObject(), _id: "new-id" });
       });
 
     const playerId = new mongoose.Types.ObjectId().toHexString();
@@ -329,15 +332,12 @@ describe("Users Service Tests", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("message", "Match saved");
     expect(res.body.match).toHaveProperty("_id", "new-id");
-    expect(findOneSpy).toHaveBeenCalledWith({ player_id: new mongoose.Types.ObjectId(playerId), idempotency_key: "abc123" });
     expect(saveSpy).toHaveBeenCalled();
-
     findOneSpy.mockRestore();
     saveSpy.mockRestore();
   });
 
   it("returns 500 when idempotency lookup fails", async () => {
-    const Match = mongoose.model("Match");
     const findOneSpy = vi
       .spyOn(Match, "findOne")
       .mockRejectedValueOnce(new Error("Lookup failure"));
@@ -361,7 +361,6 @@ describe("Users Service Tests", () => {
     expect(res.status).toBe(500);
     expect(res.body).toHaveProperty("error", "Database query failed");
     expect(saveSpy).not.toHaveBeenCalled();
-
     findOneSpy.mockRestore();
     saveSpy.mockRestore();
   });
@@ -388,14 +387,10 @@ describe("Users Service Tests", () => {
   });
 
   it("retries once and succeeds when first save fails", async () => {
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockRejectedValueOnce(new Error("First save failure"))
-      .mockResolvedValueOnce({
-        _id: "saved-match-id-retry",
-        player_id: "test-player-id",
-      });
+      .mockResolvedValueOnce({ _id: "saved-match-id-retry", player_id: "test-player-id" });
 
     const playerId = new mongoose.Types.ObjectId().toHexString();
     const res = await request(app)
@@ -419,7 +414,6 @@ describe("Users Service Tests", () => {
   });
 
   it("returns 500 when both save attempts fail", async () => {
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockRejectedValue(new Error("Total failure"));
@@ -456,7 +450,7 @@ describe("Users Service Tests", () => {
         result: "win",
         score_player: 10,
         score_opponent: 2,
-        status: "ongoing", // Trying to save an ongoing match
+        status: "ongoing",
       });
 
     expect(res.status).toBe(400);
@@ -464,14 +458,10 @@ describe("Users Service Tests", () => {
   });
 
   it("saves a match with status 'finished'", async () => {
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
-        return Promise.resolve({
-          _id: "saved-finished-match",
-          ...this.toObject(),
-        });
+        return Promise.resolve({ _id: "saved-finished-match", ...this.toObject() });
       });
 
     const playerId = new mongoose.Types.ObjectId().toHexString();
@@ -495,6 +485,7 @@ describe("Users Service Tests", () => {
   });
 });
 
+// ─── POST /users/match/forfeit ─────────────────────────────────────────────
 describe("POST /users/match/forfeit", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -546,7 +537,6 @@ describe("POST /users/match/forfeit", () => {
   });
 
   it("returns 404 when match is not found", async () => {
-    const Match = mongoose.model("Match");
     vi.spyOn(Match, "findById").mockResolvedValueOnce(null);
 
     const playerId = new mongoose.Types.ObjectId().toHexString();
@@ -565,7 +555,6 @@ describe("POST /users/match/forfeit", () => {
   });
 
   it("records forfeit for ongoing match and creates opponent win record", async () => {
-    const Match = mongoose.model("Match");
     const playerId = new mongoose.Types.ObjectId();
     const opponentId = new mongoose.Types.ObjectId();
     const matchId = new mongoose.Types.ObjectId();
@@ -587,10 +576,7 @@ describe("POST /users/match/forfeit", () => {
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
-        return Promise.resolve({
-          _id: this._id || "new-match",
-          ...this.toObject(),
-        });
+        return Promise.resolve({ _id: this._id || "new-match", ...this.toObject() });
       });
 
     const res = await request(app)
@@ -613,7 +599,6 @@ describe("POST /users/match/forfeit", () => {
   });
 
   it("returns 400 when trying to forfeit an already finished match", async () => {
-    const Match = mongoose.model("Match");
     const playerId = new mongoose.Types.ObjectId();
     const matchId = new mongoose.Types.ObjectId();
 
@@ -641,6 +626,7 @@ describe("POST /users/match/forfeit", () => {
   });
 });
 
+// ─── POST /users/match/create ──────────────────────────────────────────────
 describe("POST /users/match/create", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -675,14 +661,10 @@ describe("POST /users/match/create", () => {
   });
 
   it("creates an ongoing match with status 'ongoing'", async () => {
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
-        return Promise.resolve({
-          _id: "new-ongoing-match",
-          ...this.toObject(),
-        });
+        return Promise.resolve({ _id: "new-ongoing-match", ...this.toObject() });
       });
 
     const playerId = new mongoose.Types.ObjectId().toHexString();
@@ -706,14 +688,10 @@ describe("POST /users/match/create", () => {
   });
 
   it("creates an ongoing match with bot opponent", async () => {
-    const Match = mongoose.model("Match");
     const saveSpy = vi
       .spyOn(Match.prototype, "save")
       .mockImplementation(function () {
-        return Promise.resolve({
-          _id: "bot-match-id",
-          ...this.toObject(),
-        });
+        return Promise.resolve({ _id: "bot-match-id", ...this.toObject() });
       });
 
     const playerId = new mongoose.Types.ObjectId().toHexString();

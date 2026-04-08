@@ -79,6 +79,18 @@ function buildSafeUsername(input) {
   return matches ? matches.join("") : "";
 }
 
+let validUserIds = new Map(); // username → _id
+
+export async function refreshUserWhitelist() {
+  const users = await User.find({}).select("name _id").lean();
+  validUserIds = new Map(users.map(u => [u.name, u._id]));
+}
+
+function findUserIdByName(name) {
+  const userId = validUserIds.get(name);
+  return userId ?? null;
+}
+
 // Helper functions for match save endpoint
 async function checkIdempotency(player_id, idempotency_key) {
   return await Match.findOne({ 
@@ -144,6 +156,25 @@ async function createOpponentWinRecord(match, player_id, opponent_id, forfeit_re
   }
 }
 
+function validateMatchOwnership(match, player_id, res) {
+  if (match.player_id.toString() !== player_id) {
+    res.status(403).json({ error: "Forbidden: match does not belong to this player" });
+    return false;
+  }
+  if (match.status === "finished") {
+    res.status(400).json({ error: "Bad request: match is already finished" });
+    return false;
+  }
+  return true;
+}
+
+async function applyForfeit(match, forfeit_reason) {
+  match.result = "loss";
+  match.status = "finished";
+  match.forfeit_reason = forfeit_reason;
+  await match.save();
+}
+
 // Create User endpoint
 app.post("/createuser", async (req, res) => { 
   const { username, email } = req.body; // Extracts data
@@ -153,6 +184,8 @@ app.post("/createuser", async (req, res) => {
       email: email || `${username}@example.com`,
     });
     const savedUser = await newUser.save();
+
+    validUserIds.set(savedUser.name, savedUser._id);
 
     const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
       timeZone: "Europe/Madrid",
@@ -181,8 +214,10 @@ app.delete('/deleteuser/:username', async (req, res) => {
   const usernameParam = String(req.params.username); // Extracts parameter
   try {
     const result = await User.deleteOne({ name: { $eq: usernameParam } }); // Deletes from database ($eq → explicit equality check)
-    if (result.deletedCount === 1)  // 1 means success, 0 user not found
+    if (result.deletedCount === 1){// 1 means success, 0 user not found
+      validUserIds.delete(usernameParam);
       res.json({ message: `User ${usernameParam} deleted successfully!` });
+    }   
     else 
       res.status(404).json({ error: "User not found" });
     
@@ -244,15 +279,10 @@ app.post('/creatematch', async (req, res) => {
 });
 // ─── Games ────────────────────────────────────────────────────────────────────
 
-async function findUserIdByName(name) {
-  const user = await User.findOne({ name: { $eq: name } }).select("_id").lean();
-  return user ? user._id : null;
-}
-
 app.post("/savegame", async (req, res) => {
   const { result, board, totalMoves, username, difficulty, boardSize } = req.body;
   try {
-    const userId = await findUserIdByName(username);
+    const userId = findUserIdByName(buildSafeUsername(String(username)));
     if (!userId)
       return res.status(404).json({ error: "User not found" });
 
@@ -278,11 +308,11 @@ app.get("/games/list", async (req, res) => {
   if (!USERNAME_RE.test(raw))
     return res.status(400).json({ error: "Invalid username format" });
 
-  try {
-    const userId = await findUserIdByName(raw);
+  const userId = findUserIdByName(buildSafeUsername(raw));
     if (!userId)
       return res.status(404).json({ error: "User not found" });
 
+  try {
     const games = await Game.find({ userId: { $eq: userId } })
       .sort({ playedAt: -1 })
       .limit(20);
@@ -353,26 +383,6 @@ app.post("/users/match/save", async (req, res) => {
   }
 });
 
-
-function validateMatchOwnership(match, player_id, res) {
-  if (match.player_id.toString() !== player_id) {
-    res.status(403).json({ error: "Forbidden: match does not belong to this player" });
-    return false;
-  }
-  if (match.status === "finished") {
-    res.status(400).json({ error: "Bad request: match is already finished" });
-    return false;
-  }
-  return true;
-}
-
-async function applyForfeit(match, forfeit_reason) {
-  match.result = "loss";
-  match.status = "finished";
-  match.forfeit_reason = forfeit_reason;
-  await match.save();
-}
-
 // Handle match forfeit when a user disconnects/closes browser mid-game
 app.post("/users/match/forfeit", async (req, res) => {
   const loggedInUserId = req.header("x-user-id");
@@ -408,7 +418,6 @@ app.post("/users/match/forfeit", async (req, res) => {
 
     if (!validateMatchOwnership(match, player_id, res)) return;
 
-    // ✅ Lógica de actualización extraída
     await applyForfeit(match, forfeit_reason);
 
     if (opponent_type === "user" && opponent_id)
@@ -497,6 +506,7 @@ app.post('/users/match/create', async (req, res) => {
 async function startServer() {
   try {
     await connectDB();
+    await refreshUserWhitelist();
     app.listen(port, () => {
       console.log(`User Service listening at http://localhost:${port}`);
     });
@@ -509,5 +519,5 @@ async function startServer() {
 if (process.argv[1] === new URL(import.meta.url).pathname)
   startServer();
 
-
+export { validUserIds, refreshUserWhitelist };
 export default app;
