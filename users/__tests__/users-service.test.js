@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import request from "supertest";
-import app, { validUserIds } from "../users-service.js";
+import app, { userWhitelist } from "../users-service.js";
 import mongoose from "mongoose";
 
 const User = mongoose.model("User");
@@ -10,7 +10,7 @@ const Game = mongoose.model("Game");
 describe("Users Service Tests", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    validUserIds.clear();
+    userWhitelist.ids.clear();
   });
 
   // ─── POST /createuser ───────────────────────────────────────────────────────
@@ -102,12 +102,11 @@ describe("Users Service Tests", () => {
       totalMoves: 12,
       username: "Pablo",
       difficulty: "Hard",
-      boardSize: "7×7",
+      boardSize: "7x7",
     };
 
     beforeEach(() => {
-      // ✅ Pobla el Map con el usuario de test
-      validUserIds.set("Pablo", "user123");
+      userWhitelist.ids.set("Pablo", "user123");
     });
 
     it("saves a game successfully", async () => {
@@ -135,8 +134,7 @@ describe("Users Service Tests", () => {
     });
 
     it("returns 404 when user is not found", async () => {
-      // ✅ Map vacío — usuario no existe
-      validUserIds.clear();
+      userWhitelist.ids.clear();
 
       const res = await request(app).post("/savegame").send(gameData);
 
@@ -149,7 +147,7 @@ describe("Users Service Tests", () => {
   describe("GET /games/list", () => {
     beforeEach(() => {
       // ✅ Pobla el Map con el usuario de test
-      validUserIds.set("Pablo", "user123");
+      userWhitelist.ids.set("Pablo", "user123");
     });
 
     it("returns a list of games for a specific user", async () => {
@@ -186,8 +184,7 @@ describe("Users Service Tests", () => {
     });
 
     it("returns 404 when user is not found", async () => {
-      // ✅ Map vacío — usuario no existe
-      validUserIds.clear();
+      userWhitelist.ids.clear();
 
       const res = await request(app).get("/games/list?username=Pablo");
 
@@ -489,6 +486,7 @@ describe("Users Service Tests", () => {
 describe("POST /users/match/forfeit", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    userWhitelist.ids.clear();
   });
 
   it("returns 401 when no user session is provided", async () => {
@@ -596,6 +594,7 @@ describe("POST /users/match/forfeit", () => {
     expect(res.body.match).toHaveProperty("status", "finished");
     expect(res.body.match).toHaveProperty("forfeit_reason", "user_disconnect");
     expect(findByIdSpy).toHaveBeenCalledWith(matchId.toHexString());
+    saveSpy.mockRestore();
   });
 
   it("returns 400 when trying to forfeit an already finished match", async () => {
@@ -630,6 +629,7 @@ describe("POST /users/match/forfeit", () => {
 describe("POST /users/match/create", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    userWhitelist.ids.clear();
   });
 
   it("returns 401 when no user session is provided", async () => {
