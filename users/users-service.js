@@ -29,7 +29,7 @@ app.use(metricsMiddleware);
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const GameSchema = new mongoose.Schema({
-  username: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   result: { type: String, enum: ["player_won", "bot_won"], required: true },
   board: { type: Object, required: true },
   totalMoves: { type: Number },
@@ -75,7 +75,7 @@ function validateObjectId(id, fieldName, res) {
 const ALLOWED_FORFEIT_REASONS = ["user_disconnect", "timeout", "abandoned"];
 
 function buildSafeUsername(input) {
-  const matches = input.match(/[a-zA-Z0-9_]/g);
+  const matches = input.match(/\w/g);
   return matches ? matches.join("") : "";
 }
 
@@ -245,23 +245,20 @@ app.post('/creatematch', async (req, res) => {
 // ─── Games ────────────────────────────────────────────────────────────────────
 
 app.post("/savegame", async (req, res) => {
-  const { result, board, totalMoves, username, difficulty, boardSize } =
-    req.body;
+  const { result, board, totalMoves, username, difficulty, boardSize } = req.body;
   try {
+    const user = await User.findOne({ name: { $eq: username } }).select("_id").lean();
+    if (!user)
+      return res.status(404).json({ error: "User not found" });
+
     const game = new Game({
-      result,
-      board,
-      totalMoves,
-      username,
-      difficulty,
-      boardSize,
+      userId: user._id,
+      result, board, totalMoves, difficulty, boardSize,
     });
     const saved = await game.save();
     res.json({ message: "Game saved!", id: saved._id });
   } catch (err) {
-    res
-      .status(400)
-      .json({ error: "Could not save game", details: err.message });
+    res.status(400).json({ error: "Could not save game", details: err.message });
   }
 });
 
@@ -271,16 +268,18 @@ app.get("/games/list", async (req, res) => {
   if (!rawValue || Array.isArray(rawValue)) 
     return res.status(400).json({ error: "Invalid username parameter" });
 
-  const raw = String(rawValue); 
-  const USERNAME_RE = /^[a-zA-Z0-9_]{1,32}$/;
+  const raw = String(rawValue);
+  const USERNAME_RE = /^\w{1,32}$/;
   if (!USERNAME_RE.test(raw))
     return res.status(400).json({ error: "Invalid username format" });
 
-  const safeUsername = buildSafeUsername(raw);
-  const safeQuery = Object.freeze({ username: safeUsername });
-
   try {
-    const games = await Game.find(safeQuery)
+    const user = await User.findOne({ name: { $eq: raw } }).select("_id").lean();
+    if (!user)
+      return res.status(404).json({ error: "User not found" });
+
+    const userId = user._id;
+    const games = await Game.find({ userId: { $eq: userId } })
       .sort({ playedAt: -1 })
       .limit(20);
     res.json(games);
@@ -363,6 +362,13 @@ function validateMatchOwnership(match, player_id, res) {
   return true;
 }
 
+async function applyForfeit(match, forfeit_reason) {
+  match.result = "loss";
+  match.status = "finished";
+  match.forfeit_reason = forfeit_reason;
+  await match.save();
+}
+
 // Handle match forfeit when a user disconnects/closes browser mid-game
 app.post("/users/match/forfeit", async (req, res) => {
   const loggedInUserId = req.header("x-user-id");
@@ -383,28 +389,28 @@ app.post("/users/match/forfeit", async (req, res) => {
   if (!match_id)
     return res.status(400).json({ error: "Bad request: match_id is required" });
 
-  if (!validateObjectId(match_id, "match_id", res)) return;
-  if (!validateObjectId(player_id, "player_id", res)) return;
+  if (!validateObjectId(match_id, "match_id", res)) 
+    return;
+  if (!validateObjectId(player_id, "player_id", res)) 
+    return;
   if (opponent_type === "user" && opponent_id)
-    if (!validateObjectId(opponent_id, "opponent_id", res)) return;
+    if (!validateObjectId(opponent_id, "opponent_id", res))
+       return;
 
   try {
     const match = await Match.findById(match_id);
     if (!match)
       return res.status(404).json({ error: "Match not found" });
 
-    // ✅ Validación extraída a función separada
     if (!validateMatchOwnership(match, player_id, res)) return;
 
-    match.result = "loss";
-    match.status = "finished";
-    match.forfeit_reason = forfeit_reason;
-    await match.save();
+    // ✅ Lógica de actualización extraída
+    await applyForfeit(match, forfeit_reason);
 
     if (opponent_type === "user" && opponent_id)
       await createOpponentWinRecord(match, player_id, opponent_id, forfeit_reason);
     else if (opponent_type === "bot")
-      console.log(`Match forfeit recorded: player ${player_id} lost to bot by ${forfeit_reason}`);
+      console.log(`Match forfeit recorded: player ${player_id} lost to bot`);
 
     return res.json({
       message: "Match forfeit recorded",
