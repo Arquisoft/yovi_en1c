@@ -1,1 +1,17 @@
-{"root":["./src/app.tsx","./src/gameboard.tsx","./src/gamemenu.tsx","./src/registerform.tsx","./src/env.d.ts","./src/main.tsx","./src/__tests__/app.test.tsx","./src/__tests__/gameboard.test.tsx","./src/__tests__/gamemenu.test.tsx","./src/__tests__/registerform.test.tsx","./vite.config.ts"],"errors":true,"version":"5.9.3"}
+{
+    "root": [
+        "./src/app.tsx",
+        "./src/gameboard.tsx",
+        "./src/gamemenu.tsx",
+        "./src/registerform.tsx",
+        "./src/env.d.ts",
+        "./src/main.tsx",
+        "./src/__tests__/app.test.tsx",
+        "./src/__tests__/gameboard.test.tsx",
+        "./src/__tests__/gamemenu.test.tsx",
+        "./src/__tests__/registerform.test.tsx",
+        "./vite.config.ts"
+    ],
+    "errors": true,
+    "version": "5.9.3"
+}

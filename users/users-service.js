@@ -5,8 +5,13 @@ const swaggerUi = require("swagger-ui-express");
 const fs = require("node:fs");
 const YAML = require("js-yaml");
 const promBundle = require("express-prom-bundle");
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
 
 const { connectDB, mongoose } = require("./db");
+const User = require("./schema");
 
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
@@ -52,8 +57,65 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// ─── Users ────────────────────────────────────────────────────────────────────
+// --- SIGNUP ENDPOINT ---
+app.post("/signup", async (req, res) => {
+  const { username, password, email } = req.body;
 
+  try {
+    // 1. Sanitize input: Force 'username' to be a string
+    // This prevents passing an object like { "$gt": "" }
+    const safeUsername = String(username);
+
+    const existingUser = await User.findOne({ name: { $eq: safeUsername } });
+
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    const newUser = new User({
+      name: safeUsername,
+      password: bcrypt.hashSync(String(password), 10),
+      email: email || `${safeUsername}@example.com`,
+    });
+
+    const savedUser = await newUser.save();
+    res.status(201).json({
+      message: "User registered successfully",
+      user: { id: savedUser._id, username: savedUser.name },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Registration error", details: err.message });
+  }
+});
+
+// --- LOGIN ENDPOINT ---
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const safeUsername = String(username);
+    const user = await User.findOne({ name: { $eq: safeUsername } });
+
+    if (user && bcrypt.compareSync(String(password), user.password)) {
+      const token = jwt.sign(
+        { userId: user._id, username: user.name },
+        JWT_SECRET,
+        { expiresIn: "2h" },
+      );
+
+      return res.json({
+        message: "Login successful",
+        token: token,
+        user: { id: user._id, username: user.name },
+      });
+    }
+    res.status(401).json({ error: "Invalid credentials" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// --- CREATE USER ENDPOINT ---
 app.post("/createuser", async (req, res) => {
   const { username, email } = req.body;
   try {
@@ -73,7 +135,7 @@ app.post("/createuser", async (req, res) => {
     });
 
     res.json({
-      message: `Hello ${savedUser.name}! Welcome to the course! You were registered at ${formattedDate}`,
+      message: `Hello ${savedUser.name}! Welcome to the course! Registered at ${formattedDate}`,
       databaseInfo: {
         id: savedUser._id,
         registeredAt: formattedDate,
@@ -174,7 +236,14 @@ async function startServer() {
 }
 
 if (require.main == module) {
-  startServer();
+  startServer()
+    .then(() => {
+      console.log("Service startup sequence completed.");
+    })
+    .catch((err) => {
+      console.error("Failed to start service:", err);
+      process.exit(1);
+    });
 }
 
 module.exports = app;

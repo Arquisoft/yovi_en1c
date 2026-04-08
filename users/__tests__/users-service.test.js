@@ -1,6 +1,7 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeAll } from "vitest";
 import request from "supertest";
 import app from "../users-service.js";
+import User from "../schema.js";
 
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
@@ -9,6 +10,7 @@ const Game = mongoose.model("Game");
 describe("Users Service Tests", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   // ─── POST /createuser ───────────────────────────────────────────────────────

@@ -43,7 +43,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -54,7 +54,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -65,7 +65,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -77,7 +77,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -89,7 +89,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -100,7 +100,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -111,7 +111,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -122,7 +122,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -135,7 +135,7 @@ describe("GameBoard – rendering", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -170,7 +170,7 @@ describe("GameBoard – turn flow", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -191,7 +191,7 @@ describe("GameBoard – turn flow", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -212,12 +212,12 @@ describe("GameBoard – turn flow", () => {
   });
 
   test("shows 'Bot thinking' status while waiting for the API response", async () => {
-    global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
+    global.fetch = vi.fn().mockImplementation(() => new Promise(() => { }));
 
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -232,7 +232,7 @@ describe("GameBoard – turn flow", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -244,12 +244,12 @@ describe("GameBoard – turn flow", () => {
   });
 
   test("does not call the API again when clicking while bot is thinking", async () => {
-    global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
+    global.fetch = vi.fn().mockImplementation(() => new Promise(() => { }));
 
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -265,7 +265,7 @@ describe("GameBoard – turn flow", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -293,7 +293,7 @@ describe("GameBoard – error handling", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -311,7 +311,7 @@ describe("GameBoard – error handling", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -329,7 +329,7 @@ describe("GameBoard – error handling", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -346,7 +346,7 @@ describe("GameBoard – error handling", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -366,7 +366,7 @@ describe("GameBoard – error handling", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -390,7 +390,7 @@ describe("GameBoard – win / lose state", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );
@@ -407,7 +407,7 @@ describe("GameBoard – win / lose state", () => {
     render(
       <GameBoard
         config={defaultConfig}
-        onBack={() => {}}
+        onBack={() => { }}
         userName="testUser"
       />,
     );

@@ -1,17 +1,17 @@
 import { useState } from "react";
 import "./App.css";
 import LoginForm from "./RegisterForm";
-import GameMenu from "./GameMenu";
-import type { GameConfig } from "./GameMenu";
-import GameHistory from "./GameHistory";
-import GameBoard from "./GameBoard";
 import SignUpForm from "./SignupForm";
+import GameMenu from "./GameMenu";
+import GameHistory from "./GameHistory";
+import type { GameConfig } from "./GameMenu";
+import GameBoard from "./GameBoard";
 
-type Screen = "login" | "signup" | "menu" | "board" | "history";
+type Screen = 'login' | 'signup' | 'menu' | 'board' | 'history';
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("login");
-  const [userName, setUserName] = useState("");
+  const [screen, setScreen] = useState<Screen>('login');
+  const [userName, setUserName] = useState('');
   const [config, setConfig] = useState<GameConfig | null>(null);
 
   if (screen === "menu") {
@@ -20,7 +20,7 @@ function App() {
         userName={userName}
         onStartGame={(cfg: GameConfig) => {
           setConfig(cfg);
-          setScreen("board");
+          setScreen('board');
         }}
         onLogOut={() => {
           setUserName("");
