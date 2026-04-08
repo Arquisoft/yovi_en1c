@@ -1,4 +1,4 @@
-import express from "express"; // Javi'nin dediği gibi modern importlar
+import express from "express"; 
 import swaggerUi from "swagger-ui-express";
 import fs from "node:fs";
 import YAML from "js-yaml";
@@ -91,17 +91,16 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ name: { $eq: safeUsername } });
 
     if (user && bcrypt.compareSync(String(password), user.password)) {
-
       const token = jwt.sign(
         { userId: user._id, username: user.name },
         JWT_SECRET,
-        { expiresIn: '2h' } 
+        { expiresIn: "2h" },
       );
 
       return res.json({
         message: "Login successful",
-        token: token, 
-        user: { id: user._id, username: user.name }
+        token: token,
+        user: { id: user._id, username: user.name },
       });
     }
     res.status(401).json({ error: "Invalid credentials" });
