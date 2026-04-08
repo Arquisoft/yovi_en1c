@@ -81,6 +81,11 @@ function buildSafeUsername(input) {
 
 const userWhitelist = { ids: new Map() };
 
+async function loadAllUsers() {
+  const staticQuery = Object.freeze({});
+  return User.find(staticQuery).select("name _id").lean();
+}
+
 export async function refreshUserWhitelist() {
   const users = await loadAllUsers();
   userWhitelist.ids = new Map(users.map(u => [u.name, u._id]));
@@ -306,10 +311,12 @@ app.post("/savegame", async (req, res) => {
 app.get("/games/list", async (req, res) => {
   const rawValue = req.query.username;
 
-  if (!rawValue || Array.isArray(rawValue))
+  // Convierte a string inmediatamente antes de cualquier uso
+  const raw = typeof rawValue === "string" ? rawValue : "";
+
+  if (!raw)
     return res.status(400).json({ error: "Invalid username parameter" });
 
-  const raw = String(rawValue);
   const USERNAME_RE = /^\w{1,32}$/;
   if (!USERNAME_RE.test(raw))
     return res.status(400).json({ error: "Invalid username format" });
@@ -327,7 +334,6 @@ app.get("/games/list", async (req, res) => {
     res.status(500).json({ error: "Could not fetch games", details: err.message });
   }
 });
-
 // ─── Placeholder endpoints ────────────────────────────────────────────────────
 
 app.get("/api/play", (req, res) => {

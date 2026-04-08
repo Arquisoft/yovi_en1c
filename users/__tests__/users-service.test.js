@@ -205,6 +205,13 @@ describe("Users Service Tests", () => {
       expect(res.status).toBe(400);
       expect(res.body.error).toBe("Invalid username parameter");
     });
+
+    it("returns 400 when username is an array", async () => {
+      const res = await request(app).get("/games/list?username[]=Pablo&username[]=Other");
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Invalid username parameter");
+    });
   });
 
   // ─── POST /creatematch ─────────────────────────────────────────────────────
