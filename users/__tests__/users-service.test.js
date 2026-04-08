@@ -99,76 +99,101 @@ describe("Users Service Tests", () => {
 
   // ─── POST /savegame ────────────────────────────────────────────────────────
   describe("POST /savegame", () => {
-    const gameData = {
-      result: "player_won",
-      board: { cell1: "marked" },
-      totalMoves: 12,
-      username: "Pablo",
-      difficulty: "Hard",
-      boardSize: "7×7",
-    };
+  const gameData = {
+    result: "player_won",
+    board: { cell1: "marked" },
+    totalMoves: 12,
+    username: "Pablo",
+    difficulty: "Hard",
+    boardSize: "7×7",
+  };
 
-    it("saves a game successfully", async () => {
-      vi.spyOn(Game.prototype, "save").mockResolvedValueOnce({
-        _id: "game123",
-      });
-
-      const res = await request(app).post("/savegame").send(gameData);
-
-      expect(res.status).toBe(200);
-      expect(res.body.message).toBe("Game saved!");
-      expect(res.body.id).toBe("game123");
+  it("saves a game successfully", async () => {
+    // ✅ Mock User.findOne para que no intente conectar a MongoDB
+    vi.spyOn(User, "findOne").mockReturnValueOnce({
+      select: vi.fn().mockReturnValueOnce({
+        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
+      }),
     });
 
-    it("returns 400 when game cannot be saved", async () => {
-      vi.spyOn(Game.prototype, "save").mockRejectedValueOnce(
-        new Error("Validation failed"),
-      );
-
-      const res = await request(app).post("/savegame").send(gameData);
-
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBe("Could not save game");
-      expect(res.body.details).toBe("Validation failed");
+    vi.spyOn(Game.prototype, "save").mockResolvedValueOnce({
+      _id: "game123",
     });
+
+    const res = await request(app).post("/savegame").send(gameData);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe("Game saved!");
+    expect(res.body.id).toBe("game123");
   });
+
+  it("returns 400 when game cannot be saved", async () => {
+    vi.spyOn(User, "findOne").mockReturnValueOnce({
+      select: vi.fn().mockReturnValueOnce({
+        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
+      }),
+    });
+
+    vi.spyOn(Game.prototype, "save").mockRejectedValueOnce(
+      new Error("Validation failed"),
+    );
+
+    const res = await request(app).post("/savegame").send(gameData);
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Could not save game");
+    expect(res.body.details).toBe("Validation failed");
+  });
+});
 
   // ─── GET /games/list ───────────────────────────────────────────────────────
   describe("GET /games/list", () => {
-    it("returns a list of games for a specific user", async () => {
-      const mockGames = [
-        { _id: "1", result: "player_won", username: "Pablo" },
-        { _id: "2", result: "bot_won", username: "Pablo" },
-      ];
+  it("returns a list of games for a specific user", async () => {
+    const mockGames = [
+      { _id: "1", result: "player_won", username: "Pablo" },
+      { _id: "2", result: "bot_won", username: "Pablo" },
+    ];
 
-      // Mongoose chaining mock: Game.find().sort().limit()
-      vi.spyOn(Game, "find").mockReturnValueOnce({
-        sort: vi.fn().mockReturnValueOnce({
-          limit: vi.fn().mockResolvedValueOnce(mockGames),
-        }),
-      });
-
-      const res = await request(app).get("/games/list?username=Pablo");
-
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
-      expect(res.body[0].username).toBe("Pablo");
+    vi.spyOn(User, "findOne").mockReturnValueOnce({
+      select: vi.fn().mockReturnValueOnce({
+        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
+      }),
     });
 
-    it("returns 500 when fetching games fails", async () => {
-      vi.spyOn(Game, "find").mockReturnValueOnce({
-        sort: vi.fn().mockReturnValueOnce({
-          limit: vi.fn().mockRejectedValueOnce(new Error("DB read error")),
-        }),
-      });
-
-      const res = await request(app).get("/games/list?username=Pablo");
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe("Could not fetch games");
-      expect(res.body.details).toBe("DB read error");
+    vi.spyOn(Game, "find").mockReturnValueOnce({
+      sort: vi.fn().mockReturnValueOnce({
+        limit: vi.fn().mockResolvedValueOnce(mockGames),
+      }),
     });
+
+    const res = await request(app).get("/games/list?username=Pablo");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body[0].username).toBe("Pablo");
   });
+
+  it("returns 500 when fetching games fails", async () => {
+    // ✅ Mock User.findOne también aquí
+    vi.spyOn(User, "findOne").mockReturnValueOnce({
+      select: vi.fn().mockReturnValueOnce({
+        lean: vi.fn().mockResolvedValueOnce({ _id: "user123" }),
+      }),
+    });
+
+    vi.spyOn(Game, "find").mockReturnValueOnce({
+      sort: vi.fn().mockReturnValueOnce({
+        limit: vi.fn().mockRejectedValueOnce(new Error("DB read error")),
+      }),
+    });
+
+    const res = await request(app).get("/games/list?username=Pablo");
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe("Could not fetch games");
+    expect(res.body.details).toBe("DB read error");
+  });
+});
 
   it("creates a match with valid request", async () => {
     // Validate /creatematch endpoint can save match obj and return it.
