@@ -74,15 +74,9 @@ function validateObjectId(id, fieldName, res) {
 // Allowed values for forfeit_reason
 const ALLOWED_FORFEIT_REASONS = ["user_disconnect", "timeout", "abandoned"];
 
-const SAFE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 function buildSafeUsername(input) {
-  let result = "";
-  for (let i = 0; i < input.length; i++) {
-    if (SAFE_CHARS.includes(input[i])) {
-      result += input[i];
-    }
-  }
-  return result;
+  const matches = input.match(/[a-zA-Z0-9_]/g);
+  return matches ? matches.join("") : "";
 }
 
 // Helper functions for match save endpoint
@@ -272,29 +266,26 @@ app.post("/savegame", async (req, res) => {
 });
 
 app.get("/games/list", async (req, res) => {
-  const raw = req.query.username;
+  const rawValue = req.query.username;
 
-  if (!raw || Array.isArray(raw)) {
+  if (!rawValue || Array.isArray(rawValue)) 
     return res.status(400).json({ error: "Invalid username parameter" });
-  }
 
+  const raw = String(rawValue); 
   const USERNAME_RE = /^[a-zA-Z0-9_]{1,32}$/;
-  if (!USERNAME_RE.test(raw)) {
+  if (!USERNAME_RE.test(raw))
     return res.status(400).json({ error: "Invalid username format" });
-  }
 
-  // Nueva variable construida desde cero — rompe el taint trace de SonarCloud
-  const safeUsername = buildSafeUsername(String(raw));
+  const safeUsername = buildSafeUsername(raw);
+  const safeQuery = Object.freeze({ username: safeUsername });
 
   try {
-    const games = await Game.find({ username: { $eq: safeUsername } })
+    const games = await Game.find(safeQuery)
       .sort({ playedAt: -1 })
       .limit(20);
     res.json(games);
   } catch (err) {
-    res
-      .status(500)
-      .json({ error: "Could not fetch games", details: err.message });
+    res.status(500).json({ error: "Could not fetch games", details: err.message });
   }
 });
 
@@ -359,6 +350,19 @@ app.post("/users/match/save", async (req, res) => {
   }
 });
 
+
+function validateMatchOwnership(match, player_id, res) {
+  if (match.player_id.toString() !== player_id) {
+    res.status(403).json({ error: "Forbidden: match does not belong to this player" });
+    return false;
+  }
+  if (match.status === "finished") {
+    res.status(400).json({ error: "Bad request: match is already finished" });
+    return false;
+  }
+  return true;
+}
+
 // Handle match forfeit when a user disconnects/closes browser mid-game
 app.post("/users/match/forfeit", async (req, res) => {
   const loggedInUserId = req.header("x-user-id");
@@ -389,11 +393,8 @@ app.post("/users/match/forfeit", async (req, res) => {
     if (!match)
       return res.status(404).json({ error: "Match not found" });
 
-    if (match.player_id.toString() !== player_id)
-      return res.status(403).json({ error: "Forbidden: match does not belong to this player" });
-
-    if (match.status === "finished")
-      return res.status(400).json({ error: "Bad request: match is already finished" });
+    // ✅ Validación extraída a función separada
+    if (!validateMatchOwnership(match, player_id, res)) return;
 
     match.result = "loss";
     match.status = "finished";
