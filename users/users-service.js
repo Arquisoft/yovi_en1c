@@ -244,15 +244,20 @@ app.post('/creatematch', async (req, res) => {
 });
 // ─── Games ────────────────────────────────────────────────────────────────────
 
+async function findUserIdByName(name) {
+  const user = await User.findOne({ name: { $eq: name } }).select("_id").lean();
+  return user ? user._id : null;
+}
+
 app.post("/savegame", async (req, res) => {
   const { result, board, totalMoves, username, difficulty, boardSize } = req.body;
   try {
-    const user = await User.findOne({ name: { $eq: username } }).select("_id").lean();
-    if (!user)
+    const userId = await findUserIdByName(username);
+    if (!userId)
       return res.status(404).json({ error: "User not found" });
 
     const game = new Game({
-      userId: user._id,
+      userId,
       result, board, totalMoves, difficulty, boardSize,
     });
     const saved = await game.save();
@@ -265,7 +270,7 @@ app.post("/savegame", async (req, res) => {
 app.get("/games/list", async (req, res) => {
   const rawValue = req.query.username;
 
-  if (!rawValue || Array.isArray(rawValue)) 
+  if (!rawValue || Array.isArray(rawValue))
     return res.status(400).json({ error: "Invalid username parameter" });
 
   const raw = String(rawValue);
@@ -274,11 +279,10 @@ app.get("/games/list", async (req, res) => {
     return res.status(400).json({ error: "Invalid username format" });
 
   try {
-    const user = await User.findOne({ name: { $eq: raw } }).select("_id").lean();
-    if (!user)
+    const userId = await findUserIdByName(raw);
+    if (!userId)
       return res.status(404).json({ error: "User not found" });
 
-    const userId = user._id;
     const games = await Game.find({ userId: { $eq: userId } })
       .sort({ playedAt: -1 })
       .limit(20);
