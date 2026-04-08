@@ -62,8 +62,7 @@ app.use(
 
 // ─── Proxy: Gamey service ─────────────────────────────────────────────────────
 app.use(
-  "/gamey",
-  verifyToken,
+  "/api/gamey",
   createProxyMiddleware({
     ...commonOptions,
     target: "http://gamey:4000",
