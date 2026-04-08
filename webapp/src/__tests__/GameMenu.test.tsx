@@ -18,7 +18,7 @@ describe("GameMenu", () => {
     // FIX: Using a custom text matcher function because 'Pablo' is wrapped in a <strong> tag,
     // which breaks the default string/regex matching of getByText.
     expect(
-      screen.getByText((content, element) => {
+      screen.getByText((_content, element) => {
         const hasText =
           element?.textContent?.toLowerCase().includes("welcome, pablo") ||
           false;
