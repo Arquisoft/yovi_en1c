@@ -1,29 +1,22 @@
-const express = require("express");
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+import fs from "node:fs";
+import YAML from "js-yaml";
+import promBundle from "express-prom-bundle";
+import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken';
+import { connectDB, mongoose } from "./db.js";
+import User from "./schema.js";
+
 const app = express();
 const port = 3000;
-const swaggerUi = require("swagger-ui-express");
-const fs = require("node:fs");
-const YAML = require("js-yaml");
-const promBundle = require("express-prom-bundle");
-const bcrypt = require("bcryptjs");
-
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
-
-const { connectDB, mongoose } = require("./db");
-const User = require("./schema");
+const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
 
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
+// Swagger Documentation Setup
 // ─── Schemas ──────────────────────────────────────────────────────────────────
-
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  createdAt: { type: Date, default: Date.now },
-});
-const User = mongoose.model("User", UserSchema);
 
 const GameSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -34,7 +27,7 @@ const GameSchema = new mongoose.Schema({
   boardSize: { type: String, required: true },
   playedAt: { type: Date, default: Date.now },
 });
-const Game = mongoose.model("Game", GameSchema);
+const Game = mongoose.models.Game || mongoose.model("Game", GameSchema);
 
 // ─── Swagger ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +38,7 @@ try {
   console.log("Swagger error:", e.message);
 }
 
+// CORS and Middleware
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
 app.use((req, res, next) => {
@@ -115,7 +109,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// --- CREATE USER ENDPOINT ---
+// --- CREATE AND DELETE USER ENDPOINT ---
+// ─── Users ────────────────────────────────────────────────────────────────────
+
 app.post("/createuser", async (req, res) => {
   const { username, email } = req.body;
   try {
@@ -124,7 +120,6 @@ app.post("/createuser", async (req, res) => {
       email: email || `${username}@example.com`,
     });
     const savedUser = await newUser.save();
-
     const formattedDate = savedUser.createdAt.toLocaleString("es-ES", {
       timeZone: "Europe/Madrid",
       day: "2-digit",
@@ -235,15 +230,6 @@ async function startServer() {
   }
 }
 
-if (require.main == module) {
-  startServer()
-    .then(() => {
-      console.log("Service startup sequence completed.");
-    })
-    .catch((err) => {
-      console.error("Failed to start service:", err);
-      process.exit(1);
-    });
-}
+startServer();
 
-module.exports = app;
+export default app;

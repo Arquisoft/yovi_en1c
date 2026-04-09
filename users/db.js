@@ -1,45 +1,25 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const User = require("./schema");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import User from "./schema.js";
 
 const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/yovi";
 
-async function connectDB() {
+export async function connectDB() {
   try {
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected:", mongoUri);
 
     if (process.env.NODE_ENV !== "production") {
-      // Check if the model already exists before defining it
-      const User =
-        mongoose.models.User ||
-        mongoose.model(
-          "User",
-          new mongoose.Schema({
-            name: String,
-            email: { type: String, unique: true },
-            createdAt: { type: Date, default: Date.now },
-          }),
-        );
-
-      const Game =
-        mongoose.models.Game ||
+      if (!mongoose.models.Game) {
         mongoose.model("Game", new mongoose.Schema({}, { strict: false }));
-
-      await Game.deleteMany({});
-      console.log("Game history cleared!");
-
+      }
+      await mongoose.models.Game?.deleteMany({});
       await User.deleteMany({});
 
       const seedUsers = [
         {
           name: "Test User 1",
           email: "test1@example.com",
-          password: await bcrypt.hash("testpassword123", 10)
-        },
-        {
-          name: "Test User 2",
-          email: "test2@example.com",
           password: await bcrypt.hash("testpassword123", 10)
         }
       ];
@@ -48,9 +28,8 @@ async function connectDB() {
       console.log("Test data inserted");
     }
   } catch (err) {
-    console.error("MongoDB connection error:", err);
+    console.error("MongoDB connection error: ", err);
     throw err;
   }
 }
-
-module.exports = { connectDB, mongoose };
+export { mongoose };
