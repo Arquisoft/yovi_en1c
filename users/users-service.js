@@ -149,14 +149,8 @@ app.get("/games/list", async (req, res) => {
   }
 });
 
-// ─── Placeholder endpoints ────────────────────────────────────────────────────
-
-app.get("/api/play", (req, res) => {
-  res.json({ message: "[UNDER DEVELOPMENT]: User is playing!" });
-});
-
-app.post("/api/login", (req, res) => {
-  res.json({ status: "[UNDER DEVELOPMENT]: Users is logged in" });
+app.get("/status", (req, res) => {
+  res.status(200).json({ status: "User Service up and running" });
 });
 
 // ─── Startup ──────────────────────────────────────────────────────────────────
