@@ -38,20 +38,6 @@ paths:
                 properties:
                   status: { type: string, example: "Gateway up and running" }
 
-  /api/gamey/status:
-    get:
-      tags: [Infrastructure]
-      summary: Gamey Service Health Check
-      description: Proxied health check to the Rust service.
-      responses:
-        "200":
-          description: Service is OK.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "OK"
-
   # --- USER SERVICE (via /api/users) ---
   /api/users/createuser:
     post:
@@ -81,35 +67,6 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
         "400":
           description: Database or validation error.
-
-  /api/users/deleteuser/{username}:
-    delete:
-      tags: [Users]
-      summary: Delete User
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema: { type: string }
-      responses:
-        "200":
-          description: User deleted.
-        "404":
-          description: User not found.
-
-  /api/users/savegame:
-    post:
-      tags: [Game History]
-      summary: Save Game Record
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GameRecord"
-      responses:
-        "200":
-          description: Game saved successfully.
 
   /api/users/games/list:
     get:
