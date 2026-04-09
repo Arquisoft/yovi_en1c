@@ -103,11 +103,16 @@ function findUserIdByName(name) {
 }
 
 // Helper functions for match save endpoint
-async function checkIdempotency(player_id, idempotency_key) {
-  return await Match.findOne({ 
-    player_id: new mongoose.Types.ObjectId(player_id), 
-    idempotency_key 
+function buildIdempotencyQuery(player_id, idempotency_key) {
+  return Object.freeze({
+    player_id: new mongoose.Types.ObjectId(player_id),
+    idempotency_key,
   });
+}
+
+async function checkIdempotency(player_id, idempotency_key) {
+  const query = buildIdempotencyQuery(player_id, idempotency_key);
+  return await Match.findOne(query);
 }
 
 // Function that tries to save a match, if fails it tries again
