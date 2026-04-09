@@ -62,7 +62,8 @@ app.use((req, res, next) => { // This middleware runs for every request.
 // It has a 10 kb limit to prevent DoS attacks from massive payloads
 app.use(express.json({ limit: "10kb" }));
 
-// Validates object ids
+// Ensures a value is a valid MongoDB ObjectId
+// Prevents malformed queries and potential injection vectors
 function validateObjectId(id, fieldName, res) {
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     res.status(400).json({ error: `Invalid ${fieldName}` });
@@ -71,21 +72,31 @@ function validateObjectId(id, fieldName, res) {
   return true;
 }
 
-// Allowed values for forfeit_reason
+// Strict whitelist for allowed forfeit reasons
+// Prevents arbitrary values being stored in DB
 const ALLOWED_FORFEIT_REASONS = ["user_disconnect", "timeout", "abandoned"];
 
+// Sanitizes username to alphanumeric/underscore only
+// Prevents injection and unexpected characters
 function buildSafeUsername(input) {
   const matches = input.match(/\w/g);
   return matches ? matches.join("") : "";
 }
 
+// Instead of querying DB every time we resolve username → userId,
+// we maintain an in-memory Map.
+// Tradeoff:
+// + Faster lookups (O(1))
+// - Needs manual refresh if DB changes externally
 const userWhitelist = { ids: new Map() };
 
+// Loads all users from DB (minimal fields for efficiency)
 async function loadAllUsers() {
   const staticQuery = Object.freeze({});
   return User.find(staticQuery).select("name _id").lean();
 }
 
+// Refreshes in-memory cache
 export async function refreshUserWhitelist() {
   const users = await loadAllUsers();
   userWhitelist.ids = new Map(users.map(u => [u.name, u._id]));
@@ -102,12 +113,13 @@ function findUserIdByName(name) {
   return userWhitelist.ids.get(name) ?? null;
 }
 
-// Helper functions for match save endpoint
+// Removes unsafe characters from key
 function sanitizeIdempotencyKey(key) {
   const matches = key.match(/[\w\-]/g);
   return matches ? matches.join("") : "";
 }
 
+// DB lookup for existing match
 async function checkIdempotency(player_id, idempotency_key) {
   const safeKey = sanitizeIdempotencyKey(idempotency_key);
   return await Match.findOne({
@@ -117,6 +129,7 @@ async function checkIdempotency(player_id, idempotency_key) {
 }
 
 // Function that tries to save a match, if fails it tries again
+// Retry logic for transient DB failures
 async function saveMatchWithRetry(createFn) {
   try {
     return await createFn();
@@ -131,17 +144,21 @@ async function saveMatchWithRetry(createFn) {
   }
 }
 
+// Full validation + handling
 async function handleIdempotency(player_id, idempotency_key, res) {
+  // Type validation
   if (typeof idempotency_key !== "string") {
     res.status(400).json({ error: "Invalid idempotency_key" });
     return { abort: true };
   }
+  // Basic injection prevention
   if (idempotency_key.includes("$") || idempotency_key.includes("{") || idempotency_key.includes("}")) {
     res.status(400).json({ error: "Invalid idempotency_key" });
     return { abort: true };
   }
   try {
     const existing = await checkIdempotency(player_id, idempotency_key);
+    // If already exists → return existing result
     if (existing) {
       res.json({ message: "Match already saved", match: existing });
       return { abort: true };
@@ -173,6 +190,9 @@ async function createOpponentWinRecord(match, player_id, opponent_id, forfeit_re
   }
 }
 
+// Ensures:
+// 1. Match belongs to user
+// 2. Match is not already finished
 function validateMatchOwnership(match, player_id, res) {
   if (match.player_id.toString() !== player_id) {
     res.status(403).json({ error: "Forbidden: match does not belong to this player" });
@@ -185,6 +205,7 @@ function validateMatchOwnership(match, player_id, res) {
   return true;
 }
 
+// Applies forfeit result and persists it
 async function applyForfeit(match, forfeit_reason) {
   match.result = "loss";
   match.status = "finished";
