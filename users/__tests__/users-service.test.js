@@ -146,7 +146,6 @@ describe("Users Service Tests", () => {
   // ─── GET /games/list ───────────────────────────────────────────────────────
   describe("GET /games/list", () => {
     beforeEach(() => {
-      // ✅ Pobla el Map con el usuario de test
       userWhitelist.ids.set("Pablo", "user123");
     });
 
@@ -487,6 +486,61 @@ describe("Users Service Tests", () => {
     expect(res.body.match).toHaveProperty("status", "finished");
     saveSpy.mockRestore();
   });
+});
+
+it("rejects idempotency_key with invalid characters", async () => {
+  const playerId = new mongoose.Types.ObjectId().toHexString();
+  const res = await request(app)
+    .post("/users/match/save")
+    .set("x-user-id", playerId)
+    .send({
+      player_id: playerId,
+      idempotency_key: "key$with{invalid}chars",
+      opponent_type: "user",
+      opponent_id: new mongoose.Types.ObjectId().toHexString(),
+      result: "win",
+      score_player: 10,
+      score_opponent: 2,
+      played_at: "2026-03-30T12:00:00.000Z",
+    });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toHaveProperty("error", "Invalid idempotency_key");
+});
+
+it("returns 401 when no session is provided to save match", async () => {
+  const res = await request(app)
+    .post("/users/match/save")
+    .send({
+      player_id: new mongoose.Types.ObjectId().toHexString(),
+      opponent_type: "user",
+      opponent_id: new mongoose.Types.ObjectId().toHexString(),
+      result: "win",
+      score_player: 10,
+      score_opponent: 2,
+    });
+
+  expect(res.status).toBe(401);
+  expect(res.body).toHaveProperty("error", "Unauthorized: missing user session");
+});
+
+it("returns 400 when idempotency_key is not a string", async () => {
+  const playerId = new mongoose.Types.ObjectId().toHexString();
+  const res = await request(app)
+    .post("/users/match/save")
+    .set("x-user-id", playerId)
+    .send({
+      player_id: playerId,
+      idempotency_key: 12345,
+      opponent_type: "user",
+      opponent_id: new mongoose.Types.ObjectId().toHexString(),
+      result: "win",
+      score_player: 10,
+      score_opponent: 2,
+    });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toHaveProperty("error", "Invalid idempotency_key");
 });
 
 // ─── POST /users/match/forfeit ─────────────────────────────────────────────

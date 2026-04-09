@@ -103,16 +103,17 @@ function findUserIdByName(name) {
 }
 
 // Helper functions for match save endpoint
-function buildIdempotencyQuery(player_id, idempotency_key) {
-  return Object.freeze({
-    player_id: new mongoose.Types.ObjectId(player_id),
-    idempotency_key,
-  });
+function sanitizeIdempotencyKey(key) {
+  const matches = key.match(/[\w\-]/g);
+  return matches ? matches.join("") : "";
 }
 
 async function checkIdempotency(player_id, idempotency_key) {
-  const query = buildIdempotencyQuery(player_id, idempotency_key);
-  return await Match.findOne(query);
+  const safeKey = sanitizeIdempotencyKey(idempotency_key);
+  return await Match.findOne({
+    player_id: new mongoose.Types.ObjectId(player_id),
+    idempotency_key: safeKey,
+  });
 }
 
 // Function that tries to save a match, if fails it tries again
