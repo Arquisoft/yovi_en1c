@@ -19,135 +19,184 @@ describe("GameMenu", () => {
   it("renders the welcome message with the correct username", () => {
     render(<GameMenu {...mockProps} />);
 
-    // FIX: Using a custom text matcher function because 'Pablo' is wrapped in a <strong> tag,
-    // which breaks the default string/regex matching of getByText.
     expect(
       screen.getByText((_content, element) => {
         const hasText =
-          element?.textContent?.toLowerCase().includes("welcome, pablo") ||
-          false;
-        // This ensures we only select the node that does NOT have children that also match
+          element?.textContent?.toLowerCase().includes("welcome, pablo") || false;
         const hasNoChildrenWithText = Array.from(element?.children || []).every(
-          (child) =>
-            !child.textContent?.toLowerCase().includes("welcome, pablo"),
+          (child) => !child.textContent?.toLowerCase().includes("welcome, pablo"),
         );
         return hasText && hasNoChildrenWithText;
       }),
     ).toBeInTheDocument();
   });
 
+  it("renders the Game Lobby title", () => {
+    render(<GameMenu {...mockProps} />);
+    expect(screen.getByText("Game Lobby")).toBeInTheDocument();
+  });
+
   it("renders the game history button", () => {
     render(<GameMenu {...mockProps} />);
-    expect(
-      screen.getByRole("button", { name: /game history/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /game history/i })).toBeInTheDocument();
   });
 
-  it("calls onOpenHistory when the game history button is clicked", async () => {
+  it("calls onViewHistory when game history button is clicked", async () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    // 1. Select 'Small' board size
-    const smallBoardBtn = screen.getByRole("button", {
-      name: /small/i,
-    });
-    await user.click(smallBoardBtn);
-    expect(smallBoardBtn).toHaveClass("selected");
+    await user.click(screen.getByRole("button", { name: /game history/i }));
 
-    // 2. Select 'Master Y' game mode
-    const masterYBtn = screen.getByRole("button", {
-      name: /master y.*advanced variant/i,
-    });
-    await user.click(masterYBtn);
-    expect(masterYBtn).toHaveClass("selected");
-
-    // 3. Select 'Wooden' layout style
-    const woodenLayoutBtn = screen.getByRole("button", {
-      name: /wooden.*board-game table feel/i,
-    });
-    await user.click(woodenLayoutBtn);
-    expect(woodenLayoutBtn).toHaveClass("selected");
-
-    // 4. Click 'Start game'
-    const startBtn = screen.getByRole("button", { name: /start game/i });
-    await user.click(startBtn);
-
-    expect(mockProps.onStartGame).toHaveBeenCalledWith({
-      boardSize: "small",
-      mode: "master_y",
-      layout: "wooden",
-      difficulty: "hard",
-    });
+    expect(mockProps.onViewHistory).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onLogOut when the log out button is clicked", async () => {
+  it("calls onLogOut when log out button is clicked", async () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    const logOutBtn = screen.getByRole("button", { name: /log out/i });
-    await user.click(logOutBtn);
+    await user.click(screen.getByRole("button", { name: /log out/i }));
 
     expect(mockProps.onLogOut).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onStartGame with the default configuration when start game is clicked", async () => {
+  it("calls onStartGame with default configuration (small, standard, random, classic)", async () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    const startBtn = screen.getByRole("button", { name: /start game/i });
-    await user.click(startBtn);
+    await user.click(screen.getByRole("button", { name: /start game/i }));
 
     expect(mockProps.onStartGame).toHaveBeenCalledWith({
       boardSize: "small",
       mode: "standard",
-      difficulty: "easy",
+      difficulty: "random",
+      layout: "classic",
     });
   });
 
-  it("updates board size and difficulty through carousel buttons before starting the game", async () => {
+  // ─── Board size carousel ───────────────────────────────────────────────────
+
+  it("cycles forward through board sizes: small -> medium -> large -> small", async () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    const nextBoardBtn = screen.getByRole("button", {
-      name: /next board size/i,
-    });
+    const next = screen.getByRole("button", { name: /next board size/i });
 
-    const nextDifficultyBtn = screen.getByRole("button", {
-      name: /next difficulty/i,
-    });
+    expect(screen.getByText("Small")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Medium")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Large")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Small")).toBeInTheDocument(); // wraps around
+  });
 
-    // small -> medium -> large
-    await user.click(nextBoardBtn);
-    await user.click(nextBoardBtn);
+  it("cycles backward through board sizes: small -> large (wraps)", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
 
-    // easy -> medium -> hard
-    await user.click(nextDifficultyBtn);
-    await user.click(nextDifficultyBtn);
+    const prev = screen.getByRole("button", { name: /previous board size/i });
 
-    const startBtn = screen.getByRole("button", { name: /start game/i });
-    await user.click(startBtn);
+    expect(screen.getByText("Small")).toBeInTheDocument();
+    await user.click(prev);
+    expect(screen.getByText("Large")).toBeInTheDocument(); // wraps to end
+  });
+
+  it("starts game with large board after navigating carousel", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
+
+    const next = screen.getByRole("button", { name: /next board size/i });
+    await user.click(next); // medium
+    await user.click(next); // large
+
+    await user.click(screen.getByRole("button", { name: /start game/i }));
+
+    expect(mockProps.onStartGame).toHaveBeenCalledWith(
+      expect.objectContaining({ boardSize: "large" })
+    );
+  });
+
+  // ─── Difficulty carousel ───────────────────────────────────────────────────
+
+  it("cycles forward through difficulties: random -> easy -> hard -> random", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
+
+    const next = screen.getByRole("button", { name: /next difficulty/i });
+
+    expect(screen.getByText("Random")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Easy")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Hard")).toBeInTheDocument();
+    await user.click(next);
+    expect(screen.getByText("Random")).toBeInTheDocument(); // wraps around
+  });
+
+  it("cycles backward through difficulties: random -> hard (wraps)", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
+
+    const prev = screen.getByRole("button", { name: /previous difficulty/i });
+
+    expect(screen.getByText("Random")).toBeInTheDocument();
+    await user.click(prev);
+    expect(screen.getByText("Hard")).toBeInTheDocument();
+  });
+
+  it("starts game with hard difficulty after navigating carousel", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
+
+    const next = screen.getByRole("button", { name: /next difficulty/i });
+    await user.click(next); // easy
+    await user.click(next); // hard
+
+    await user.click(screen.getByRole("button", { name: /start game/i }));
+
+    expect(mockProps.onStartGame).toHaveBeenCalledWith(
+      expect.objectContaining({ difficulty: "hard" })
+    );
+  });
+
+  // ─── Combined config ───────────────────────────────────────────────────────
+
+  it("starts game with large board and hard difficulty after navigating both carousels", async () => {
+    const user = userEvent.setup();
+    render(<GameMenu {...mockProps} />);
+
+    const nextBoard = screen.getByRole("button", { name: /next board size/i });
+    const nextDifficulty = screen.getByRole("button", { name: /next difficulty/i });
+
+    await user.click(nextBoard);     // medium
+    await user.click(nextBoard);     // large
+    await user.click(nextDifficulty); // easy
+    await user.click(nextDifficulty); // hard
+
+    await user.click(screen.getByRole("button", { name: /start game/i }));
 
     expect(mockProps.onStartGame).toHaveBeenCalledWith({
       boardSize: "large",
       mode: "standard",
       difficulty: "hard",
+      layout: "classic",
     });
   });
 
-  it("cycles through board size options in the UI", async () => {
+  // ─── Game mode carousel (only 1 option, stays on standard) ────────────────
+
+  it("game mode stays on standard when navigating (only one option)", async () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    expect(screen.getByText("Small")).toBeInTheDocument();
+    const nextMode = screen.getByRole("button", { name: /next game mode/i });
+    await user.click(nextMode);
 
-    const nextBoardBtn = screen.getByRole("button", {
-      name: /next board size/i,
-    });
+    expect(screen.getByText("Standard")).toBeInTheDocument();
 
-    await user.click(nextBoardBtn);
-    expect(screen.getByText("Medium")).toBeInTheDocument();
-
-    await user.click(nextBoardBtn);
-    expect(screen.getByText("Large")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /start game/i }));
+    expect(mockProps.onStartGame).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: "standard" })
+    );
   });
 });

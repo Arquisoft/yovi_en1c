@@ -4,66 +4,151 @@ import { describe, expect, it, vi } from "vitest";
 import App from "../App";
 import "@testing-library/jest-dom";
 
-// We mock the child components to simplify the App test
-// and focus strictly on the App's navigation logic.
 vi.mock("../RegisterForm", () => ({
-  default: ({ onRegistered }: { onRegistered: (name: string) => void }) => (
-    <button onClick={() => onRegistered("Pablo")}>Mock Register</button>
+  default: ({ onLoggedIn, onGoToSignUp }: any) => (
+    <div>
+      <h1>Login Screen</h1>
+      <button onClick={() => onLoggedIn("Pablo")}>Mock Login</button>
+      <button onClick={onGoToSignUp}>Go to Sign Up</button>
+    </div>
+  ),
+}));
+
+vi.mock("../SignupForm", () => ({
+  default: ({ onRegistered, onGoToLogin }: any) => (
+    <div>
+      <h1>Signup Screen</h1>
+      <button onClick={() => onRegistered("Pablo")}>Mock Sign Up</button>
+      <button onClick={onGoToLogin}>Go to Login</button>
+    </div>
   ),
 }));
 
 vi.mock("../GameMenu", () => ({
-  default: ({ userName, onStartGame, onLogOut }: any) => (
+  default: ({ userName, onStartGame, onLogOut, onViewHistory }: any) => (
     <div>
       <h1>Menu Screen</h1>
       <p>User: {userName}</p>
-      <button onClick={() => onStartGame({})}>Start Game</button>
+      <button onClick={() => onStartGame({ boardSize: "small", mode: "standard", difficulty: "random", layout: "classic" })}>
+        Start Game
+      </button>
       <button onClick={onLogOut}>Log Out</button>
+      <button onClick={onViewHistory}>View History</button>
     </div>
   ),
 }));
 
 vi.mock("../GameBoard", () => ({
-  default: ({ onBack }: { onBack: () => void }) => (
+  default: ({ onBack, userName }: any) => (
     <div>
       <h1>Board Screen</h1>
+      <p>Playing as: {userName}</p>
+      <button onClick={onBack}>Back to Menu</button>
+    </div>
+  ),
+}));
+
+vi.mock("../GameHistory", () => ({
+  default: ({ onBack, userName }: any) => (
+    <div>
+      <h1>History Screen</h1>
+      <p>History for: {userName}</p>
       <button onClick={onBack}>Back to Menu</button>
     </div>
   ),
 }));
 
 describe("App Navigation Flow", () => {
-  it("should follow the full flow: Register -> Menu -> Board -> Menu -> Logout", async () => {
+  it("shows login screen on initial render", () => {
+    render(<App />);
+
+    expect(screen.getByText(/Welcome to play the game of Y/i)).toBeInTheDocument();
+    expect(screen.getByText("Login Screen")).toBeInTheDocument();
+  });
+
+  it("navigates from login to menu after logging in", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    // 1. Initial State: Register Screen
-    expect(screen.getByText(/Welcome to play the game of Y/i)).toBeInTheDocument();
-    const registerBtn = screen.getByText("Mock Register");
+    await user.click(screen.getByText("Mock Login"));
 
-    // 2. Action: Register
-    await user.click(registerBtn);
-
-    // 3. Result: Menu Screen
     expect(screen.getByText("Menu Screen")).toBeInTheDocument();
     expect(screen.getByText("User: Pablo")).toBeInTheDocument();
+  });
 
-    // 4. Action: Start Game
-    await user.click(screen.getByText("Start Game"));
+  it("navigates from login to signup screen", async () => {
+    const user = userEvent.setup();
+    render(<App />);
 
-    // 5. Result: Board Screen
-    expect(screen.getByText("Board Screen")).toBeInTheDocument();
+    await user.click(screen.getByText("Go to Sign Up"));
 
-    // 6. Action: Go Back
-    await user.click(screen.getByText("Back to Menu"));
+    expect(screen.getByText("Signup Screen")).toBeInTheDocument();
+  });
 
-    // 7. Result: Back in Menu
+  it("navigates from signup back to login", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText("Go to Sign Up"));
+    expect(screen.getByText("Signup Screen")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Go to Login"));
+    expect(screen.getByText("Login Screen")).toBeInTheDocument();
+  });
+
+  it("navigates from signup to menu after registering", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText("Go to Sign Up"));
+    await user.click(screen.getByText("Mock Sign Up"));
+
+    expect(screen.getByText("Menu Screen")).toBeInTheDocument();
+    expect(screen.getByText("User: Pablo")).toBeInTheDocument();
+  });
+
+  it("full flow: Login -> Menu -> Board -> Menu -> Logout", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText("Mock Login"));
     expect(screen.getByText("Menu Screen")).toBeInTheDocument();
 
-    // 8. Action: Log Out
+    await user.click(screen.getByText("Start Game"));
+    expect(screen.getByText("Board Screen")).toBeInTheDocument();
+    expect(screen.getByText("Playing as: Pablo")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Back to Menu"));
+    expect(screen.getByText("Menu Screen")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Log Out"));
+    expect(screen.getByText("Login Screen")).toBeInTheDocument();
+  });
+
+  it("navigates from menu to history and back", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText("Mock Login"));
+    expect(screen.getByText("Menu Screen")).toBeInTheDocument();
+
+    await user.click(screen.getByText("View History"));
+    expect(screen.getByText("History Screen")).toBeInTheDocument();
+    expect(screen.getByText("History for: Pablo")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Back to Menu"));
+    expect(screen.getByText("Menu Screen")).toBeInTheDocument();
+  });
+
+  it("clears username and config after logout", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText("Mock Login"));
     await user.click(screen.getByText("Log Out"));
 
-    // 9. Result: Back to Register Screen
-    expect(screen.getByText(/Welcome to the Software/i)).toBeInTheDocument();
+    // Back to login, no username shown
+    expect(screen.getByText("Login Screen")).toBeInTheDocument();
+    expect(screen.queryByText("User: Pablo")).not.toBeInTheDocument();
   });
 });

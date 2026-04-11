@@ -1,47 +1,171 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import SignUpForm from "../SignupForm";
 import "@testing-library/jest-dom";
 
 describe("SignUpForm", () => {
-    it("shows an error if passwords do not match", async () => {
-        const user = userEvent.setup();
-        const onRegistered = vi.fn();
-        const onGoToLogin = vi.fn();
+  const onRegistered = vi.fn();
+  const onGoToLogin = vi.fn();
 
-        render(
-            <SignUpForm
-                onRegistered={onRegistered}
-                onGoToLogin={onGoToLogin}
-            />
-        );
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-        await user.type(screen.getByLabelText(/username/i), "Pablo");
-        await user.type(screen.getByLabelText(/email/i), "pablo@test.com");
-        await user.type(screen.getByLabelText(/^password$/i), "abc123");
-        await user.type(screen.getByLabelText(/repeat password/i), "xyz999");
+  const fillForm = async (
+    user: ReturnType<typeof userEvent.setup>,
+    {
+      username = "Pablo",
+      email = "pablo@test.com",
+      password = "abc123",
+      confirmPassword = "abc123",
+    } = {}
+  ) => {
+    await user.type(screen.getByLabelText(/username/i), username);
+    await user.type(screen.getByLabelText(/email/i), email);
+    await user.type(screen.getByLabelText(/^password$/i), password);
+    await user.type(screen.getByLabelText(/confirm password/i), confirmPassword);
+  };
 
-        await user.click(screen.getByRole("button", { name: /sign up/i }));
+  it("renders all form fields and buttons", () => {
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
-        expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
-        expect(onRegistered).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign up/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /log in here/i })).toBeInTheDocument();
+  });
+
+  it("calls onGoToLogin when 'Log in here' is clicked", async () => {
+    const user = userEvent.setup();
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await user.click(screen.getByRole("button", { name: /log in here/i }));
+
+    expect(onGoToLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows error if all fields are empty on submit", async () => {
+    const user = userEvent.setup();
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(screen.getByText(/please fill in all fields/i)).toBeInTheDocument();
+    expect(onRegistered).not.toHaveBeenCalled();
+  });
+
+  it("shows error if username is only whitespace", async () => {
+    const user = userEvent.setup();
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await fillForm(user, { username: "   " });
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(screen.getByText(/please fill in all fields/i)).toBeInTheDocument();
+    expect(onRegistered).not.toHaveBeenCalled();
+  });
+
+  it("shows error if passwords do not match", async () => {
+    const user = userEvent.setup();
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await fillForm(user, { confirmPassword: "xyz999" });
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    expect(onRegistered).not.toHaveBeenCalled();
+  });
+
+  it("calls onRegistered with username on successful signup", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ message: "User created" }),
     });
 
-    it("calls onGoToLogin when login link/button is clicked", async () => {
-        const user = userEvent.setup();
-        const onRegistered = vi.fn();
-        const onGoToLogin = vi.fn();
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
-        render(
-            <SignUpForm
-                onRegistered={onRegistered}
-                onGoToLogin={onGoToLogin}
-            />
-        );
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
 
-        await user.click(screen.getByRole("button", { name: /login here/i }));
-
-        expect(onGoToLogin).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(onRegistered).toHaveBeenCalledWith("Pablo");
     });
+  });
+
+  it("shows server error message when signup fails", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      text: async () => JSON.stringify({ error: "Username already exists" }),
+    });
+
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/username already exists/i)).toBeInTheDocument();
+    });
+    expect(onRegistered).not.toHaveBeenCalled();
+  });
+
+  it("shows fallback error when server returns non-JSON", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      text: async () => "Internal Server Error",
+    });
+
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/unexpected server response/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows network error when fetch throws", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/network error/i)).toBeInTheDocument();
+    });
+  });
+
+  it("clears previous error on new submit attempt", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ message: "ok" }),
+    });
+
+    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+    // Trigger error first
+    await fillForm(user, { confirmPassword: "wrong" });
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+
+    // Fix and resubmit
+    await user.clear(screen.getByLabelText(/confirm password/i));
+    await user.type(screen.getByLabelText(/confirm password/i), "abc123");
+    await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
+    });
+  });
 });
