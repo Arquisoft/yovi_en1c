@@ -5,10 +5,10 @@ import SignUpForm from "../SignupForm";
 import "@testing-library/jest-dom";
 
 describe("SignUpForm", () => {
-  const onRegistered = vi.fn();
-  const onGoToLogin = vi.fn();
+            const onRegistered = vi.fn();
+        const onGoToLogin = vi.fn();
 
-  beforeEach(() => {
+        beforeEach(() => {
     vi.clearAllMocks();
   });
 
@@ -21,10 +21,10 @@ describe("SignUpForm", () => {
       confirmPassword = "abc123",
     } = {}
   ) => {
-    await user.type(screen.getByLabelText(/username/i), username);
-    await user.type(screen.getByLabelText(/email/i), email);
+        await user.type(screen.getByLabelText(/username/i), username);
+        await user.type(screen.getByLabelText(/email/i), email);
     await user.type(screen.getByLabelText(/^password$/i), password);
-    await user.type(screen.getByLabelText(/confirm password/i), confirmPassword);
+        await user.type(screen.getByLabelText(/confirm password/i), confirmPassword);
   };
 
   it("renders all form fields and buttons", () => {
@@ -51,7 +51,7 @@ describe("SignUpForm", () => {
     const user = userEvent.setup();
     render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
-    await user.click(screen.getByRole("button", { name: /sign up/i }));
+        await user.click(screen.getByRole("button", { name: /sign up/i }));
 
     expect(screen.getByText(/please fill in all fields/i)).toBeInTheDocument();
     expect(onRegistered).not.toHaveBeenCalled();
@@ -75,11 +75,11 @@ describe("SignUpForm", () => {
     await fillForm(user, { confirmPassword: "xyz999" });
     await user.click(screen.getByRole("button", { name: /sign up/i }));
 
-    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
-    expect(onRegistered).not.toHaveBeenCalled();
-  });
+        expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+        expect(onRegistered).not.toHaveBeenCalled();
+    });
 
-  it("calls onRegistered with username on successful signup", async () => {
+    it("calls onRegistered with username on successful signup", async () => {
     const user = userEvent.setup();
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -146,17 +146,17 @@ describe("SignUpForm", () => {
   });
 
   it("clears previous error on new submit attempt", async () => {
-    const user = userEvent.setup();
-    global.fetch = vi.fn().mockResolvedValue({
+        const user = userEvent.setup();
+        global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ message: "ok" }),
     });
 
-    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+        render(            <SignUpForm                 onRegistered={onRegistered}                 onGoToLogin={onGoToLogin} />);
 
     // Trigger error first
     await fillForm(user, { confirmPassword: "wrong" });
-    await user.click(screen.getByRole("button", { name: /sign up/i }));
+        await user.click(screen.getByRole("button", { name: /sign up/i }));
     expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
 
     // Fix and resubmit
@@ -167,5 +167,5 @@ describe("SignUpForm", () => {
     await waitFor(() => {
       expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
     });
-  });
+    });
 });
