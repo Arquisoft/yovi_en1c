@@ -1,17 +1,17 @@
 import { useState } from "react";
 import "./App.css";
-import RegisterForm from "./RegisterForm";
+import LoginForm from "./RegisterForm";
+import SignUpForm from "./SignupForm";
 import GameMenu from "./GameMenu";
-import type { GameConfig } from "./GameMenu";
 import GameHistory from "./GameHistory";
+import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
-import reactLogo from "./assets/react.svg";
 
-type Screen = "register" | "menu" | "board" | "history";
+type Screen = 'login' | 'signup' | 'menu' | 'board' | 'history';
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("register");
-  const [userName, setUserName] = useState("");
+  const [screen, setScreen] = useState<Screen>('login');
+  const [userName, setUserName] = useState('');
   const [config, setConfig] = useState<GameConfig | null>(null);
 
   if (screen === "menu") {
@@ -20,12 +20,12 @@ function App() {
         userName={userName}
         onStartGame={(cfg: GameConfig) => {
           setConfig(cfg);
-          setScreen("board");
+          setScreen('board');
         }}
         onLogOut={() => {
           setUserName("");
           setConfig(null);
-          setScreen("register");
+          setScreen("login");
         }}
         onViewHistory={() => setScreen("history")}
       />
@@ -49,24 +49,31 @@ function App() {
   return (
     <div className="App">
       <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
         <a href="https://react.dev" target="_blank" rel="noreferrer">
           <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
         </a>
       </div>
-      <h2>Welcome to the Software Architecture 2025-2026 course</h2>
+      <h2>Welcome to play the game of Y</h2>
 
-      <RegisterForm
-        onRegistered={(name: string) => {
-          setUserName(name);
-          setScreen("menu");
-        }}
-      />
+      {screen === "login" && (
+        <LoginForm
+          onLoggedIn={(name: string) => {
+            setUserName(name);
+            setScreen("menu");
+          }}
+          onGoToSignUp={() => setScreen("signup")}
+        />
+      )}
+
+      {screen === "signup" && (
+        <SignUpForm
+          onRegistered={(name: string) => {
+            setUserName(name);
+            setScreen('menu');
+          }}
+          onGoToLogin={() => setScreen("login")}
+        />
+      )}
     </div>
   );
 }

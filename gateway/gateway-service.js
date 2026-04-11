@@ -1,5 +1,7 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
 
 const app = express();
 const PORT = 8000;
@@ -33,6 +35,23 @@ app.use((req, res, next) => {
   console.log(`[Gateway]: ${req.method} ${req.path}`);
   next();
 });
+
+const verifyToken = (req, res, next) =>{
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided. Access denied!" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token!" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 // ─── Routes and Proxies ───────────────────────────────────────────────────────
 

@@ -2,58 +2,67 @@ import { useState } from "react";
 import "./GameMenu.css";
 
 export type BoardSize = "small" | "medium" | "large";
-export type GameMode = "standard" | "standard_pie" | "master_y";
-export type LayoutStyle = "classic" | "futuristic" | "wooden";
+export type GameMode = "standard";
 export type Difficulty = "random" | "easy" | "hard";
+export type LayoutStyle = "classic";
 
+// This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
   boardSize: BoardSize;
   mode: GameMode;
-  layout: LayoutStyle;
   difficulty: Difficulty;
+  layout: LayoutStyle;
 }
 
 type Props = {
-  readonly userName: string;
-  readonly onStartGame: (config: GameConfig) => void;
-  readonly onLogOut: () => void;
-  readonly onViewHistory: () => void;
+  userName: string;
+  onStartGame: (config: GameConfig) => void;
+  onLogOut: () => void;
+  onViewHistory: () => void;
 };
 
-const boardSizes: { value: BoardSize; title: string; description: string }[] = [
-  { value: "small", title: "Small", description: "5×5 — quick match" },
-  { value: "medium", title: "Medium", description: "7×7 — balanced" },
-  { value: "large", title: "Large", description: "9×9 — 55 nodes" },
-];
-
-const gameModes: { value: GameMode; title: string; description: string }[] = [
-  { value: "standard", title: "Standard", description: "Classic Y rules" },
+const boardSizes = [
   {
-    value: "standard_pie",
-    title: "Standard Pie",
-    description: "Includes pie rule",
+    value: "small" as BoardSize,
+    title: "Small",
+    description: "5x5 board, suitable for quick games",
   },
-  { value: "master_y", title: "Master Y", description: "Advanced variant" },
-];
-
-const layouts: { value: LayoutStyle; title: string; description: string }[] = [
-  { value: "classic", title: "Classic", description: "Clean tournament look" },
   {
-    value: "futuristic",
-    title: "Futuristic",
-    description: "Neon sci-fi style",
+    value: "medium" as BoardSize,
+    title: "Medium",
+    description: "7x7 board, classic Y experience",
   },
-  { value: "wooden", title: "Wooden", description: "Board-game table feel" },
+  {
+    value: "large" as BoardSize,
+    title: "Large",
+    description: "9x9 board, extensive Y gameplay",
+  },
 ];
 
-const difficulties: {
-  value: Difficulty;
-  title: string;
-  description: string;
-}[] = [
-  { value: "random", title: "Random", description: "Purely random moves" },
-  { value: "easy", title: "Easy", description: "20 % smart, 80 % random" },
-  { value: "hard", title: "Hard", description: "Always best move" },
+const gameModes = [
+  {
+    value: "standard" as GameMode,
+    title: "Standard",
+    description: "Classic Y rules",
+  },
+];
+
+const difficulties = [
+  {
+    value: "random" as Difficulty,
+    title: "Random",
+    description: "Random difficulty",
+  },
+  {
+    value: "easy" as Difficulty,
+    title: "Easy",
+    description: "Bit more difficult",
+  },
+  {
+    value: "hard" as Difficulty,
+    title: "Hard",
+    description: "Clean tournament look",
+  },
 ];
 
 export default function GameMenu({
@@ -62,146 +71,155 @@ export default function GameMenu({
   onLogOut,
   onViewHistory,
 }: Props) {
-  const [config, setConfig] = useState<GameConfig>({
-    boardSize: "medium",
-    mode: "standard",
-    layout: "classic",
-    difficulty: "hard",
-  });
+  const [boardIndex, setBoardIndex] = useState(0);
+  const [modeIndex, setModeIndex] = useState(0);
+  const [difficultyIndex, setDifficultyIndex] = useState(0);
 
-  const set = <K extends keyof GameConfig>(key: K, value: GameConfig[K]) =>
-    setConfig((c) => ({ ...c, [key]: value }));
+  const config: GameConfig = {
+    boardSize: boardSizes[boardIndex].value,
+    mode: gameModes[modeIndex].value,
+    difficulty: difficulties[difficultyIndex].value,
+    layout: "classic",
+  };
+
+  const goPrev = (index: number, length: number) => {
+    return (index - 1 + length) % length;
+  };
+
+  const goNext = (index: number, length: number) => {
+    return (index + 1) % length;
+  };
 
   return (
     <div className="menu">
       <div className="menuCard">
-        {/* CABECERA: Ahora el Log Out se queda arriba a la derecha */}
-        <div
-          className="menuHeader"
-          style={{ position: "relative", paddingTop: "10px" }}
-        >
-          <h2
-            className="menuTitle"
-            style={{ textAlign: "center", width: "100%" }}
-          >
-            Game Lobby
-          </h2>
-          <button
-            className="btn btnSecondary"
-            type="button"
-            onClick={onLogOut}
-            style={{ position: "absolute", right: "10px", top: "5px" }}
-          >
-            Log out
-          </button>
-        </div>
-
-        <p
-          className="menuSubtitle"
-          style={{ textAlign: "center", marginBottom: "25px" }}
-        >
-          Welcome, <strong>{userName}</strong>. Choose your setup for Y.
-        </p>
-
-        {/* 1. Board Size */}
-        <section className="menuSection">
-          <h3 className="sectionTitle">Board size</h3>
-          <div className="optionGrid">
-            {boardSizes.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={`optionCard ${config.boardSize === o.value ? "selected" : ""}`}
-                onClick={() => set("boardSize", o.value)}
-              >
-                <span className="optionTitle">{o.title}</span>
-                <span className="optionDescription">{o.description}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* 2. Game Mode */}
-        <section className="menuSection">
-          <h3 className="sectionTitle">Game mode</h3>
-          <div className="optionGrid">
-            {gameModes.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={`optionCard ${config.mode === o.value ? "selected" : ""}`}
-                onClick={() => set("mode", o.value)}
-              >
-                <span className="optionTitle">{o.title}</span>
-                <span className="optionDescription">{o.description}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* 3. Layout Style */}
-        <section className="menuSection">
-          <h3 className="sectionTitle">Layout style</h3>
-          <div className="optionGrid">
-            {layouts.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={`optionCard ${config.layout === o.value ? "selected" : ""}`}
-                onClick={() => set("layout", o.value)}
-              >
-                <span className="optionTitle">{o.title}</span>
-                <span className="optionDescription">{o.description}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* 4. Bot Difficulty */}
-        <section className="menuSection">
-          <h3 className="sectionTitle">Bot difficulty</h3>
-          <div className="optionGrid">
-            {difficulties.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={`optionCard ${config.difficulty === o.value ? "selected" : ""}`}
-                onClick={() => set("difficulty", o.value)}
-              >
-                <span className="optionTitle">{o.title}</span>
-                <span className="optionDescription">{o.description}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* ACCIONES: Botones agrupados al fondo con buen espaciado */}
-        <div
-          className="actions"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "12px",
-            marginTop: "30px",
-          }}
-        >
-          <button
-            className="btn btnPrimary btnLarge"
-            type="button"
-            onClick={() => onStartGame(config)}
-            style={{ width: "250px" }}
-          >
-            Start game
-          </button>
-
+        <div className="menuHeader">
+          <h2 className="menuTitle">Game Lobby</h2>
+          <p className="menuSubtitle">
+            Welcome, {userName}. Choose your setup for Y.
+          </p>
           <button
             className="btn btnSecondary"
             type="button"
             onClick={onViewHistory}
-            style={{ width: "180px" }}
           >
-            View History
+            Game history
+          </button>
+        </div>
+
+        <section className="menuSection">
+          <h3 className="sectionTitle">Board size</h3>
+          <div className="carousel">
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() =>
+                setBoardIndex(goPrev(boardIndex, boardSizes.length))
+              }
+              aria-label="Previous board size"
+            >
+              ‹
+            </button>
+
+            <div className="carouselCard">
+              <span className="optionTitle">
+                {boardSizes[boardIndex].title}
+              </span>
+              <span className="optionDescription">
+                {boardSizes[boardIndex].description}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() =>
+                setBoardIndex(goNext(boardIndex, boardSizes.length))
+              }
+              aria-label="Next board size"
+            >
+              ›
+            </button>
+          </div>
+        </section>
+
+        <section className="menuSection">
+          <h3 className="sectionTitle">Game mode</h3>
+          <div className="carousel">
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() => setModeIndex(goPrev(modeIndex, gameModes.length))}
+              aria-label="Previous game mode"
+            >
+              ‹
+            </button>
+
+            <div className="carouselCard">
+              <span className="optionTitle">{gameModes[modeIndex].title}</span>
+              <span className="optionDescription">
+                {gameModes[modeIndex].description}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() => setModeIndex(goNext(modeIndex, gameModes.length))}
+              aria-label="Next game mode"
+            >
+              ›
+            </button>
+          </div>
+        </section>
+
+        <section className="menuSection">
+          <h3 className="sectionTitle">Opponent style</h3>
+          <div className="carousel">
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() =>
+                setDifficultyIndex(goPrev(difficultyIndex, difficulties.length))
+              }
+              aria-label="Previous difficulty"
+            >
+              ‹
+            </button>
+
+            <div className="carouselCard">
+              <span className="optionTitle">
+                {difficulties[difficultyIndex].title}
+              </span>
+              <span className="optionDescription">
+                {difficulties[difficultyIndex].description}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() =>
+                setDifficultyIndex(goNext(difficultyIndex, difficulties.length))
+              }
+              aria-label="Next difficulty"
+            >
+              ›
+            </button>
+          </div>
+        </section>
+
+        <div className="actions">
+          <button
+            className="btn btnPrimary btnLarge"
+            type="button"
+            onClick={() => onStartGame(config)}
+          >
+            Start game
+          </button>
+
+          <button className="btn btnSecondary" type="button" onClick={onLogOut}>
+            Log out
           </button>
         </div>
       </div>

@@ -28,8 +28,6 @@ const BOT_ID_MAP: Record<Difficulty, string> = {
 // Map layout style to CSS class applied to the SVG wrapper
 const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
   classic: "layout-classic",
-  futuristic: "layout-futuristic",
-  wooden: "layout-wooden",
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -194,75 +192,75 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
   //helper method to call the bot API and return the chosen move, throwing an error if the call fails for any reason
   async function fetchBotMove(
-  botId: string,
-  yen: YEN,
-): Promise<BotResponse> {
-  const res = await fetch(
-    `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(yen),
-    },
-  );
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.message ?? `HTTP ${res.status}`);
+    botId: string,
+    yen: YEN,
+  ): Promise<BotResponse> {
+    const res = await fetch(
+      `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(yen),
+      },
+    );
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message ?? `HTTP ${res.status}`);
+    }
+    return res.json();
   }
-  return res.json();
-}
 
-//helper method to try to reduce complexity of the click handler, by applying the player move and returning the new board map without mutating the original
-function applyPlayerMove(
-  boardMap: BoardMap,
-  x: number,
-  y: number,
-  z: number,
-): BoardMap {
-  return { ...boardMap, [coordKey(x, y, z)]: 0 };
-}
+  //helper method to try to reduce complexity of the click handler, by applying the player move and returning the new board map without mutating the original
+  function applyPlayerMove(
+    boardMap: BoardMap,
+    x: number,
+    y: number,
+    z: number,
+  ): BoardMap {
+    return { ...boardMap, [coordKey(x, y, z)]: 0 };
+  }
 
-const handleCellClick = useCallback(
-  async (x: number, y: number, z: number) => {
-    if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
-    if (boardMap[coordKey(x, y, z)] !== undefined) return;
+  const handleCellClick = useCallback(
+    async (x: number, y: number, z: number) => {
+      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
+      if (boardMap[coordKey(x, y, z)] !== undefined) return;
 
-    setErrorMsg(null);
-    const afterPlayer = applyPlayerMove(boardMap, x, y, z);
-    setBoardMap(afterPlayer);
+      setErrorMsg(null);
+      const afterPlayer = applyPlayerMove(boardMap, x, y, z);
+      setBoardMap(afterPlayer);
 
-    if (checkWin(afterPlayer, 0)) {
-      setGameStatus("player_won");
-      saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
-      return;
-    }
-
-    setCurrentTurn(1);
-    setLoading(true);
-
-    try {
-      const data = await fetchBotMove(botId, buildYEN(afterPlayer, 1, boardSize));
-      const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
-      const afterBot: BoardMap = { ...afterPlayer, [botKey]: 1 };
-
-      setBoardMap(afterBot);
-      setLastBotMove(botKey);
-
-      if (checkWin(afterBot, 1)) {
-        setGameStatus("bot_won");
-        saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
-      } else {
-        setCurrentTurn(0);
+      if (checkWin(afterPlayer, 0)) {
+        setGameStatus("player_won");
+        saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
+        return;
       }
-    } catch (err) {
-      setErrorMsg(`Bot error: ${err instanceof Error ? err.message : "Unknown error"}`);
-      setCurrentTurn(0);
-    } finally {
-      setLoading(false);
-    }
-  },
-  [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId],
-);
+
+      setCurrentTurn(1);
+      setLoading(true);
+
+      try {
+        const data = await fetchBotMove(botId, buildYEN(afterPlayer, 1, boardSize));
+        const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
+        const afterBot: BoardMap = { ...afterPlayer, [botKey]: 1 };
+
+        setBoardMap(afterBot);
+        setLastBotMove(botKey);
+
+        if (checkWin(afterBot, 1)) {
+          setGameStatus("bot_won");
+          saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
+        } else {
+          setCurrentTurn(0);
+        }
+      } catch (err) {
+        setErrorMsg(`Bot error: ${err instanceof Error ? err.message : "Unknown error"}`);
+        setCurrentTurn(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId],
+  );
 
   // ─── Labels ───────────────────────────────────────────────────────────────
 
@@ -331,6 +329,7 @@ const handleCellClick = useCallback(
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
+        {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
         <div className={`svgWrapper ${layoutClass}`}>
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}

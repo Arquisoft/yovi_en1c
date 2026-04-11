@@ -64,6 +64,7 @@
 .statValue.statWin {
   color: #4ade80;
 }
+
 .statValue.statLoss {
   color: #f87171;
 }
@@ -157,9 +158,11 @@
   margin-left: 0.3rem;
   font-size: 0.75rem;
 }
+
 .sortIcon.inactive {
   opacity: 0.3;
 }
+
 .sortIcon.active {
   color: #a5b4fc;
 }
@@ -185,6 +188,7 @@
 .rowWin {
   border-left: 2px solid rgba(74, 222, 128, 0.35);
 }
+
 .rowLoss {
   border-left: 2px solid rgba(248, 113, 113, 0.35);
 }
