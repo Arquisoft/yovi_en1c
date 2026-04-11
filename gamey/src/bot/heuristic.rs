@@ -1,5 +1,4 @@
 use crate::{Cell, Coordinates, GameStatus, GameY, Movement, PlayerId, YBot};
-use rand::prelude::IndexedRandom;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 const WIN_SCORE: i32 = 1_000_000;
@@ -43,26 +42,7 @@ fn all_coords(size: u32) -> Vec<Coordinates> {
 // ─────────────────────────────────────────────────────────────
 // Virtual connection cost  (core evaluation idea)
 // ─────────────────────────────────────────────────────────────
-//
-// To win Y you must connect all three sides simultaneously.
-// The "virtual connection cost" is the minimum number of *additional*
-// stones you would need to place to achieve that connection.
-//
-// Algorithm:
-//   1. Run a 0-1 BFS from each side through the board:
-//        - your own stones cost 0 to traverse (already there)
-//        - empty cells cost 1 (need to be filled)
-//        - opponent stones are impassable
-//   2. For every cell C on the board, compute:
-//        dist_A[C] + dist_B[C] + dist_C[C]
-//      This is the cost of a "Steiner tree" routed through C.
-//   3. The minimum over all cells is a tight lower bound on how many
-//      moves you need to win. Subtract opponent's cost → evaluation.
 
-// Cost to traverse a cell for `player`:
-//   0    → already our stone (free)
-//   1    → empty (we need to place here)
-//   None → opponent's stone (impassable)
 fn traverse_cost(board: &GameY, coords: Coordinates, player: PlayerId) -> Option<u32> {
     let cell = board.cell_at(&coords);
     if cell == Cell::Occupied(player) {
@@ -74,8 +54,6 @@ fn traverse_cost(board: &GameY, coords: Coordinates, player: PlayerId) -> Option
     }
 }
 
-// Multi-source 0-1 BFS from a list of side cells.
-// Returns the minimum cost to reach every reachable cell on the board.
 fn bfs_from_side(
     board: &GameY,
     sources: &[Coordinates],
@@ -88,7 +66,6 @@ fn bfs_from_side(
         if let Some(cost) = traverse_cost(board, start, player) {
             if !dist.contains_key(&start) {
                 dist.insert(start, cost);
-                // 0-cost nodes go to the front, 1-cost to the back
                 if cost == 0 { deque.push_front(start); } else { deque.push_back(start); }
             }
         }
@@ -109,8 +86,6 @@ fn bfs_from_side(
     dist
 }
 
-// Returns the minimum number of stones still needed to connect all 3 sides.
-// Returns 999 if a win is impossible (fully blocked).
 fn virtual_connection_cost(board: &GameY, player: PlayerId) -> u32 {
     let all = all_coords(board.board_size());
 
@@ -122,9 +97,6 @@ fn virtual_connection_cost(board: &GameY, player: PlayerId) -> u32 {
     let dist_b = bfs_from_side(board, &side_b, player);
     let dist_c = bfs_from_side(board, &side_c, player);
 
-    // The Steiner-point cost through cell C = dist_a[C] + dist_b[C] + dist_c[C].
-    // The minimum over all cells is how close we are to connecting all three sides.
-    // A central cell (equidistant from all sides) minimises this naturally.
     all.iter()
         .filter_map(|c| {
             let da = dist_a.get(c).copied()?;
@@ -140,8 +112,6 @@ fn virtual_connection_cost(board: &GameY, player: PlayerId) -> u32 {
 // Static board evaluation (used at minimax leaf nodes)
 // ─────────────────────────────────────────────────────────────
 
-// Full board score from the bot's perspective.
-// Higher = better: we want our cost low and the opponent's cost high.
 fn evaluate_board(board: &GameY, bot_player: PlayerId) -> i32 {
     let my_cost  = virtual_connection_cost(board, bot_player)               as i32;
     let opp_cost = virtual_connection_cost(board, other_player(bot_player)) as i32;
@@ -153,7 +123,6 @@ fn evaluate_board(board: &GameY, bot_player: PlayerId) -> i32 {
 // them in minimax (better ordering → more alpha-beta pruning)
 // ─────────────────────────────────────────────────────────────
 
-// BFS from `start` through already-placed friendly pieces.
 fn group_info(
     board: &GameY,
     start: Coordinates,
@@ -259,7 +228,8 @@ fn minimax(
 // Core move selection
 // ─────────────────────────────────────────────────────────────
 
-fn best_move(board: &GameY) -> Option<Coordinates> {
+/// Selects the best move using minimax up to the given depth.
+fn best_move_with_depth(board: &GameY, depth: u32) -> Option<Coordinates> {
     let available = board.available_cells().clone();
     if available.is_empty() {
         return None;
@@ -277,7 +247,7 @@ fn best_move(board: &GameY) -> Option<Coordinates> {
                 .add_move(Movement::Placement { player: bot_player, coords })
                 .is_ok()
             {
-                minimax(&sim, MINIMAX_DEPTH - 1, i32::MIN + 1, i32::MAX, false, bot_player)
+                minimax(&sim, depth - 1, i32::MIN + 1, i32::MAX, false, bot_player)
             } else {
                 i32::MIN
             };
@@ -287,9 +257,26 @@ fn best_move(board: &GameY) -> Option<Coordinates> {
         .map(|(coords, _)| coords)
 }
 
+fn best_move(board: &GameY) -> Option<Coordinates> {
+    best_move_with_depth(board, MINIMAX_DEPTH)
+}
+
 // ─────────────────────────────────────────────────────────────
 // Public bot structs
 // ─────────────────────────────────────────────────────────────
+
+/// Plays with a shallow minimax (depth 1).
+/// Has basic strategy but cannot see threats more than 1 move ahead.
+pub struct EasyBot;
+
+impl YBot for EasyBot {
+    fn name(&self) -> &str { "easy_bot" }
+
+    fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        best_move_with_depth(board, 1)
+    }
+}
 
 /// Always plays the best move via minimax + virtual connection evaluation.
 pub struct HeuristicBot;
@@ -300,24 +287,6 @@ impl YBot for HeuristicBot {
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
         std::thread::sleep(std::time::Duration::from_millis(600));
         best_move(board)
-    }
-}
-
-/// Plays heuristically 20% of the time, randomly 80% of the time.
-pub struct EasyBot;
-
-impl YBot for EasyBot {
-    fn name(&self) -> &str { "easy_bot" }
-
-    fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-        if rand::random::<f32>() < 0.20 {
-            best_move(board)
-        } else {
-            let available = board.available_cells();
-            let &cell_idx = available.choose(&mut rand::rng())?;
-            Some(Coordinates::from_index(cell_idx, board.board_size()))
-        }
     }
 }
 
@@ -396,7 +365,6 @@ mod tests {
         );
     }
 
-    // On an empty board the bot must still return a valid move.
     #[test]
     fn test_returns_a_valid_move_on_empty_board() {
         let game = GameY::new(7);
@@ -407,7 +375,6 @@ mod tests {
         );
     }
 
-    // A group that already touches all three sides must have virtual cost 0.
     #[test]
     fn test_virtual_cost_zero_when_already_connected() {
         let mut game = GameY::new(3);
@@ -421,7 +388,6 @@ mod tests {
         assert_eq!(cost, 0, "A group touching all three sides should cost 0");
     }
 
-    // Virtual connection cost should not increase after placing a central stone.
     #[test]
     fn test_virtual_cost_decreases_with_better_positions() {
         let mut game = GameY::new(5);
