@@ -1,268 +1,277 @@
 .menu {
-    min-height: 100vh;
-    display: flex;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    background: var(--color-surface, #1a1a1f);
-    box-sizing: border-box;
-}
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #111116;
 
-.historyButtonWrapper {
-    position: absolute;
-    top: 24px;
-    left: 24px;
-    z-index: 10;
+  /* Fixed Hexagon Pattern with scattered Red/Blue flickering glows */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='200' viewBox='0 0 112 200'%3E%3Cdefs%3E%3Cstyle%3E .hex %7B stroke: %232d2d35; stroke-width: 1; fill: none; %7D .blue %7B fill: %233b82f6; opacity: 0; animation: pulse 8s infinite; %7D .red %7B fill: %23ef4444; opacity: 0; animation: pulse 12s infinite 2s; %7D @keyframes pulse %7B 0%25, 100%25 %7B opacity: 0; %7D 50%25 %7B opacity: 0.15; %7D %7D %3C/style%3E%3C/defs%3E%3Cpath class='hex' d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100'/%3E%3Cpath class='hex' d='M84 66L56 50L56 16L84 0L112 16L112 50L84 66L84 100'/%3E%3Cpath class='hex blue' d='M28 66L0 50L0 16L28 0L56 16L56 50z'/%3E%3Cpath class='hex red' d='M84 166L56 150L56 116L84 100L112 116L112 150z'/%3E%3C/svg%3E");
+  background-size: 112px 200px;
+  background-attachment: fixed; /* Keeps the background from scrolling */
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .menuCard {
-    width: 100%;
-    max-width: 760px;
-    background: var(--color-surface, #1a1a1f);
-    border-radius: 22px;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
-    padding: 2rem;
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  background: rgba(26, 26, 31, 0.95); /* Slight transparency */
+  backdrop-filter: blur(8px); /* Nice glass effect */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .menuHeader {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .menuTitle {
-    margin: 0;
-    font-size: 2rem;
-    color: #0f4c5c;
+  margin: 0;
+  font-size: 2rem;
+  color: #22d3ee;
 }
 
 .menuSubtitle {
-    margin-top: 0.6rem;
-    color: #4b5563;
-    font-size: 1rem;
-    line-height: 1.5;
+  margin-top: 0.6rem;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .menuSection {
-    margin-bottom: 1.75rem;
+  margin-bottom: 1.75rem;
 }
 
 .sectionTitle {
-    margin: 0 0 0.9rem 0;
-    color: #155e75;
-    font-size: 1.05rem;
-    font-weight: 700;
+  margin: 0 0 0.9rem 0;
+  color: #155e75;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .carousel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .carouselButton {
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #14b8a6, #3b82f6);
-    color: white;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-    flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #3b82f6);
+  color: white;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+  flex-shrink: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    line-height: 1;
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.16);
 }
 
 .carouselButton:hover {
-    transform: translateY(-1px) scale(1.03);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.22);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.22);
 }
 
 .carouselButton:active {
-    transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1);
 }
 
 .carouselButton span {
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1;
-    transform: translateY(-1px);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .carouselCard {
+  flex: 1;
+  max-width: 430px;
+  min-height: 118px;
+  background: var(--color-surface, #74748a);
+  border: 1.5px solid #b6e3ea;
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.carouselCard:hover {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.08);
+}
+
+.optionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8f1ff;
+  margin-bottom: 0.35rem;
+}
+
+.optionDescription {
+  font-size: 0.96rem;
+  color: #b8c6e0;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btnPrimary {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.02em;
+}
+
+.btnPrimary:hover {
+  background: #7c73ff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.3);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+.btnLarge {
+  min-width: 190px;
+}
+
+.btnSecondary {
+  background: #a5a5b5;
+  color: #f9fafb;
+  border: 1px solid #5b5b6a;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.btnSecondary:hover {
+  background: #3a3a44;
+  border-color: #7c73ff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btnSecondary:active {
+  transform: translateY(0);
+}
+
+.historyButtonWrapper .btnSecondary {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  background: #3a3a44;
+  border-color: #7c73ff;
+}
+
+@media (max-width: 640px) {
+  .menu {
+    padding: 1rem;
+  }
+
+  .menuCard {
+    padding: 1.4rem;
+    border-radius: 18px;
+  }
+
+  .menuTitle {
+    font-size: 1.7rem;
+  }
+
+  .menuSubtitle {
+    font-size: 0.95rem;
+  }
+
+  .carousel {
+    gap: 0.75rem;
+  }
+
+  .carouselButton {
+    width: 44px;
+    height: 44px;
+  }
+
+  .carouselButton span {
+    font-size: 1.5rem;
+  }
+
+  .carouselCard {
     flex: 1;
     max-width: 430px;
     min-height: 118px;
-    background: var(--color-surface, #74748a);
-    border: 1.5px solid #b6e3ea;
+    background: #1f1f24;
+    border: 1.5px solid #3c4454;
     border-radius: 18px;
     padding: 1.2rem 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-}
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
+  }
 
-.carouselCard:hover {
-    border-color: #14b8a6;
-    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.08);
-}
+  .carouselCard:hover {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  }
 
-.optionTitle {
+  .optionTitle {
     font-size: 1.15rem;
     font-weight: 700;
     color: #e8f1ff;
     margin-bottom: 0.35rem;
-}
+  }
 
-.optionDescription {
+  .optionDescription {
     font-size: 0.96rem;
     color: #b8c6e0;
     line-height: 1.45;
-}
-
-.actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.btn {
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    padding: 0.9rem 1.4rem;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.btnPrimary {
-    background: #4f46e5;
-    color: white;
-    border: none;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-    letter-spacing: 0.02em;
-}
-
-.btnPrimary:hover {
-    background: #7c73ff;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.3);
-}
-
-.btnPrimary:active {
-    transform: translateY(0);
-}
-
-.btnLarge {
-    min-width: 190px;
-}
-
-.btnSecondary {
-    background: #a5a5b5;
-    color: #f9fafb;
-    border: 1px solid #5b5b6a;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.btnSecondary:hover {
-    background: #3a3a44;
-    border-color: #7c73ff;
-    color: #ffffff;
-    transform: translateY(-1px);
-}
-
-.btnSecondary:active {
-    transform: translateY(0);
-}
-
-
-.historyButtonWrapper .btnSecondary {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-    background: #3a3a44;
-    border-color: #7c73ff;
-}
-
-@media (max-width: 640px) {
-    .menu {
-        padding: 1rem;
-    }
-
-    .menuCard {
-        padding: 1.4rem;
-        border-radius: 18px;
-    }
-
-    .menuTitle {
-        font-size: 1.7rem;
-    }
-
-    .menuSubtitle {
-        font-size: 0.95rem;
-    }
-
-    .carousel {
-        gap: 0.75rem;
-    }
-
-    .carouselButton {
-        width: 44px;
-        height: 44px;
-    }
-
-    .carouselButton span {
-        font-size: 1.5rem;
-    }
-
-    .carouselCard {
-        flex: 1;
-        max-width: 430px;
-        min-height: 118px;
-        background: #1f1f24;
-        border: 1.5px solid #3c4454;
-        border-radius: 18px;
-        padding: 1.2rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-    }
-
-
-    .carouselCard:hover {
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
-    }
-
-    .optionTitle {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #e8f1ff;
-        margin-bottom: 0.35rem;
-    }
-
-    .optionDescription {
-
-        font-size: 0.96rem;
-        color: #b8c6e0;
-        line-height: 1.45;
-
-    }
+  }
 }
