@@ -1,35 +1,215 @@
 openapi: 3.0.0
 info:
-  title: User Service API
+  title: Game Y Architecture API
   version: 1.0.0
-  description: API for managing users
+  description: |
+    Unified API for the Y Game system. 
+    Entry point: Gateway Service (Port 8000).
+    - User/History logic handled by Users Service (Node.js).
+    - Bot/Game logic handled by Gamey Service (Rust).
+
+servers:
+  - url: http://localhost:8000
+    description: Gateway Server
+
+tags:
+  - name: Infrastructure
+    description: Health monitoring for all services.
+  - name: Users
+    description: User registration and management.
+  - name: Game History
+    description: Persistence of match results.
+  - name: Game Logic & Bots
+    description: AI move selection and game turn processing.
+
 paths:
-  /createuser:
+  # --- INFRASTRUCTURE ---
+  /health:
+    get:
+      tags: [Infrastructure]
+      summary: Gateway Health Check
+      responses:
+        "200":
+          description: Gateway is operational.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "Gateway up and running" }
+
+  # --- USER SERVICE (via /api/users) ---
+  /api/users/createuser:
     post:
-      summary: Creates a new user
-      description: Creates a new user with the given username.
+      tags: [Users]
+      summary: Create User
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - username
+              required: [username]
               properties:
-                username:
-                  type: string
-                  example: "testuser"
+                username: { type: string, example: "player1" }
+                email:
+                  {
+                    type: string,
+                    format: email,
+                    example: "player1@example.com",
+                  }
       responses:
-        '200':
-          description: User created successfully
+        "200":
+          description: User created.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Hello testuser! welcome to the course!"
-        '400':
-          description: Error creating user
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Database or validation error.
+
+  /api/users/games/list:
+    get:
+      tags: [Game History]
+      summary: List User Games
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^[a-zA-Z0-9_]{1,32}$"
+      responses:
+        "200":
+          description: List of the last 20 games.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GameRecord"
+
+  # --- GAMEY SERVICE (via /api/gamey) ---
+  /api/gamey/{api_version}/ybot/choose/{bot_id}:
+    post:
+      tags: [Game Logic & Bots]
+      summary: Get Bot Move
+      parameters:
+        - name: api_version
+          in: path
+          required: true
+          schema: { type: string, example: "v1" }
+        - name: bot_id
+          in: path
+          required: true
+          schema: { type: string, enum: [random_bot, easy_bot, heuristic_bot] }
+      requestBody:
+        description: Current game state in YEN format.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/YEN"
+      responses:
+        "200":
+          description: Bot move coordinates.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoveResponse"
+        "400":
+          description: Error (Invalid version or bot).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/gamey/{api_version}/play:
+    post:
+      tags: [Game Logic & Bots]
+      summary: Process Turn
+      description: Validates human move and optionally triggers bot response.
+      parameters:
+        - name: api_version
+          in: path
+          required: true
+          schema: { type: string, example: "v1" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayRequest"
+      responses:
+        "200":
+          description: Updated game state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayResponse"
+
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        message: { type: string }
+        databaseInfo:
+          type: object
+          properties:
+            id: { type: string }
+            registeredAt: { type: string }
+            status: { type: string }
+
+    GameRecord:
+      type: object
+      required: [username, result, board, difficulty, boardSize]
+      properties:
+        username: { type: string }
+        result: { type: string, enum: [player_won, bot_won] }
+        board: { type: object }
+        totalMoves: { type: integer }
+        difficulty: { type: string }
+        boardSize: { type: string }
+        playedAt: { type: string, format: date-time }
+
+    YEN:
+      type: object
+      description: The internal state representation of the Y Game board.
+
+    Coordinates:
+      type: object
+      properties:
+        x: { type: integer }
+        y: { type: integer }
+        z: { type: integer }
+
+    MoveResponse:
+      type: object
+      properties:
+        api_version: { type: string }
+        bot_id: { type: string }
+        coords: { $ref: "#/components/schemas/Coordinates" }
+
+    PlayRequest:
+      type: object
+      required: [yen, position]
+      properties:
+        yen: { $ref: "#/components/schemas/YEN" }
+        position: { type: integer, description: "Index of the move" }
+        bot_id: { type: string, description: "Optional bot to play next turn" }
+
+    PlayResponse:
+      type: object
+      properties:
+        api_version: { type: string }
+        yen: { $ref: "#/components/schemas/YEN" }
+        status: { type: string, enum: [ongoing, finished] }
+        winner: { type: integer, nullable: true }
+
+    ErrorResponse:
+      type: object
+      properties:
+        api_version: { type: string, nullable: true }
+        bot_id: { type: string, nullable: true }
+        message: { type: string }
