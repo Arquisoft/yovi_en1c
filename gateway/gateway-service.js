@@ -6,6 +6,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
 const app = express();
 const PORT = 8000;
 
+// ─── Configuration ────────────────────────────────────────────────────────────
+const SERVICES = {
+  USERS: process.env.USERS_SERVICE_URL || "http://users:3000",
+  GAMEY: process.env.GAMEY_SERVICE_URL || "http://gamey:4000",
+};
+
 const commonOptions = {
   changeOrigin: true,
   onError: (err, req, res) => {
@@ -14,14 +20,12 @@ const commonOptions = {
 };
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-// Implemented with plain Express middleware so no extra npm package is needed. It was giving some problems
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  // Preflight requests must be answered immediately without hitting the proxy
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -49,30 +53,54 @@ const verifyToken = (req, res, next) =>{
   });
 };
 
+// ─── Routes and Proxies ───────────────────────────────────────────────────────
 
-// ─── Proxy: Users service ─────────────────────────────────────────────────────
+// Proxy: Users service
 app.use(
   "/api/users",
   createProxyMiddleware({
     ...commonOptions,
-    target: "http://users:3000",
+    target: SERVICES.USERS,
     pathRewrite: { "^/api/users": "" },
   }),
 );
 
-// ─── Proxy: Gamey service ─────────────────────────────────────────────────────
+// Proxy: Gamey service
 app.use(
   "/api/gamey",
   createProxyMiddleware({
     ...commonOptions,
-    target: "http://gamey:4000",
+    target: SERVICES.GAMEY,
     pathRewrite: { "^/api/gamey": "" },
   }),
 );
 
 // ─── Health check ─────────────────────────────────────────────────────────────
-app.get("/health", (req, res) => {
-  res.json({ status: "Gateway up and running" });
+app.get("/health", async (req, res) => {
+  const check = async (url) => {
+    try {
+      const response = await fetch(`${url}/status`, {
+        signal: AbortSignal.timeout(2000),
+      });
+      return response.ok ? "OK" : "Error";
+    } catch {
+      return "Error";
+    }
+  };
+
+  // Run checks in parallel for better performance
+  const [usersStatus, gameyStatus] = await Promise.all([
+    check(SERVICES.USERS),
+    check(SERVICES.GAMEY),
+  ]);
+
+  const isHealthy = usersStatus === "OK" && gameyStatus === "OK";
+
+  res.status(isHealthy ? 200 : 503).json({
+    gateway: "OK",
+    users: usersStatus,
+    gamey: gameyStatus,
+  });
 });
 
 app.listen(PORT, () => {
