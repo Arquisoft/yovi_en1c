@@ -1,18 +1,31 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
 
 const app = express();
 const PORT = 8000;
 
+// ─── Configuration ────────────────────────────────────────────────────────────
+const SERVICES = {
+  USERS: process.env.USERS_SERVICE_URL || "http://users:3000",
+  GAMEY: process.env.GAMEY_SERVICE_URL || "http://gamey:4000",
+};
+
+const commonOptions = {
+  changeOrigin: true,
+  onError: (err, req, res) => {
+    res.status(503).json({ error: "Service unreachable" });
+  },
+};
+
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-// Implemented with plain Express middleware so no extra npm package is needed. It was giving some problems
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  // Preflight requests must be answered immediately without hitting the proxy
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -23,29 +36,71 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Proxy: Users service ─────────────────────────────────────────────────────
+const verifyToken = (req, res, next) =>{
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided. Access denied!" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token!" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+// ─── Routes and Proxies ───────────────────────────────────────────────────────
+
+// Proxy: Users service
 app.use(
-  "/users",
+  "/api/users",
   createProxyMiddleware({
-    target: "http://users:3000",
-    changeOrigin: true,
-    pathRewrite: { "^/users": "" },
+    ...commonOptions,
+    target: SERVICES.USERS,
+    pathRewrite: { "^/api/users": "" },
   }),
 );
 
-// ─── Proxy: Gamey service ─────────────────────────────────────────────────────
+// Proxy: Gamey service
 app.use(
-  "/gamey",
+  "/api/gamey",
   createProxyMiddleware({
-    target: "http://gamey:4000",
-    changeOrigin: true,
-    pathRewrite: { "^/gamey": "" },
+    ...commonOptions,
+    target: SERVICES.GAMEY,
+    pathRewrite: { "^/api/gamey": "" },
   }),
 );
 
 // ─── Health check ─────────────────────────────────────────────────────────────
-app.get("/health", (req, res) => {
-  res.json({ status: "Gateway up and running" });
+app.get("/health", async (req, res) => {
+  const check = async (url) => {
+    try {
+      const response = await fetch(`${url}/status`, {
+        signal: AbortSignal.timeout(2000),
+      });
+      return response.ok ? "OK" : "Error";
+    } catch {
+      return "Error";
+    }
+  };
+
+  // Run checks in parallel for better performance
+  const [usersStatus, gameyStatus] = await Promise.all([
+    check(SERVICES.USERS),
+    check(SERVICES.GAMEY),
+  ]);
+
+  const isHealthy = usersStatus === "OK" && gameyStatus === "OK";
+
+  res.status(isHealthy ? 200 : 503).json({
+    gateway: "OK",
+    users: usersStatus,
+    gamey: gameyStatus,
+  });
 });
 
 app.listen(PORT, () => {

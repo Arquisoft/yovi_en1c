@@ -23,6 +23,7 @@ pub mod choose;
 pub mod error;
 pub mod state;
 pub mod version;
+pub mod play;
 use axum::response::IntoResponse;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
@@ -30,7 +31,7 @@ pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
 
-use crate::{GameYError, RandomBot, YBotRegistry, state::AppState};
+use crate::{EasyBot, GameYError, HeuristicBot, RandomBot, YBotRegistry, state::AppState};
 
 /// Creates the Axum router with the given state.
 ///
@@ -42,15 +43,19 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
+        .route("/{api_version}/play", axum::routing::post(play::play))
         .layer(CorsLayer::permissive())
         .with_state(state)
 }
 
-/// Creates the default application state with the standard bot registry.
+/// Creates the default application state with all the standard bot registry.
 ///
-/// The default state includes the `RandomBot` which selects moves randomly.
+/// The default state includes the type of bots in other to know the algorithms which selects moves randomly.
 pub fn create_default_state() -> AppState {
-    let bots = YBotRegistry::new().with_bot(Arc::new(RandomBot));
+    let bots = YBotRegistry::new()
+        .with_bot(Arc::new(RandomBot))
+        .with_bot(Arc::new(EasyBot))
+        .with_bot(Arc::new(HeuristicBot));
     AppState::new(bots)
 }
 

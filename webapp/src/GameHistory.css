@@ -1,0 +1,272 @@
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.history {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: var(--color-bg, #0f0f11);
+}
+
+.historyCard {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #1a1a1f);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.historyHeader h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text, #f1f1f3);
+  margin: 0;
+}
+
+/* ── Stats bar ───────────────────────────────────────────────────────────── */
+.statsBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text, #f1f1f3);
+  line-height: 1;
+}
+
+.statValue.statWin {
+  color: #4ade80;
+}
+
+.statValue.statLoss {
+  color: #f87171;
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statDivider {
+  width: 1px;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ── Filter tabs ─────────────────────────────────────────────────────────── */
+.filterTabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filterTab {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterTab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.filterTab.activeTab {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #c4b5fd;
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────── */
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.historyTable thead tr {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.historyTable th {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.historyTable th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.historyTable th.sortable:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tdBoardSize {
+  text-align: center;
+  font-weight: 500;
+}
+
+.sortIcon {
+  margin-left: 0.3rem;
+  font-size: 0.75rem;
+}
+
+.sortIcon.inactive {
+  opacity: 0.3;
+}
+
+.sortIcon.active {
+  color: #a5b4fc;
+}
+
+.historyTable tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.12s;
+}
+
+.historyTable tbody tr:last-child {
+  border-bottom: none;
+}
+
+.historyTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.historyTable td {
+  padding: 0.7rem 1rem;
+  color: var(--color-text, #f1f1f3);
+}
+
+.rowWin {
+  border-left: 2px solid rgba(74, 222, 128, 0.35);
+}
+
+.rowLoss {
+  border-left: 2px solid rgba(248, 113, 113, 0.35);
+}
+
+.tdIndex {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.78rem;
+  width: 2rem;
+}
+
+.tdMoves {
+  font-variant-numeric: tabular-nums;
+}
+
+.tdDate {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.resultBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.badgeWin {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.badgeLoss {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+/* ── Empty / loading / error states ─────────────────────────────────────── */
+.historyCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #a5b4fc;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.88rem;
+}
+
+.emptyText {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.95rem;
+}
+
+.errorText {
+  color: #f87171;
+  font-size: 0.9rem;
+}

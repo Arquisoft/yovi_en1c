@@ -441,6 +441,17 @@ impl GameY {
         }
         false
     }
+
+    /// Returns the state of the cell at the given coordinates.
+    ///
+    /// This is used by external code (e.g. bots) that needs to read the board
+    /// without having direct access to the internal `board_map`.
+    pub fn cell_at(&self, coords: &Coordinates) -> Cell {
+        match self.board_map.get(coords) {
+            Some((_, player)) => Cell::Occupied(*player),
+            None => Cell::Empty,
+        }
+    }
 }
 
 fn indent(str: &mut String, level: u32) {
