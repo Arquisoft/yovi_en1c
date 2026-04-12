@@ -1,21 +1,17 @@
 import express from "express";
-import swaggerUi from "swagger-ui-express";
-import fs from "node:fs";
-import YAML from "js-yaml";
 import promBundle from "express-prom-bundle";
 import bcrypt from "bcryptjs";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import { connectDB, mongoose } from "./db.js";
 import User from "./schema.js";
 
 const app = express();
 const port = 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'gamey_secret_26';
+const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
 
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
-// Swagger Documentation Setup
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const GameSchema = new mongoose.Schema({
@@ -29,14 +25,8 @@ const GameSchema = new mongoose.Schema({
 });
 const Game = mongoose.models.Game || mongoose.model("Game", GameSchema);
 
-// ─── Swagger ──────────────────────────────────────────────────────────────────
-
-try {
-  const swaggerDocument = YAML.load(fs.readFileSync("./openapi.yaml", "utf8"));
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-} catch (e) {
-  console.log("Swagger error:", e.message);
-}
+// CORS and Middleware
+// ─── CORS ─────────────────────────────────────────────────────────────────────
 
 // CORS and Middleware
 // ─── CORS ─────────────────────────────────────────────────────────────────────

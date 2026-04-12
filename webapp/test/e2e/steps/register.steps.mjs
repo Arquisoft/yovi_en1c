@@ -5,13 +5,16 @@ Given("the register page is open", async function () {
   await this.page.goto("http://localhost:5173");
 });
 
-// 1. A dedicated step for a successful API response
 When("the API returns a successful registration", async function () {
-  await this.page.route("**/users/createuser", async (route) => {
+  await this.page.route("**/api/users/login", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ message: "User created" }),
+      body: JSON.stringify({
+        message: "Login successful",
+        token: "fake-token-for-testing",
+        user: { id: "123", username: "Alice" },
+      }),
     });
   });
 });
@@ -19,6 +22,7 @@ When("the API returns a successful registration", async function () {
 When("I enter {string} as the username and submit", async function (username) {
   const page = this.page;
   await page.fill("#username", username);
+  await page.fill("#password", "testpassword123");
   await page.click(".submit-button");
 });
 
@@ -28,16 +32,15 @@ Then(
     const page = this.page;
     await page.waitForSelector(".menuSubtitle", { timeout: 5000 });
     const text = await page.textContent(".menuSubtitle");
-    // Checking for the name "Alice" to be flexible with "Welcome, Alice"
     assert.ok(
       text.includes(expectedName),
-      `Expected name ${expectedName} not found in: ${text}`,
+      `Expected name "${expectedName}" not found in: "${text}"`,
     );
   },
 );
 
 When("the API returns a 400 error", async function () {
-  await this.page.route("**/users/createuser", async (route) => {
+  await this.page.route("**/api/users/login", async (route) => {
     await route.fulfill({
       status: 400,
       contentType: "application/json",
@@ -47,7 +50,7 @@ When("the API returns a 400 error", async function () {
 });
 
 When("the network call fails", async function () {
-  await this.page.route("**/users/createuser", async (route) =>
+  await this.page.route("**/api/users/login", async (route) =>
     route.abort("failed"),
   );
 });
@@ -56,7 +59,6 @@ Then(
   "I should see an error message containing {string}",
   async function (expected) {
     const page = this.page;
-    // Wait for the error div defined in RegisterForm.tsx
     await page.waitForSelector(".error-message", { timeout: 5000 });
     const text = await page.textContent(".error-message");
 
@@ -65,7 +67,7 @@ Then(
 
     assert.ok(
       text.includes(actualExpected),
-      `Error expected: ${actualExpected}, obtained: ${text}`,
+      `Error expected: "${actualExpected}", obtained: "${text}"`,
     );
   },
 );
