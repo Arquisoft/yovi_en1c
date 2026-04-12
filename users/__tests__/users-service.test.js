@@ -218,7 +218,6 @@ describe("Auth & Game Endpoints", () => {
         difficulty: "easy",
         boardSize: "3x3",
       });
-
     expect(res.status).toBe(200);
     expect(res.body.message).toBe("Game saved!");
   });
@@ -379,7 +378,6 @@ describe("Auth & Game Endpoints", () => {
     vi.spyOn(User, "deleteOne").mockRejectedValueOnce(new Error("Delete Fail"));
 
     const res = await request(app).delete("/deleteuser/testuser");
-
     expect(res.status).toBe(500);
   });
 
