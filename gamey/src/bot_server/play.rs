@@ -2,8 +2,7 @@ use crate::{Coordinates, GameY, YEN, error::ErrorResponse, state::AppState};
 use axum::{Json, extract::{Query, State}};
 use serde::{Deserialize, Serialize};
 
-/// We define the query parameters expected by the competition.
-/// The 'position' field arrives as a URL-encoded JSON string.
+/// Query parameters expected (position YEN & [optional] bot_id).
 #[derive(Deserialize)]
 pub struct PlayQuery {
     pub position: String,
@@ -28,7 +27,7 @@ pub async fn play(
     Query(query): Query<PlayQuery>,
 ) -> Result<Json<BotResponse>, Json<ErrorResponse>> {
     
-    // We attempt to parse the 'position' query string into our YEN format.
+    // Parsing the position query string into our YEN format.
     let yen: YEN = serde_json::from_str(&query.position).map_err(|e| {
         Json(ErrorResponse::error(
             &format!("Invalid YEN JSON: {}", e),
@@ -37,7 +36,8 @@ pub async fn play(
         ))
     })?;
 
-    // We convert the YEN representation into our internal GameY logic.
+    // Convert the YEN representation into our internal GameY logic.
+    // Try form function in game.rs
     let game = GameY::try_from(yen).map_err(|e| {
         Json(ErrorResponse::error(
             &format!("Invalid game state: {}", e),
@@ -55,6 +55,7 @@ pub async fn play(
         )));
     }
 
+    // bot_id is optional, default to "heuristic_bot" if not provided.
     let bot_id = query.bot_id.unwrap_or_else(|| "heuristic_bot".to_string());
     let bot = state.bots().find(&bot_id).ok_or_else(|| {
         Json(ErrorResponse::error(
@@ -64,16 +65,15 @@ pub async fn play(
         ))
     })?;
 
-    // We ask our bot to choose the best move based on the provided state.
-    // Since we are using barycentric coordinates, our 'Coordinates' struct 
-    // already contains the necessary x, y, and z values.
+    // Ask the bot to choose the best move based on the provided state.
     match bot.choose_move(&game) {
         Some(coords) => {
             // We return the movement coordinates as the primary response.
             Ok(Json(BotResponse::Movement { coords }))
         }
         None => {
-            // If our bot determines it must swap or resign, we handle that here.
+            // Swap or resign actions would be handled here
+
             // For now, if no move is found, we treat it as an error or a resignation.
             Ok(Json(BotResponse::Action { action: "resign".to_string() }))
         }
