@@ -64,6 +64,11 @@ describe("GameHistory", () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining("username=Javi"),
+        expect.objectContaining({
+          headers: expect.objectContaining({"Authorization": expect.stringContaining("Bearer")
+
+          })
+        })
       );
     });
   });

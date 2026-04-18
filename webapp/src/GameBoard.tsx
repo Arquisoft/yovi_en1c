@@ -196,11 +196,16 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     botId: string,
     yen: YEN,
   ): Promise<BotResponse> {
+
+    const token = localStorage.getItem("token");
+
     const res = await fetch(
       `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+         },
         body: JSON.stringify(yen),
       },
     );

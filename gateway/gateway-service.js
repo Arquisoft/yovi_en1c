@@ -81,6 +81,7 @@ app.use(
 // Proxy: Gamey service
 app.use(
   "/api/gamey",
+  verifyToken,
   createProxyMiddleware({
     ...commonOptions,
     target: SERVICES.GAMEY,

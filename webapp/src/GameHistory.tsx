@@ -40,9 +40,18 @@ export default function GameHistory({ onBack, userName }: Props) {
   useEffect(() => {
     const fetchGames = async () => {
       try {
+
+        const token = localStorage.getItem("token");
+
         const res = await fetch(
           `${API_GATEWAY_URL}/api/users/games/list?username=${encodeURIComponent(userName)}`,
+        {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
         );
+        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: GameRecord[] = await res.json();
         setGames(data);
