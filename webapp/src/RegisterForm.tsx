@@ -56,60 +56,62 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="register-form">
-      <h2>Welcome back!</h2>
-      <p>Please enter your username and password to log in.</p>
+    <div className="login-form hexBackground">
+      <form onSubmit={handleSubmit} className="register-form">
+        <h2>Welcome back!</h2>
+        <p>Please enter your username and password to log in.</p>
 
-      <div className="form-group">
-        <label htmlFor="username">What's your username?</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="password">And password?</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <button type="submit" className="submit-button">
-        Lets go!
-      </button>
-
-      <p style={{ marginTop: 16 }}>
-        Don't have an account?{" "}
-        <button
-          type="button"
-          onClick={onGoToSignUp}
-          style={{
-            background: "none",
-            border: "none",
-            padding: 0,
-            color: "#4f46e5",
-            cursor: "pointer",
-            textDecoration: "underline",
-          }}
-        >
-          Sign up here
-        </button>
-      </p>
-
-      {error && (
-        <div className="error-message" style={{ marginTop: 12, color: "red" }}>
-          {error}
+        <div className="form-group">
+          <label htmlFor="username">What's your username?</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="form-input"
+          />
         </div>
-      )}
-    </form>
+
+        <div className="form-group">
+          <label htmlFor="password">And password?</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <button type="submit" className="submit-button">
+          Lets go!
+        </button>
+
+        <p style={{ marginTop: 16 }}>
+          Don't have an account?{" "}
+          <button
+            type="button"
+            onClick={onGoToSignUp}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#4f46e5",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Sign up here
+          </button>
+        </p>
+
+        {error && (
+          <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+            {error}
+          </div>
+        )}
+      </form>
+    </div>
   );
 };
 

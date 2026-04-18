@@ -124,7 +124,7 @@ export default function GameHistory({ onBack, userName }: Props) {
   };
 
   return (
-    <div className="history">
+    <div className="history hexBackground">
       <div className="historyCard">
         <div className="historyHeader">
           <button className="btn" type="button" onClick={onBack}>

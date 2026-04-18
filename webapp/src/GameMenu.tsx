@@ -4,7 +4,7 @@ import "./GameMenu.css";
 export type BoardSize = "small" | "medium" | "large";
 export type GameMode = "standard";
 export type Difficulty = "random" | "easy" | "hard";
-export type LayoutStyle = "classic";
+export type LayoutStyle = "classic" | "wooden";
 
 // This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
@@ -65,6 +65,20 @@ const difficulties = [
   },
 ];
 
+const layouts = [
+  {
+    value: "classic" as LayoutStyle,
+    title: "Classic",
+    description: "Traditional Y board layout",
+  },
+  {
+    value: "wooden" as LayoutStyle,
+    title: "Wooden",
+    description: "Wooden-themed board layout",
+  }
+];
+
+
 export default function GameMenu({
   userName,
   onStartGame,
@@ -72,14 +86,15 @@ export default function GameMenu({
   onViewHistory,
 }: Props) {
   const [boardIndex, setBoardIndex] = useState(0);
-  const [modeIndex, setModeIndex] = useState(0);
+  const [modeIndex] = useState(0);
   const [difficultyIndex, setDifficultyIndex] = useState(0);
+  const [layoutIndex, setLayoutIndex] = useState(0);
 
   const config: GameConfig = {
     boardSize: boardSizes[boardIndex].value,
     mode: gameModes[modeIndex].value,
     difficulty: difficulties[difficultyIndex].value,
-    layout: "classic",
+    layout: layouts[layoutIndex].value,
   };
 
   const goPrev = (index: number, length: number) => {
@@ -91,7 +106,7 @@ export default function GameMenu({
   };
 
   return (
-    <div className="menu">
+    <div className="menu hexBackground">
       <div className="menuCard">
         <div className="menuHeader">
           <h2 className="menuTitle">Game Lobby</h2>
@@ -144,12 +159,42 @@ export default function GameMenu({
         </section>
 
         <section className="menuSection">
+          <h3 className="sectionTitle">Board layout</h3>
+          <div className="carousel">
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() => setLayoutIndex(goPrev(layoutIndex, layouts.length))}
+              aria-label="Previous board layout"
+            >
+              ‹
+            </button>
+
+            <div className="carouselCard">
+              <span className="optionTitle">{layouts[layoutIndex].title}</span>
+              <span className="optionDescription">
+                {layouts[layoutIndex].description}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="carouselButton"
+              onClick={() => setLayoutIndex(goNext(layoutIndex, layouts.length))}
+              aria-label="Next board layout "
+            >
+              ›
+            </button>
+          </div>
+        </section>
+
+        <section className="menuSection">
           <h3 className="sectionTitle">Game mode</h3>
           <div className="carousel">
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goPrev(modeIndex, gameModes.length))}
+              disabled
               aria-label="Previous game mode"
             >
               ‹
@@ -165,7 +210,7 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goNext(modeIndex, gameModes.length))}
+              disabled
               aria-label="Next game mode"
             >
               ›

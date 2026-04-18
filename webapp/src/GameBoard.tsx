@@ -27,7 +27,8 @@ const BOT_ID_MAP: Record<Difficulty, string> = {
 
 // Map layout style to CSS class applied to the SVG wrapper
 const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
-  classic: "layout-classic",
+  classic: "classic",
+  wooden: "wooden"
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -295,125 +296,165 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="board">
+    <div className="board hexBackground">
       <div className="boardCard">
-        <div className="boardHeader">
+        <div className="boardTopBar">
           <button className="btn" type="button" onClick={onBack}>
             ← Back
           </button>
-          <h2>Yovi — Y Game</h2>
-          <div style={{ width: 80 }} />
-        </div>
 
-        <div className="boardMeta">
-          <span className="infoTag">
-            {config.boardSize.charAt(0).toUpperCase() +
-              config.boardSize.slice(1)}{" "}
-            ({boardSize}×{boardSize})
-          </span>
-          <span className="infoTag">
-            {config.mode === "standard"
-              ? "Standard"
-              : config.mode === "standard_pie"
-                ? "Pie rule"
-                : "Master Y"}
-          </span>
-          <span className="infoTag">{difficultyLabel[config.difficulty]}</span>
-          <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
-          {gameStatus !== "ongoing" && (
-            <button className="btn resetBtn" onClick={resetGame}>
-              New game
-            </button>
-          )}
+          <h2 className="boardTitle">Yovi — Y Game</h2>
+
+
+          <div className="boardInfoStack">
+            <div className="infoRow">
+              <span className="infoLabel">Board</span>
+              <span className="infoValue">
+                {config.boardSize.charAt(0).toUpperCase() + config.boardSize.slice(1)} ({boardSize}×{boardSize})
+              </span>
+            </div>
+
+            <div className="infoRow">
+              <span className="infoLabel">Difficulty</span>
+              <span className="infoValue">
+                {difficultyLabel[config.difficulty]}
+              </span>
+            </div>
+
+            {gameStatus !== "ongoing" && (
+              <button className="btn resetBtn infoReset" onClick={resetGame}>
+                New game
+              </button>
+            )}
+          </div>
+
         </div>
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
-        {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
-        <div className={`svgWrapper ${layoutClass}`}>
-          <svg
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            style={{ display: "block", width: "100%", height: "auto" }}
-          >
-            {Array.from({ length: boardSize }, (_, row) =>
-              Array.from({ length: row + 1 }, (_, col) => {
-                const x = boardSize - 1 - row;
-                const y = col;
-                const z = row - col;
-                const key = coordKey(x, y, z);
+        <div className="boardMiddle">
+          <div className="boardUpper">
+            <div className="playerBadge playerBadgeTop">
+              <div className="avatar avatarRed">🤖</div>
+              <div className="playerText">
+                <span className="playerName">Bot</span>
+                <span className="playerRole">Red player</span>
+              </div>
+            </div>
 
-                const occupied = boardMap[key];
-                const isHovered = hoveredKey === key;
-                const isLastBot = lastBotMove === key;
+            <div className={`statusTag ${statusClass}`}>{statusLabel}</div>
 
-                const cx =
-                  BOARD_MARGIN +
-                  ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
-                  col * HEX_HORIZONTAL_SPACING +
-                  HEX_HORIZONTAL_SPACING / 2;
-                const cy =
-                  BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
+          </div>
 
-                let fill: string;
-                let stroke: string;
-                let strokeW = 1;
+          {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
+          <div className={`svgWrapper ${layoutClass}`}>
+            <div className="boardSurface">
+              <svg
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                style={{ display: "block", width: "100%", height: "100%" }}
+                preserveAspectRatio="xMidYMid meet" // new to ensure proper scaling and centering
+              >
+                {Array.from({ length: boardSize }, (_, row) =>
+                  Array.from({ length: row + 1 }, (_, col) => {
+                    const x = boardSize - 1 - row;
+                    const y = col;
+                    const z = row - col;
+                    const key = coordKey(x, y, z);
 
-                if (occupied === 0) {
-                  fill = "rgba(56, 189, 248, 0.9)";
-                  stroke = "#7dd3fc";
-                  strokeW = 2;
-                } else if (occupied === 1) {
-                  fill = isLastBot
-                    ? "rgba(251, 113, 133, 1)"
-                    : "rgba(251, 113, 133, 0.85)";
-                  stroke = "#fda4af";
-                  strokeW = 2;
-                } else if (isHovered) {
-                  fill = "rgba(56, 189, 248, 0.18)";
-                  stroke = "rgba(56, 189, 248, 0.6)";
-                  strokeW = 2;
-                } else {
-                  fill = "rgba(59, 48, 48, 0.04)";
-                  stroke = "rgba(0, 0, 0, 0.08)";
-                }
+                    const occupied = boardMap[key];
+                    const isHovered = hoveredKey === key;
+                    const isLastBot = lastBotMove === key;
 
-                const isClickable =
-                  gameStatus === "ongoing" &&
-                  currentTurn === 0 &&
-                  occupied === undefined &&
-                  !loading;
+                    const cx =
+                      BOARD_MARGIN +
+                      ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
+                      col * HEX_HORIZONTAL_SPACING +
+                      HEX_HORIZONTAL_SPACING / 2;
+                    const cy =
+                      BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
-                return (
-                  <polygon
-                    key={key}
-                    points={hexPoints(cx, cy, HEX_RADIUS - 1)}
-                    fill={fill}
-                    stroke={stroke}
-                    strokeWidth={strokeW}
-                    style={{
-                      cursor: isClickable ? "pointer" : "default",
-                      transition: "fill 0.15s, stroke 0.15s",
-                    }}
-                    onClick={() => handleCellClick(x, y, z)}
-                    onMouseEnter={() => {
-                      if (isClickable) setHoveredKey(key);
-                    }}
-                    onMouseLeave={() => setHoveredKey(null)}
-                  />
-                );
-              }),
-            )}
-          </svg>
+                    const isWooden = layoutClass === "wooden";
+
+                    let fill: string;
+                    let stroke: string;
+                    let strokeW = 1;
+
+                    if (occupied === 0) {
+                      fill = "rgba(56, 189, 248, 0.9)";
+                      stroke = "#bae6fd";
+                      strokeW = 2.2;
+                    } else if (occupied === 1) {
+                      fill = isLastBot
+                        ? "rgba(251, 113, 133, 1)"
+                        : "rgba(251, 113, 133, 0.85)";
+                      stroke = "#fecdd3";
+                      strokeW = 2;
+                    } else if (isHovered) {
+                      fill = isWooden
+                        ? "rgba(96, 165, 250, 0.22)"
+                        : "rgba(56, 189, 248, 0.20)";
+                      stroke = isWooden
+                        ? "rgba(191, 219, 254, 0.75)"
+                        : "rgba(125, 211, 252, 0.75)";
+                      strokeW = 2;
+                    }
+                    else {
+                      fill = isWooden
+                        ? "rgba(255, 248, 220, 0.08)"
+                        : "rgba(31, 41, 55, 0.96)";
+                      stroke = isWooden
+                        ? "rgba(70, 42, 20, 0.5)"
+                        : "rgba(255, 255, 255, 0.10)";
+
+                      strokeW = 1.8;
+                    }
+
+
+
+
+                    const isClickable =
+                      gameStatus === "ongoing" &&
+                      currentTurn === 0 &&
+                      occupied === undefined &&
+                      !loading;
+
+                    return (
+                      <polygon
+                        key={key}
+                        points={hexPoints(cx, cy, HEX_RADIUS - 1)}
+                        fill={fill}
+                        stroke={stroke}
+                        strokeWidth={strokeW}
+                        style={{
+                          cursor: isClickable ? "pointer" : "default",
+                          transition: "fill 0.15s, stroke 0.15s",
+                        }}
+                        onClick={() => handleCellClick(x, y, z)}
+                        onMouseEnter={() => {
+                          if (isClickable) setHoveredKey(key);
+                        }}
+                        onMouseLeave={() => setHoveredKey(null)}
+                      />
+                    );
+                  }),
+                )}
+              </svg>
+            </div>
+          </div>
+
+          <div className="boardLower">
+            <div className="playerBadge playerBadgeBottom">
+              <div className="avatar avatarBlue">
+                {(userName?.[0] || "Y").toUpperCase()}
+              </div>
+              <div className="playerText">
+                <span className="playerName">{userName || "You"}</span>
+                <span className="playerRole">Blue player</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="boardLegend">
-          <span className="legendItem">
-            <span className="dot dotBlue" /> You (Blue)
-          </span>
-          <span className="legendItem">
-            <span className="dot dotRed" /> Bot (Red)
-          </span>
-        </div>
         <p className="rulesHint">
           Connect all three sides of the triangle with your pieces to win.
         </p>

@@ -47,33 +47,36 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
-        </a>
+    <div className="App hexBackground">
+      <div className="authPage">
+        <div>
+          <a href="https://react.dev" target="_blank" rel="noreferrer">
+            <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
+          </a>
+        </div>
+
+        <h2>Welcome to play the game of Y</h2>
+
+        {screen === "login" && (
+          <LoginForm
+            onLoggedIn={(name: string) => {
+              setUserName(name);
+              setScreen("menu");
+            }}
+            onGoToSignUp={() => setScreen("signup")}
+          />
+        )}
+
+        {screen === "signup" && (
+          <SignUpForm
+            onRegistered={(name: string) => {
+              setUserName(name);
+              setScreen('menu');
+            }}
+            onGoToLogin={() => setScreen("login")}
+          />
+        )}
       </div>
-      <h2>Welcome to play the game of Y</h2>
-
-      {screen === "login" && (
-        <LoginForm
-          onLoggedIn={(name: string) => {
-            setUserName(name);
-            setScreen("menu");
-          }}
-          onGoToSignUp={() => setScreen("signup")}
-        />
-      )}
-
-      {screen === "signup" && (
-        <SignUpForm
-          onRegistered={(name: string) => {
-            setUserName(name);
-            setScreen('menu');
-          }}
-          onGoToLogin={() => setScreen("login")}
-        />
-      )}
     </div>
   );
 }

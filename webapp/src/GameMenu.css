@@ -5,12 +5,6 @@
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  background-color: #111116;
-
-  /* Fixed Hexagon Pattern with scattered Red/Blue flickering glows */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='200' viewBox='0 0 112 200'%3E%3Cdefs%3E%3Cstyle%3E .hex %7B stroke: %232d2d35; stroke-width: 1; fill: none; %7D .blue %7B fill: %233b82f6; opacity: 0; animation: pulse 8s infinite; %7D .red %7B fill: %23ef4444; opacity: 0; animation: pulse 12s infinite 2s; %7D @keyframes pulse %7B 0%25, 100%25 %7B opacity: 0; %7D 50%25 %7B opacity: 0.15; %7D %7D %3C/style%3E%3C/defs%3E%3Cpath class='hex' d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100'/%3E%3Cpath class='hex' d='M84 66L56 50L56 16L84 0L112 16L112 50L84 66L84 100'/%3E%3Cpath class='hex blue' d='M28 66L0 50L0 16L28 0L56 16L56 50z'/%3E%3Cpath class='hex red' d='M84 166L56 150L56 116L84 100L112 116L112 150z'/%3E%3C/svg%3E");
-  background-size: 112px 200px;
-  background-attachment: fixed; /* Keeps the background from scrolling */
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -18,8 +12,10 @@
 .menuCard {
   width: 100%;
   max-width: 760px;
-  background: rgba(26, 26, 31, 0.95); /* Slight transparency */
-  backdrop-filter: blur(8px); /* Nice glass effect */
+  background: rgba(26, 26, 31, 0.95);
+  /* Slight transparency */
+  backdrop-filter: blur(8px);
+  /* Nice glass effect */
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 22px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -147,12 +143,12 @@
 }
 
 .btn {
-  color: #ffffff;
+  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.08);
   border: none;
-  border-radius: 12px;
-  padding: 0.9rem 1.4rem;
-  font-size: 1rem;
-  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
   cursor: pointer;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   transition:
@@ -163,11 +159,8 @@
 
 .btnPrimary {
   background: #4f46e5;
-  color: white;
-  border: none;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-  letter-spacing: 0.02em;
 }
+
 
 .btnPrimary:hover {
   background: #7c73ff;
@@ -184,10 +177,8 @@
 }
 
 .btnSecondary {
-  background: #a5a5b5;
-  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid #5b5b6a;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .btnSecondary:hover {
@@ -204,7 +195,7 @@
 .historyButtonWrapper .btnSecondary {
   padding: 0.6rem 1rem;
   font-size: 0.9rem;
-  background: #3a3a44;
+  background: rgba(255, 255, 255, 0.08);
   border-color: #7c73ff;
 }
 
@@ -233,10 +224,6 @@
   .carouselButton {
     width: 44px;
     height: 44px;
-  }
-
-  .carouselButton span {
-    font-size: 1.5rem;
   }
 
   .carouselCard {

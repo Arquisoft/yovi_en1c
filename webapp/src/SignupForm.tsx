@@ -74,82 +74,84 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
     // and error handling for empty fields and password mismatch
 
     return (
-        <form onSubmit={handleSubmit} className="signup-form">
-            <h2>Sign Up</h2>
-            <p>Please fill this form to create an account.</p>
+        <div className="hexBackground">
+            <form onSubmit={handleSubmit} className="signup-form">
+                <h2>Sign Up</h2>
+                <p>Please fill this form to create an account.</p>
 
-            <div className="form-group">
-                <label htmlFor="signup-username">Username</label>
-                <input
-                    type="text"
-                    id="signup-username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="form-input"
-                />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="signup-email">Email</label>
-                <input
-                    type="email"
-                    id="signup-email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="form-input"
-                />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="signup-password">Password</label>
-                <input
-                    type="password"
-                    id="signup-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="form-input"
-                />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="signup-confirm-password">Confirm Password</label>
-                <input
-                    type="password"
-                    id="signup-confirm-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="form-input"
-                />
-            </div>
-
-            <button type="submit" className="submit-button">
-                Sign Up
-            </button>
-
-            <p style={{ marginTop: 16 }}>
-                Already have an account?{" "}
-                <button
-                    type="button"
-                    onClick={onGoToLogin}
-                    style={{
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        color: "#4f46e5",
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                    }}
-                >
-                    Log in here
-                </button>
-            </p>
-
-            {error && (
-                <div className="error-message" style={{ marginTop: 12, color: "red" }}>
-                    {error}
+                <div className="form-group">
+                    <label htmlFor="signup-username">Username</label>
+                    <input
+                        type="text"
+                        id="signup-username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="form-input"
+                    />
                 </div>
-            )}
-        </form>
+
+                <div className="form-group">
+                    <label htmlFor="signup-email">Email</label>
+                    <input
+                        type="email"
+                        id="signup-email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="form-input"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="signup-password">Password</label>
+                    <input
+                        type="password"
+                        id="signup-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="form-input"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="signup-confirm-password">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="signup-confirm-password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="form-input"
+                    />
+                </div>
+
+                <button type="submit" className="submit-button">
+                    Sign Up
+                </button>
+
+                <p style={{ marginTop: 16 }}>
+                    Already have an account?{" "}
+                    <button
+                        type="button"
+                        onClick={onGoToLogin}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            padding: 0,
+                            color: "#4f46e5",
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                        }}
+                    >
+                        Log in here
+                    </button>
+                </p>
+
+                {error && (
+                    <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+                        {error}
+                    </div>
+                )}
+            </form>
+        </div>
     );
 };
 
