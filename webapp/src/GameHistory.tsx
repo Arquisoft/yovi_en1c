@@ -225,7 +225,7 @@ export default function GameHistory({ onBack, userName }: Props) {
                       className="sortable"
                       onClick={() => handleSort("difficulty")}
                     >
-                      Diff {sortIcon("difficulty")}
+                      Difficulty {sortIcon("difficulty")}
                     </th>
                     <th
                       className="sortable"
@@ -237,7 +237,7 @@ export default function GameHistory({ onBack, userName }: Props) {
                       className="sortable"
                       onClick={() => handleSort("points")}
                     >
-                      Pts {sortIcon("points")}
+                      Points {sortIcon("points")}
                     </th>
                     <th
                       className="sortable"
@@ -269,7 +269,7 @@ export default function GameHistory({ onBack, userName }: Props) {
                           {game.result === "player_won" ? "🏆 Win" : "🤖 Loss"}
                         </span>
                       </td>
-                      <td>
+                      <td className="tdDifficulty">
                         {game.difficulty
                           ? difficultyLabel[game.difficulty]
                           : "—"}
