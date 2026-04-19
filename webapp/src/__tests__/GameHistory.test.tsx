@@ -322,11 +322,9 @@ describe("GameHistory", () => {
     const rankBtn = await screen.findByRole("button", { name: /Rank/i });
     await user.click(rankBtn);
 
-    // Check lines 194-224 (Leaderboard rendering)
     expect(screen.getByText("Winner1")).toBeInTheDocument();
     expect(screen.getByText(/★ 500/)).toBeInTheDocument();
 
-    // Verify row highlight for current user (Line 212)
     const userRow = screen.getByText(/Javi/i).closest("tr");
     expect(userRow).toHaveClass("rowHighlight");
     expect(screen.getByText(/\(You\)/i)).toBeInTheDocument();
@@ -394,9 +392,6 @@ describe("GameHistory", () => {
   });
 
   test("returns null on default switch case", async () => {
-    // This covers line 411/423 (the default branch)
-    // We can force this by manipulating the state if the component allowed,
-    // but usually reaching the closing tags covers these lines.
     global.fetch = vi
       .fn()
       .mockResolvedValue({ ok: true, json: async () => [] });
