@@ -203,9 +203,10 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-                  "Authorization": `Bearer ${token}`
-         },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(yen),
       },
     );

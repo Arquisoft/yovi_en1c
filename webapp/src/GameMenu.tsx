@@ -14,6 +14,31 @@ export interface GameConfig {
   layout: LayoutStyle;
 }
 
+export function TriviaHelp() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="triviaHelp">
+      <button
+        type="button"
+        className="triviaButton"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label="Show game trivia"
+        aria-expanded={open}
+      >
+        ¿
+      </button>
+
+      {open && (
+        <div className="triviaPopup" role="dialog" aria-live="polite">
+          Y is inspired by strategy games where small layout changes can
+          completely change the opening possibilities.
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Props = {
   userName: string;
   onStartGame: (config: GameConfig) => void;
@@ -39,13 +64,13 @@ const boardSizes = [
   },
 ];
 
-const gameModes = [
+/* const gameModes = [
   {
     value: "standard" as GameMode,
     title: "Standard",
     description: "Classic Y rules",
   },
-];
+]; */
 
 const difficulties = [
   {
@@ -86,13 +111,13 @@ export default function GameMenu({
   onViewHistory,
 }: Props) {
   const [boardIndex, setBoardIndex] = useState(0);
-  const [modeIndex] = useState(0);
+  /* const [modeIndex] = useState(0); */
   const [difficultyIndex, setDifficultyIndex] = useState(0);
   const [layoutIndex, setLayoutIndex] = useState(0);
 
   const config: GameConfig = {
     boardSize: boardSizes[boardIndex].value,
-    mode: gameModes[modeIndex].value,
+    mode: "standard",
     difficulty: difficulties[difficultyIndex].value,
     layout: layouts[layoutIndex].value,
   };
@@ -109,7 +134,10 @@ export default function GameMenu({
     <div className="menu hexBackground">
       <div className="menuCard">
         <div className="menuHeader">
-          <h2 className="menuTitle">Game Lobby</h2>
+          <div className="menuTitleRow">
+            <h2 className="menuTitle">Game Lobby</h2>
+            <TriviaHelp />
+          </div>
           <p className="menuSubtitle">
             Welcome, {userName}. Choose your setup for Y.
           </p>
@@ -182,36 +210,6 @@ export default function GameMenu({
               className="carouselButton"
               onClick={() => setLayoutIndex(goNext(layoutIndex, layouts.length))}
               aria-label="Next board layout "
-            >
-              ›
-            </button>
-          </div>
-        </section>
-
-        <section className="menuSection">
-          <h3 className="sectionTitle">Game mode</h3>
-          <div className="carousel">
-            <button
-              type="button"
-              className="carouselButton"
-              disabled
-              aria-label="Previous game mode"
-            >
-              ‹
-            </button>
-
-            <div className="carouselCard">
-              <span className="optionTitle">{gameModes[modeIndex].title}</span>
-              <span className="optionDescription">
-                {gameModes[modeIndex].description}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              className="carouselButton"
-              disabled
-              aria-label="Next game mode"
             >
               ›
             </button>

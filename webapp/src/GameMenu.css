@@ -9,6 +9,83 @@
   overflow: hidden;
 }
 
+.menuTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.p {
+  color: #b8c6e0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.triviaHelp {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+}
+
+.triviaButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: #f90000;
+  font-size: 3rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: slowFlip 5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.triviaButton:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.triviaPopup {
+  .triviaPopup {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    right: auto;
+    width: 260px;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: rgba(26, 26, 31, 0.97);
+    color: #e8f1ff;
+    border: 1px solid rgba(124, 115, 255, 0.45);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    font-size: 0.92rem;
+    line-height: 1.45;
+    z-index: 20;
+  }
+}
+
+@keyframes slowFlip {
+
+  0%,
+  45% {
+    transform: rotate(0deg);
+  }
+
+  55%,
+  95% {
+    transform: rotate(180deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .menuCard {
   width: 100%;
   max-width: 760px;
@@ -24,8 +101,10 @@
 }
 
 .menuHeader {
+  position: relative;
   text-align: center;
   margin-bottom: 2rem;
+  min-height: 48px;
 }
 
 .menuTitle {
@@ -60,6 +139,8 @@
 }
 
 .carouselButton {
+  font-size: 1.8rem;
+  font-weight: 700;
   width: 50px;
   height: 50px;
   border: none;
@@ -88,13 +169,6 @@
 
 .carouselButton:active {
   transform: translateY(0) scale(1);
-}
-
-.carouselButton span {
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1;
-  transform: translateY(-1px);
 }
 
 .carouselCard {
@@ -142,6 +216,12 @@
   flex-wrap: wrap;
 }
 
+.btn,
+.btnPrimary,
+.btnSecondary {
+  color: #ffffff !important;
+}
+
 .btn {
   color: #f9fafb;
   background: rgba(255, 255, 255, 0.08);
@@ -155,10 +235,6 @@
     transform 0.15s ease,
     box-shadow 0.2s ease,
     opacity 0.2s ease;
-}
-
-.btnPrimary {
-  background: #4f46e5;
 }
 
 
@@ -217,48 +293,63 @@
     font-size: 0.95rem;
   }
 
-  .carousel {
-    gap: 0.75rem;
+  .menuHeader {
+    padding-top: 3rem;
   }
 
-  .carouselButton {
-    width: 44px;
-    height: 44px;
+  .triviaHelp {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
-  .carouselCard {
-    flex: 1;
-    max-width: 430px;
-    min-height: 118px;
-    background: #1f1f24;
-    border: 1.5px solid #3c4454;
-    border-radius: 18px;
-    padding: 1.2rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease,
-      transform 0.15s ease;
+  .triviaPopup {
+    left: 50%;
+    transform: translateX(-50%);
   }
+}
 
-  .carouselCard:hover {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
-  }
+.carousel {
+  gap: 0.75rem;
+}
 
-  .optionTitle {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #e8f1ff;
-    margin-bottom: 0.35rem;
-  }
+.carouselButton {
+  width: 44px;
+  height: 44px;
+}
 
-  .optionDescription {
-    font-size: 0.96rem;
-    color: #b8c6e0;
-    line-height: 1.45;
-  }
+.carouselCard {
+  flex: 1;
+  max-width: 430px;
+  min-height: 118px;
+  background: #1f1f24;
+  border: 1.5px solid #3c4454;
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.carouselCard:hover {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+}
+
+.optionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8f1ff;
+  margin-bottom: 0.35rem;
+}
+
+.optionDescription {
+  font-size: 0.96rem;
+  color: #b8c6e0;
+  line-height: 1.45;
 }
