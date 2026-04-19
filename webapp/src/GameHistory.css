@@ -270,3 +270,85 @@
   color: #f87171;
   font-size: 0.9rem;
 }
+
+.statsDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.chartCard h3 {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 1.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.avgMovesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  height: 100px;
+}
+
+.avgMoveItem {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.avgMoveItem .label {
+  color: rgba(255, 255, 255, 0.5);
+}
+.avgMoveItem .value {
+  font-weight: 600;
+  color: #f1f1f3;
+}
+
+@media (max-width: 600px) {
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Points Styling ──────────────────────────────────────────────────────── */
+.tdPoints {
+  font-weight: 700;
+  color: #a5b4fc;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Leaderboard Specific ────────────────────────────────────────────────── */
+.rowHighlight {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-left: 2px solid #6366f1 !important;
+}
+
+/* ── Responsiveness ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .historyHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .historyTable {
+    font-size: 0.75rem;
+  }
+}
