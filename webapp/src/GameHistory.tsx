@@ -86,9 +86,11 @@ export default function GameHistory({ onBack, userName }: Props) {
       setError(null);
       try {
         const [gamesRes, leaderRes, statsRes] = await Promise.all([
-          fetch(`${API_GATEWAY_URL}/games/list?username=${userName}`),
-          fetch(`${API_GATEWAY_URL}/games/leaderboard`),
-          fetch(`${API_GATEWAY_URL}/games/stats?username=${userName}`),
+          fetch(`${API_GATEWAY_URL}/api/users/games/list?username=${userName}`),
+          fetch(`${API_GATEWAY_URL}/api/users/games/leaderboard`),
+          fetch(
+            `${API_GATEWAY_URL}/api/users/games/stats?username=${userName}`,
+          ),
         ]);
 
         if (!gamesRes.ok || !leaderRes.ok || !statsRes.ok) {
