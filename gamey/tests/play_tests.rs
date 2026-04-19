@@ -119,6 +119,71 @@ async fn test_method_not_allowed() {
     assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
 }
 
+#[tokio::test]
+async fn test_invalid_yen_json() {
+    let app = test_app();
+    
+    // Malformed JSON string (missing a closing brace)
+    let malformed_json = "{\"size\":3, \"turn\":0"; 
+    let uri = format!("/v1/play?position={}", urlencoding::encode(malformed_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    // play.rs returns 200 OK even for errors
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Verify the error message matches the 'Invalid YEN JSON' pattern
+    assert!(body["message"].as_str().unwrap().contains("Invalid YEN JSON"));
+}
+
+#[tokio::test]
+async fn test_invalid_game_state() {
+    let app = test_app();
+    
+    // Valid JSON, but the layout is wrong for a size 3 board (too many segments)
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "B/B/B/B/B".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
+
+    let uri = format!("/v1/play?position={}", urlencoding::encode(&yen_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Verify the error message matches the 'Invalid game state' pattern
+    assert!(body["message"].as_str().unwrap().contains("Invalid game state"));
+}
+
+#[tokio::test]
+async fn test_bot_not_found() {
+    let app = test_app();
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "./../...".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
+
+    // Use a bot_id that is not in the registry
+    let uri = format!("/v1/play?position={}&bot_id=unknown_bot", urlencoding::encode(&yen_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Matches the 'Bot not found' error logic
+    assert!(body["message"].as_str().unwrap().contains("Bot not found: unknown_bot"));
+    assert_eq!(body["bot_id"], "unknown_bot");
+}
+
 //Extra
 #[tokio::test]
 async fn test_play_normal_move_returns_coords() {
