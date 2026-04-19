@@ -34,7 +34,6 @@ interface LeaderboardEntry {
   gamesPlayed: number;
 }
 
-// Interfaces for the new Stats data structure
 interface StatsData {
   byDifficulty: Array<{ _id: string; total: number; wins: number }>;
   progression: Array<{ points: number; date: string }>;
@@ -65,81 +64,9 @@ export default function GameHistory({ onBack, userName }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // History Sort State
   const [sortField, setSortField] = useState<SortField>("playedAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [filter, setFilter] = useState<"all" | GameResult>("all");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        if (view === "history") {
-          const res = await fetch(
-            `${API_GATEWAY_URL}/api/users/games/list?username=${encodeURIComponent(userName)}`,
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          setGames(await res.json());
-        } else if (view === "leaderboard") {
-          const res = await fetch(
-            `${API_GATEWAY_URL}/api/users/games/leaderboard`,
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          setLeaderboard(await res.json());
-        } else if (view === "stats") {
-          const res = await fetch(
-            `${API_GATEWAY_URL}/api/users/games/stats?username=${encodeURIComponent(userName)}`,
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          setStats(await res.json());
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [userName, view]);
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDir("desc");
-    }
-  };
-
-  const sortIcon = (field: SortField) => {
-    if (sortField !== field)
-      return <span className="sortIcon inactive">↕</span>;
-    return (
-      <span className="sortIcon active">{sortDir === "asc" ? "↑" : "↓"}</span>
-    );
-  };
-
-  const filtered = games.filter((g) => filter === "all" || g.result === filter);
-
-  const sorted = [...filtered].sort((a, b) => {
-    let cmp = 0;
-    if (sortField === "playedAt") {
-      cmp = new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime();
-    } else if (sortField === "totalMoves") {
-      cmp = (a.totalMoves ?? 0) - (b.totalMoves ?? 0);
-    } else if (sortField === "points") {
-      cmp = (a.points ?? 0) - (b.points ?? 0);
-    } else if (sortField === "result") {
-      cmp = a.result.localeCompare(b.result);
-    } else {
-      const valA = String(a[sortField as keyof GameRecord] ?? "");
-      const valB = String(b[sortField as keyof GameRecord] ?? "");
-      cmp = valA.localeCompare(valB);
-    }
-    return sortDir === "asc" ? cmp : -cmp;
-  });
 
   const difficultyLabel: Record<Difficulty, string> = {
     random: "🎲 Rand",
@@ -153,46 +80,93 @@ export default function GameHistory({ onBack, userName }: Props) {
     large: "9×9",
   };
 
-  return (
-    <div className="history">
-      <div className="historyCard">
-        <div className="historyHeader">
-          <button className="btn" type="button" onClick={onBack}>
-            ← Back
-          </button>
-          <div className="viewToggle">
-            <button
-              className={`toggleBtn ${view === "history" ? "active" : ""}`}
-              onClick={() => setView("history")}
-            >
-              History
-            </button>
-            <button
-              className={`toggleBtn ${view === "stats" ? "active" : ""}`}
-              onClick={() => setView("stats")}
-            >
-              Stats
-            </button>
-            <button
-              className={`toggleBtn ${view === "leaderboard" ? "active" : ""}`}
-              onClick={() => setView("leaderboard")}
-            >
-              Rank
-            </button>
-          </div>
-          <div style={{ width: 80 }} />
-        </div>
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [gamesRes, leaderRes, statsRes] = await Promise.all([
+          fetch(`${API_GATEWAY_URL}/games/list?username=${userName}`),
+          fetch(`${API_GATEWAY_URL}/games/leaderboard`),
+          fetch(`${API_GATEWAY_URL}/games/stats?username=${userName}`),
+        ]);
 
-        {loading ? (
-          <div className="historyCenter">
-            <div className="spinner" />
-          </div>
-        ) : error ? (
-          <div className="historyCenter">
-            <p className="errorText">Error: {error}</p>
-          </div>
-        ) : view === "history" ? (
-          /* --- HISTORY TABLE VIEW --- */
+        if (!gamesRes.ok || !leaderRes.ok || !statsRes.ok) {
+          throw new Error("Failed to fetch data from one or more services");
+        }
+
+        const gamesData = await gamesRes.json();
+        const leaderData = await leaderRes.json();
+        const statsData = await statsRes.json();
+
+        setGames(gamesData);
+        setLeaderboard(leaderData);
+        setStats(statsData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userName]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDir("desc");
+    }
+  };
+
+  const filtered = games.filter((g) =>
+    filter === "all" ? true : g.result === filter,
+  );
+
+  const sorted = [...filtered].sort((a, b) => {
+    let valA: string | number = a[sortField] ?? "";
+    let valB: string | number = b[sortField] ?? "";
+
+    if (sortField === "playedAt") {
+      valA = new Date(a.playedAt).getTime();
+      valB = new Date(b.playedAt).getTime();
+    }
+
+    if (valA < valB) return sortDir === "asc" ? -1 : 1;
+    if (valA > valB) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const sortIcon = (field: SortField) => {
+    if (sortField !== field)
+      return <span className="sortIcon inactive">↕</span>;
+    return (
+      <span className="sortIcon active">{sortDir === "asc" ? "↑" : "↓"}</span>
+    );
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="historyCenter">
+          <div className="spinner" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="historyCenter">
+          <p className="errorText">Error: {error}</p>
+        </div>
+      );
+    }
+
+    switch (view) {
+      case "history":
+        return (
           <>
             <div className="filterTabs">
               {(["all", "player_won", "bot_won"] as const).map((f) => (
@@ -288,8 +262,10 @@ export default function GameHistory({ onBack, userName }: Props) {
               </table>
             </div>
           </>
-        ) : view === "leaderboard" ? (
-          /* --- LEADERBOARD VIEW --- */
+        );
+
+      case "leaderboard":
+        return (
           <div className="tableWrapper">
             <table className="historyTable">
               <thead>
@@ -321,8 +297,10 @@ export default function GameHistory({ onBack, userName }: Props) {
               </tbody>
             </table>
           </div>
-        ) : (
-          /* --- STATS DASHBOARD VIEW --- */
+        );
+
+      case "stats":
+        return (
           <div className="statsDashboard">
             {stats && (
               <>
@@ -414,7 +392,43 @@ export default function GameHistory({ onBack, userName }: Props) {
               </>
             )}
           </div>
-        )}
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="history">
+      <div className="historyCard">
+        <div className="historyHeader">
+          <button className="btn" type="button" onClick={onBack}>
+            ← Back
+          </button>
+          <div className="viewToggle">
+            <button
+              className={`toggleBtn ${view === "history" ? "active" : ""}`}
+              onClick={() => setView("history")}
+            >
+              History
+            </button>
+            <button
+              className={`toggleBtn ${view === "stats" ? "active" : ""}`}
+              onClick={() => setView("stats")}
+            >
+              Stats
+            </button>
+            <button
+              className={`toggleBtn ${view === "leaderboard" ? "active" : ""}`}
+              onClick={() => setView("leaderboard")}
+            >
+              Rank
+            </button>
+          </div>
+          <div style={{ width: "80px" }} />
+        </div>
+
+        {renderContent()}
       </div>
     </div>
   );

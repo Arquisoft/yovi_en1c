@@ -106,7 +106,8 @@ describe("GameHistory", () => {
     render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/HTTP 500/i)).toBeInTheDocument();
+      // Match the actual string the component renders
+      expect(screen.getByText(/Failed to fetch data/i)).toBeInTheDocument();
     });
   });
 
