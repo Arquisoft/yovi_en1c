@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/yovi_en1c-logo.svg" alt="yovi_en1c Logo" width="300">
+  <img src="docs/images/yovi_en1c-logo.svg" alt="yovi_en1c Logo" width="650">
 </p>
 
 [![Release — Test, Build, Publish, Deploy](https://github.com/arquisoft/yovi_en1c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_en1c/actions/workflows/release-deploy.yml)
