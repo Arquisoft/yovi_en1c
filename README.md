@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/yovi_en1c-logo.png" alt="yovi_en1c Logo" width="300">
+  <img src="docs/images/yovi_en1c-logo.svg" alt="yovi_en1c Logo" width="300">
 </p>
 
 [![Release — Test, Build, Publish, Deploy](https://github.com/arquisoft/yovi_en1c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_en1c/actions/workflows/release-deploy.yml)
@@ -12,7 +12,6 @@ This is a UniOvi project for the Software Architecture course in 2025/2026.
 
 # 👥 Team members
 
-- Andrés Álvarez Fernández (@AndresUO300170)
 - Fernando Cachón Alonso (@fercalonso)
 - Javier Yáñez Luzón (@JavierYanez23)
 - Elif Busra Caylan (@ebus99)
