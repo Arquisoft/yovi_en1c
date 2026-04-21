@@ -34,8 +34,8 @@ The project is divided into several main components:
 ## ✨ Features
 
 - **User Registration** 👤: The web application provides a simple form to register new users.
-- **Webapp** 🏢: A lobby where the user can decide the parameters to play.
-- **GameY** 🎲: A basic Game engine which only chooses a random piece.
+- **Webapp** 🏢: A lobby where the user can decide the parameters to play, stats and history views for the user, and a leaderboard common to all players!.
+- **GameY** 🎲: Our Game engine with different difficulties, and our heuristic approach, the hardest one.
 
 ## 🛠️ Component breakdown
 
@@ -44,24 +44,24 @@ The project is divided into several main components:
 The `webapp` is a single-page application (SPA) created with [Vite](https://vitejs.dev/) and [React](https://reactjs.org/).
 
 - `src/App.tsx`: The main component of the application.
-- `src/RegisterForm.tsx`: The component that renders the user registration form.
+- `src/RegisterForm.tsx`: Example of the component that renders the user registration form.
 - `package.json`: Contains scripts to run, build, and test the webapp.
 - `vite.config.ts`: Configuration file for Vite.
 - `Dockerfile`: Defines the Docker image for the webapp.
 
-### 🛡️ Gateway Service
+### 🛡️ API Gateway Service
 
 The `gateway` service is the **public API entry point**, built with [Node.js](https://nodejs.org/) and [Express](https://expressjs.com/).
 
-- **API Routing**: Exposes public endpoints (like `/adduser`, `/login`) and proxies requests to the appropriate internal services.
+- **API Routing**: Exposes the public endpoints and proxies requests to the appropriate internal services.
+- The API specification following the OpenAPI standard, can be seen in http://20.82.125.79:8000/api-docs.
 - `gateway-service.js`: The main file that handles request routing and security.
-- `openapi.yaml`: The API specification following the OpenAPI standard.
 - `monitoring/`: Contains configurations for service monitoring and health checks.
 - `Dockerfile`: Defines the Docker image for the gateway service.
 
 ### 📂 Users Service
 
-The `users` service is an **internal REST API** that handles user persistence and business logic.
+The `users` service handles user persistence and business logic.
 
 - `users-service.js`: The main file for the service logic.
 - `db.js`: Manages the **MongoDB** connection using **Mongoose**. It includes automatic database seeding with test data when running in non-production environments.
