@@ -391,3 +391,56 @@ describe("Auth & Game Endpoints", () => {
     process.env.NODE_ENV = originalEnv;
   });
 });
+
+// ─── ENDPOINT: GET /games/leaderboard ─────────────────────────────────────
+describe("GET /games/leaderboard", () => {
+  it("should return the top 10 players", async () => {
+    const mockLeaderboard = [
+      { username: "pro_player", totalPoints: 5000, gamesPlayed: 10 },
+      { username: "tester", totalPoints: 1200, gamesPlayed: 2 },
+    ];
+    vi.spyOn(Game, "aggregate").mockResolvedValue(mockLeaderboard);
+
+    const res = await request(app).get("/games/leaderboard");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toBeInstanceOf(Array);
+    expect(res.body[0].username).toBe("pro_player");
+  });
+});
+
+// ─── ENDPOINT: GET /games/stats ───────────────────────────────────────────
+describe("GET /games/stats", () => {
+  it("should return aggregated stats for a user", async () => {
+    const mockStats = [
+      {
+        byDifficulty: [{ _id: "hard", total: 1, wins: 1 }],
+        progression: [{ points: 500, date: "2023-01-01" }],
+        avgMoves: [{ _id: "player_won", avgMoves: 15 }],
+      },
+    ];
+    vi.spyOn(Game, "aggregate").mockResolvedValue(mockStats);
+
+    const res = await request(app)
+      .get("/games/stats")
+      .query({ username: "tester" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("byDifficulty");
+    expect(res.body.avgMoves[0].avgMoves).toBe(15);
+  });
+
+  it("should return 400 if username is missing", async () => {
+    const res = await request(app).get("/games/stats");
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── ENDPOINT: GET /status ────────────────────────────────────────────────
+describe("GET /status", () => {
+  it("should return 200 OK", async () => {
+    const res = await request(app).get("/status");
+    expect(res.status).toBe(200);
+    expect(res.body.status).toContain("up and running");
+  });
+});
