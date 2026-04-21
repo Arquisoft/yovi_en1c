@@ -19,7 +19,7 @@ This is a UniOvi project for the Software Architecture course in 2025/2026.
 
 ## 📚 Documentation
 
-The architecture documentation is based on the **Arc42** template. You can find it in the following link 👉 **[View Project Documentation](https://arquisoft.github.io/yovi_en1c/)**
+You can find documentation in the following link 👉 **[View Project Documentation](https://arquisoft.github.io/yovi_en1c/)**
 
 ## 🏗️ Project Structure
 
