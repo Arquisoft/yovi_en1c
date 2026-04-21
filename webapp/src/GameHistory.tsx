@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./GameHistory.css";
 import type { Difficulty, BoardSize } from "./GameMenu";
 
@@ -13,15 +14,10 @@ interface GameRecord {
   playedAt: string;
   board: Record<string, 0 | 1>;
   difficulty?: Difficulty;
-  boardSize?: BoardSize; // Added boardSize to the record type
+  boardSize?: BoardSize;
 }
 
-type SortField =
-  | "playedAt"
-  | "totalMoves"
-  | "result"
-  | "difficulty"
-  | "boardSize";
+type SortField = "playedAt" | "totalMoves" | "result" | "difficulty" | "boardSize";
 type SortDir = "asc" | "desc";
 
 interface Props {
@@ -30,6 +26,7 @@ interface Props {
 }
 
 export default function GameHistory({ onBack, userName }: Props) {
+  const { t, i18n } = useTranslation();
   const [games, setGames] = useState<GameRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +49,6 @@ export default function GameHistory({ onBack, userName }: Props) {
         setLoading(false);
       }
     };
-
     fetchGames();
   }, [userName]);
 
@@ -66,11 +62,8 @@ export default function GameHistory({ onBack, userName }: Props) {
   };
 
   const sortIcon = (field: SortField) => {
-    if (sortField !== field)
-      return <span className="sortIcon inactive">↕</span>;
-    return (
-      <span className="sortIcon active">{sortDir === "asc" ? "↑" : "↓"}</span>
-    );
+    if (sortField !== field) return <span className="sortIcon inactive">↕</span>;
+    return <span className="sortIcon active">{sortDir === "asc" ? "↑" : "↓"}</span>;
   };
 
   const filtered = games.filter((g) => filter === "all" || g.result === filter);
@@ -84,25 +77,20 @@ export default function GameHistory({ onBack, userName }: Props) {
     } else if (sortField === "result") {
       cmp = a.result.localeCompare(b.result);
     } else if (sortField === "difficulty") {
-      const diffA = a.difficulty ?? "";
-      const diffB = b.difficulty ?? "";
-      cmp = diffA.localeCompare(diffB);
+      cmp = (a.difficulty ?? "").localeCompare(b.difficulty ?? "");
     } else if (sortField === "boardSize") {
-      const sizeA = a.boardSize ?? "";
-      const sizeB = b.boardSize ?? "";
-      cmp = sizeA.localeCompare(sizeB);
+      cmp = (a.boardSize ?? "").localeCompare(b.boardSize ?? "");
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
 
   const wins = games.filter((g) => g.result === "player_won").length;
   const losses = games.filter((g) => g.result === "bot_won").length;
-  const winRate =
-    games.length > 0 ? Math.round((wins / games.length) * 100) : 0;
+  const winRate = games.length > 0 ? Math.round((wins / games.length) * 100) : 0;
 
+  // Use the active locale for date formatting
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("es-ES", {
-      timeZone: "Europe/Madrid",
+    new Date(iso).toLocaleString(i18n.resolvedLanguage, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -110,13 +98,6 @@ export default function GameHistory({ onBack, userName }: Props) {
       minute: "2-digit",
     });
 
-  const difficultyLabel: Record<Difficulty, string> = {
-    random: "🎲 Random",
-    easy: "😊 Easy",
-    hard: "🔥 Hard",
-  };
-
-  // Map boardSize to its string representation
   const boardSizeLabel: Record<BoardSize, string> = {
     small: "5×5",
     medium: "7×7",
@@ -128,9 +109,9 @@ export default function GameHistory({ onBack, userName }: Props) {
       <div className="historyCard">
         <div className="historyHeader">
           <button className="btn" type="button" onClick={onBack}>
-            ← Back
+            {t("common.back")}
           </button>
-          <h2>Game History</h2>
+          <h2>{t("history.title")}</h2>
           <div style={{ width: 80 }} />
         </div>
 
@@ -138,22 +119,22 @@ export default function GameHistory({ onBack, userName }: Props) {
           <div className="statsBar">
             <div className="statItem">
               <span className="statValue">{games.length}</span>
-              <span className="statLabel">Total games</span>
+              <span className="statLabel">{t("history.stats.total")}</span>
             </div>
             <div className="statDivider" />
             <div className="statItem">
               <span className="statValue statWin">{wins}</span>
-              <span className="statLabel">Wins</span>
+              <span className="statLabel">{t("history.stats.wins")}</span>
             </div>
             <div className="statDivider" />
             <div className="statItem">
               <span className="statValue statLoss">{losses}</span>
-              <span className="statLabel">Losses</span>
+              <span className="statLabel">{t("history.stats.losses")}</span>
             </div>
             <div className="statDivider" />
             <div className="statItem">
               <span className="statValue">{winRate}%</span>
-              <span className="statLabel">Win rate</span>
+              <span className="statLabel">{t("history.stats.win_rate")}</span>
             </div>
           </div>
         )}
@@ -168,10 +149,10 @@ export default function GameHistory({ onBack, userName }: Props) {
                 onClick={() => setFilter(f)}
               >
                 {f === "all"
-                  ? "All"
+                  ? t("history.filter.all")
                   : f === "player_won"
-                    ? "🏆 Wins"
-                    : "🤖 Losses"}
+                    ? t("history.filter.wins")
+                    : t("history.filter.losses")}
               </button>
             ))}
           </div>
@@ -180,7 +161,7 @@ export default function GameHistory({ onBack, userName }: Props) {
         {loading && (
           <div className="historyCenter">
             <div className="spinner" />
-            <p className="loadingText">Loading history…</p>
+            <p className="loadingText">{t("history.loading")}</p>
           </div>
         )}
 
@@ -188,14 +169,14 @@ export default function GameHistory({ onBack, userName }: Props) {
           <div className="historyCenter">
             <p className="errorText">⚠️ {error}</p>
             <button className="btn" onClick={() => window.location.reload()}>
-              Retry
+              {t("common.retry")}
             </button>
           </div>
         )}
 
         {!loading && !error && games.length === 0 && (
           <div className="historyCenter">
-            <p className="emptyText">No games played yet. Go play one! 🎮</p>
+            <p className="emptyText">{t("history.empty")}</p>
           </div>
         )}
 
@@ -204,34 +185,21 @@ export default function GameHistory({ onBack, userName }: Props) {
             <table className="historyTable">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>{t("history.table.number")}</th>
                   <th className="sortable" onClick={() => handleSort("result")}>
-                    Result {sortIcon("result")}
+                    {t("history.table.result")} {sortIcon("result")}
                   </th>
-                  <th
-                    className="sortable"
-                    onClick={() => handleSort("difficulty")}
-                  >
-                    Difficulty {sortIcon("difficulty")}
+                  <th className="sortable" onClick={() => handleSort("difficulty")}>
+                    {t("history.table.difficulty")} {sortIcon("difficulty")}
                   </th>
-                  {/* New Board Size header */}
-                  <th
-                    className="sortable"
-                    onClick={() => handleSort("boardSize")}
-                  >
-                    Size {sortIcon("boardSize")}
+                  <th className="sortable" onClick={() => handleSort("boardSize")}>
+                    {t("history.table.size")} {sortIcon("boardSize")}
                   </th>
-                  <th
-                    className="sortable"
-                    onClick={() => handleSort("totalMoves")}
-                  >
-                    Moves {sortIcon("totalMoves")}
+                  <th className="sortable" onClick={() => handleSort("totalMoves")}>
+                    {t("history.table.moves")} {sortIcon("totalMoves")}
                   </th>
-                  <th
-                    className="sortable"
-                    onClick={() => handleSort("playedAt")}
-                  >
-                    Date {sortIcon("playedAt")}
+                  <th className="sortable" onClick={() => handleSort("playedAt")}>
+                    {t("history.table.date")} {sortIcon("playedAt")}
                   </th>
                 </tr>
               </thead>
@@ -239,22 +207,25 @@ export default function GameHistory({ onBack, userName }: Props) {
                 {sorted.map((game, i) => (
                   <tr
                     key={game._id}
-                    className={
-                      game.result === "player_won" ? "rowWin" : "rowLoss"
-                    }
+                    className={game.result === "player_won" ? "rowWin" : "rowLoss"}
                   >
                     <td className="tdIndex">{i + 1}</td>
                     <td>
                       <span
-                        className={`resultBadge ${game.result === "player_won" ? "badgeWin" : "badgeLoss"}`}
+                        className={`resultBadge ${
+                          game.result === "player_won" ? "badgeWin" : "badgeLoss"
+                        }`}
                       >
-                        {game.result === "player_won" ? "🏆 Win" : "🤖 Loss"}
+                        {game.result === "player_won"
+                          ? t("history.result.win")
+                          : t("history.result.loss")}
                       </span>
                     </td>
                     <td className="tdDifficulty">
-                      {game.difficulty ? difficultyLabel[game.difficulty] : "—"}
+                      {game.difficulty
+                        ? t(`history.difficulty_label.${game.difficulty}`)
+                        : "—"}
                     </td>
-                    {/* New Board Size cell */}
                     <td className="tdBoardSize">
                       {game.boardSize ? boardSizeLabel[game.boardSize] : "—"}
                     </td>

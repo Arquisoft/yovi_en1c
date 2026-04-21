@@ -1,9 +1,6 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./RegisterForm.css";
-
-// React hooks for managing form state and error handling
-// Using onGoToLogin and onGoToSignUp callbacks to navigate
-//  between login and signup forms without using react-router
 
 type Props = {
   onLoggedIn: (username: string) => void;
@@ -11,6 +8,7 @@ type Props = {
 };
 
 const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +20,7 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
     const trimmed = username.trim();
 
     if (!trimmed || !password) {
-      setError("Please enter both username and password.");
+      setError(t("login.error_empty"));
       return;
     }
 
@@ -31,37 +29,30 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
 
       const res = await fetch(`${API_URL}/api/users/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: trimmed,
-          password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: trimmed, password }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
+        if (data.token) localStorage.setItem("token", data.token);
         onLoggedIn(data.user?.username || trimmed);
       } else {
-        setError(data.error || "Problems with the login");
+        setError(data.error || t("login.error_generic"));
       }
     } catch (err: any) {
-      setError(err.message || "Network error");
+      setError(err.message || t("common.error_network"));
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="register-form">
-      <h2>Welcome back!</h2>
-      <p>Please enter your username and password to log in.</p>
+      <h2>{t("login.title")}</h2>
+      <p>{t("login.subtitle")}</p>
 
       <div className="form-group">
-        <label htmlFor="username">What's your username?</label>
+        <label htmlFor="username">{t("login.username_label")}</label>
         <input
           type="text"
           id="username"
@@ -72,7 +63,7 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="password">And password?</label>
+        <label htmlFor="password">{t("login.password_label")}</label>
         <input
           type="password"
           id="password"
@@ -83,11 +74,11 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
       </div>
 
       <button type="submit" className="submit-button">
-        Lets go!
+        {t("login.submit")}
       </button>
 
       <p style={{ marginTop: 16 }}>
-        Don't have an account?{" "}
+        {t("login.no_account")}{" "}
         <button
           type="button"
           onClick={onGoToSignUp}
@@ -100,7 +91,7 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
             textDecoration: "underline",
           }}
         >
-          Sign up here
+          {t("login.go_signup")}
         </button>
       </p>
 
