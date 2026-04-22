@@ -63,8 +63,8 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
             if (res.ok) {
 
                 if(data.token && data.username){
-                    const safeToken = String(data.token).replace(/[^\w.-]/g, '');
-                    const safeUsername = String(data.username).replace(/[^\w.-]/g, '');
+                    const safeToken = String(data.token).replaceAll(/[^\w.-]/g, '');
+                    const safeUsername = String(data.username).replaceAll(/[^\w.-]/g, '');
 
                     localStorage.setItem("token", safeToken);
                     localStorage.setItem("username", safeUsername);
