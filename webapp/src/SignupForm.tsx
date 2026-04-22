@@ -61,6 +61,12 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
             }
 
             if (res.ok) {
+
+                if(data.token){
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("username", trimmedUsername);
+                }
+                
                 onRegistered(trimmedUsername);
             } else {
                 setError(data.error || "Sign up error");

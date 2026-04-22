@@ -63,8 +63,16 @@ app.post("/signup", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
+
+    const token = jwt.sign(
+      { userId: savedUser._id, username: savedUser.name },
+       JWT_SECRET,
+       { expiresIn: "2h" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
+      token: token,
       user: { id: savedUser._id, username: savedUser.name },
     });
   } catch (err) {

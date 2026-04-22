@@ -115,9 +115,14 @@ async function saveGame(
   boardSize: GameConfig["boardSize"],
 ) {
   const totalMoves = Object.keys(board).length;
+
+  const token = localStorage.getItem("token");
+  console.log("Token value:", token);
+
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}`},
+
     body: JSON.stringify({
       result,
       board,

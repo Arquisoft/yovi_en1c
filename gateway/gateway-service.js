@@ -71,6 +71,15 @@ const verifyToken = (req, res, next) => {
 // Proxy: Users service
 app.use(
   "/api/users",
+  (req, res, next) => {
+    const publicPaths = ["/signup", "/login"];
+
+    if(publicPaths.includes(req.path)){
+      return next();
+    }
+    verifyToken(req,res,next);
+  },
+  
   createProxyMiddleware({
     ...commonOptions,
     target: SERVICES.USERS,
