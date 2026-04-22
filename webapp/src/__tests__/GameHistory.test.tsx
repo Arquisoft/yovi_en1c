@@ -45,6 +45,8 @@ const defaultProps = {
 
 describe("GameHistory", () => {
   beforeEach(() => {
+    window.localStorage.setItem("token", "test-token-123");
+    
     // Setup a robust global fetch mock for multiple endpoints
     global.fetch = vi.fn().mockImplementation((url) => {
       if (url.includes("/games/list")) {

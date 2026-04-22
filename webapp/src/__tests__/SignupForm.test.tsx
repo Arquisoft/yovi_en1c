@@ -81,10 +81,15 @@ describe("SignUpForm", () => {
 
     it("calls onRegistered with username on successful signup", async () => {
     const user = userEvent.setup();
+
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ message: "User created" }),
-    });
+      
+    json: async () => ({ token: "fake-jwt-token", username: "Pablo" }), 
+    text: async () => JSON.stringify({ token: "fake-jwt-token", username: "Pablo" }), 
+     });
 
     render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
@@ -93,6 +98,8 @@ describe("SignUpForm", () => {
 
     await waitFor(() => {
       expect(onRegistered).toHaveBeenCalledWith("Pablo");
+      expect(setItemSpy).toHaveBeenCalledWith("token", expect.any(String));
+      expect(setItemSpy).toHaveBeenCalledWith("username", "Pablo");
     });
   });
 
