@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GameHistory from '../GameHistory'; 
 
-// Mock i18next
+// 1. Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (str: string) => str,
@@ -11,7 +11,6 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-// Mock Recharts to avoid DOM dimension errors in JSDOM
 vi.mock('recharts', async () => {
   const actual = await vi.importActual('recharts');
   return {
@@ -26,6 +25,15 @@ const mockGames = [
   { _id: "1", result: "player_won", totalMoves: 10, playedAt: "2023-01-01T10:00:00Z", difficulty: "easy", boardSize: "small", points: 100 },
   { _id: "2", result: "bot_won", totalMoves: 15, playedAt: "2023-01-02T10:00:00Z", difficulty: "hard", boardSize: "large", points: 20 }
 ];
+
+const mockStats = {
+  byDifficulty: [{ _id: "easy", total: 1, wins: 1 }],
+  progression: [{ points: 100, date: "2023-01-01" }],
+  avgMoves: [
+    { _id: "player_won", avgMoves: 10 },
+    { _id: "bot_won", avgMoves: 15 }
+  ]
+};
 
 describe('GameHistory Coverage Boost', () => {
   beforeEach(() => {
@@ -42,7 +50,7 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText(/API Failure/i)).toBeInTheDocument();
     });
     
-    // Patch window.location.reload to avoid "Cannot redefine property" error
+    // Fix window.location.reload
     const originalLocation = window.location;
     delete (window as any).location;
     window.location = { ...originalLocation, reload: vi.fn() } as any;
@@ -51,8 +59,6 @@ describe('GameHistory Coverage Boost', () => {
     fireEvent.click(retryBtn);
     
     expect(window.location.reload).toHaveBeenCalled();
-
-    // Restore location
     window.location = originalLocation;
   });
 
@@ -68,24 +74,21 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText('history.stats.total')).toBeInTheDocument();
     });
 
-    // Test filtering by wins
     const winsFilter = screen.getByText('history.filter.wins');
     fireEvent.click(winsFilter);
     expect(screen.queryByText('history.result.loss')).not.toBeInTheDocument();
 
-    // Test table sorting (moves and points)
     const movesHeader = screen.getByText(/history.table.moves/i);
     fireEvent.click(movesHeader); 
     fireEvent.click(movesHeader); 
-    
-    const pointsHeader = screen.getByText(/history.table.points/i);
-    fireEvent.click(pointsHeader);
   });
 
   it('should navigate between tabs and call onBack', async () => {
-    (global.fetch as any).mockResolvedValue({
-      ok: true,
-      json: async () => mockGames,
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('/stats')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockStats) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(mockGames) });
     });
 
     const onBackMock = vi.fn();
@@ -95,19 +98,23 @@ describe('GameHistory Coverage Boost', () => {
         expect(screen.getByText('history.view.stats')).toBeInTheDocument();
     });
 
-    // Switch to Stats view
+    // Go to Stats View
     fireEvent.click(screen.getByText('history.view.stats'));
     
-    // Switch to Leaderboard view
+    // Verify stats content is rendered
+    expect(screen.getByText('history.stats_view.avg_moves')).toBeInTheDocument();
+
+    // Go to Leaderboard
     fireEvent.click(screen.getByText('history.view.leaderboard'));
 
+    // Test Back button
     const backBtn = screen.getAllByText('common.back')[0];
     fireEvent.click(backBtn); 
     
     expect(onBackMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should handle cases with missing optional data (edge cases)', async () => {
+  it('should handle missing optional data (fallback dashes)', async () => {
     const incompleteGames = [{
       _id: "3", result: "player_won", playedAt: "2023-01-01T10:00:00Z"
     }];
