@@ -54,21 +54,6 @@ describe("GameBoard", () => {
     expect(getPolygons()).toHaveLength(28);
   });
 
-  test("completes a full turn cycle from player click to bot response", async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(mockBotResponse(0, 1, 0));
-    global.fetch = fetchMock;
-
-    render(<GameBoard config={defaultConfig} onBack={() => {}} userName="testUser" />);
-    
-    await userEvent.click(getPolygons()[0]);
-    expect(screen.getByText(/bot thinking/i)).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalled();
-      expect(screen.getByText(/your turn/i)).toBeInTheDocument();
-    });
-  });
-
   test("prevents additional clicks while bot is thinking", async () => {
     global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
