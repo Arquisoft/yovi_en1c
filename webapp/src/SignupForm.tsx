@@ -63,11 +63,20 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
             if (res.ok) {
 
                 if(data.token && data.username){
-                    const safeToken = String(data.token).replaceAll(/[^\w.-]/g, '');
-                    const safeUsername = String(data.username).replaceAll(/[^\w.-]/g, '');
+                    const rawToken = String(data.token);
+                    const rawUsername = String(data.username);
 
-                    localStorage.setItem("token", safeToken); // NOSONAR: Manual sanitization applied
-                    localStorage.setItem("username", safeUsername); // NOSONAR: Manual sanitization applied
+                    const isTokenSafe = /^[a-zA-Z0-9._-]+$/.test(rawToken);
+                    const isUserSafe = /^[a-zA-Z0-9._-]+$/.test(rawUsername);
+                   
+                    if(isTokenSafe && isUserSafe){
+                    localStorage.setItem("token", rawToken); 
+                    localStorage.setItem("username", rawUsername); 
+                    } else {
+                        localStorage.setItem("token", rawToken.replaceAll(/[^\w.-]/g, ''));
+                        localStorage.setItem("username", rawUsername.replaceAll(/[^\w.-]/g, ''));
+                    }  
+                    
                 }
                 
                 onRegistered(trimmedUsername);
