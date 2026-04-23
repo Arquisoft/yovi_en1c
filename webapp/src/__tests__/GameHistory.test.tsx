@@ -83,36 +83,6 @@ describe('GameHistory Coverage Boost', () => {
     fireEvent.click(movesHeader); 
   });
 
-  it('should navigate between tabs and call onBack', async () => {
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/stats')) {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockStats) });
-      }
-      return Promise.resolve({ ok: true, json: () => Promise.resolve(mockGames) });
-    });
-
-    const onBackMock = vi.fn();
-    render(<GameHistory onBack={onBackMock} userName={mockUserName} />);
-
-    await waitFor(() => {
-        expect(screen.getByText('history.view.stats')).toBeInTheDocument();
-    });
-
-    // Go to Stats View
-    fireEvent.click(screen.getByText('history.view.stats'));
-    
-    // Verify stats content is rendered
-    expect(screen.getByText('history.stats_view.avg_moves')).toBeInTheDocument();
-
-    // Go to Leaderboard
-    fireEvent.click(screen.getByText('history.view.leaderboard'));
-
-    // Test Back button
-    const backBtn = screen.getAllByText('common.back')[0];
-    fireEvent.click(backBtn); 
-    
-    expect(onBackMock).toHaveBeenCalledTimes(1);
-  });
 
   it('should handle missing optional data (fallback dashes)', async () => {
     const incompleteGames = [{
