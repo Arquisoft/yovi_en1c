@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import SignUpForm from "../SignupForm"; // Ajusta la ruta si es necesario
+import SignUpForm from "../SignupForm";
 import "@testing-library/jest-dom";
 
-// 1. MOCK DE I18NEXT: Fundamental para que el test encuentre las etiquetas
+// Mock i18next to return translation keys as text
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
-    t: (key: string) => key, // Esto hace que t("signup.title") devuelva "signup.title"
+    t: (key: string) => key,
     i18n: { changeLanguage: vi.fn(), language: "en" },
   }),
 }));
@@ -24,6 +24,7 @@ describe("SignUpForm", () => {
     vi.restoreAllMocks();
   });
 
+  // Helper to populate form fields
   const fillForm = async (
     user: ReturnType<typeof userEvent.setup>,
     {
@@ -33,7 +34,6 @@ describe("SignUpForm", () => {
       confirmPassword = "abc123",
     } = {}
   ) => {
-    // Buscamos por la clave de traducción, ya que el mock devuelve la clave
     await user.type(screen.getByLabelText(/signup.username_label/i), username);
     await user.type(screen.getByLabelText(/signup.email_label/i), email);
     await user.type(screen.getByLabelText(/signup.password_label/i), password);
@@ -72,7 +72,6 @@ describe("SignUpForm", () => {
   it("calls onRegistered on successful signup", async () => {
     const user = userEvent.setup();
     
-    // Mock de fetch para que devuelva un OK
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ message: "OK" }),

@@ -4,8 +4,7 @@ import LoginForm from "../RegisterForm";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
 
-// 1. Mock useTranslation so it returns the keys
-// This ensures that t("login.username_label") returns "login.username_label"
+// Mock i18next to return translation keys
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -30,16 +29,14 @@ describe("LoginForm", () => {
     render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
 
     const user = userEvent.setup();
-    // Using the translation key as the name
     await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     expect(screen.getByText(/login.error_empty/i)).toBeInTheDocument();
     expect(onLoggedIn).not.toHaveBeenCalled();
   });
 
-  test("submits login successfully and calls onLoggedIn with API username", async () => {
+  test("submits login successfully and saves token", async () => {
     const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
     const user = userEvent.setup();
 
     global.fetch = vi.fn().mockResolvedValueOnce({
@@ -50,9 +47,8 @@ describe("LoginForm", () => {
       }),
     } as Response);
 
-    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
+    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={vi.fn()} />);
 
-    // Match by the translation key used in the <label>
     await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
     await user.type(screen.getByLabelText(/login.password_label/i), "secret123");
     await user.click(screen.getByRole("button", { name: /login.submit/i }));
@@ -64,9 +60,7 @@ describe("LoginForm", () => {
     expect(localStorage.getItem("token")).toBe("mock-token");
   });
 
-  test("shows server error message when API returns an error", async () => {
-    const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
+  test("shows server error message on API failure", async () => {
     const user = userEvent.setup();
 
     global.fetch = vi.fn().mockResolvedValueOnce({
@@ -74,7 +68,7 @@ describe("LoginForm", () => {
       json: async () => ({ error: "Invalid Credentials" }),
     } as Response);
 
-    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
+    render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
     await user.type(screen.getByLabelText(/login.password_label/i), "wrong");
@@ -85,7 +79,7 @@ describe("LoginForm", () => {
     });
   });
 
-  test("shows fallback error message when API returns empty error object", async () => {
+  test("shows fallback error message for empty error response", async () => {
     const user = userEvent.setup();
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
@@ -99,18 +93,16 @@ describe("LoginForm", () => {
     await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     await waitFor(() => {
-      // It should fall back to the generic error key
       expect(screen.getByText(/login.error_generic/i)).toBeInTheDocument();
     });
   });
 
-  test("calls onGoToSignUp when the sign up button is clicked", async () => {
+  test("calls onGoToSignUp when requested", async () => {
     const onGoToSignUp = vi.fn();
     const user = userEvent.setup();
 
     render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={onGoToSignUp} />);
 
-    // Matches the key for the "Go to signup" button
     await user.click(screen.getByRole("button", { name: /login.go_signup/i }));
 
     expect(onGoToSignUp).toHaveBeenCalledTimes(1);

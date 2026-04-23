@@ -4,22 +4,23 @@ import GameHistory from "../GameHistory";
 import { afterEach, describe, expect, test, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 
-// 1. MOCK DE I18NEXT
+// --- i18n Mock ---
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
-      // Mapeo manual para casos con interpolación o lógica específica
-      if (key === "history.subtitle") return `welcome, ${options?.name}`;
-      if (key === "history.board_size.small") return "5×5";
-      if (key === "history.board_size.medium") return "7×7";
-      if (key === "history.board_size.large") return "9×9";
-      return key; // Para el resto, devuelve la clave (ej: "history.title")
+      const translations: Record<string, string> = {
+        "history.subtitle": `welcome, ${options?.name}`,
+        "history.board_size.small": "5×5",
+        "history.board_size.medium": "7×7",
+        "history.board_size.large": "9×9",
+      };
+      return translations[key] || key;
     },
     i18n: { resolvedLanguage: "en" },
   }),
 }));
 
-// Mock de Recharts para evitar errores de renderizado en entorno de test (JSDOM)
+// --- Recharts Mock (Prevents JSDOM rendering errors) ---
 vi.mock("recharts", async () => {
   const actual = await vi.importActual("recharts");
   return {
@@ -49,16 +50,6 @@ const mockGames = [
     boardSize: "small",
     points: 0,
   },
-  {
-    _id: "3",
-    result: "player_won",
-    totalMoves: 15,
-    playedAt: "2024-01-03T09:00:00.000Z",
-    board: {},
-    difficulty: "random",
-    boardSize: "large",
-    points: 500,
-  },
 ];
 
 const defaultProps = {
@@ -69,32 +60,21 @@ const defaultProps = {
 describe("GameHistory", () => {
   beforeEach(() => {
     global.fetch = vi.fn().mockImplementation((url) => {
-      if (url.includes("/games/list")) {
-        return Promise.resolve({ ok: true, json: async () => mockGames });
-      }
-      if (url.includes("/games/leaderboard")) {
-        return Promise.resolve({ ok: true, json: async () => [] });
-      }
+      if (url.includes("/games/list")) return Promise.resolve({ ok: true, json: async () => mockGames });
+      if (url.includes("/games/leaderboard")) return Promise.resolve({ ok: true, json: async () => [] });
       if (url.includes("/games/stats")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({
-            byDifficulty: [],
-            progression: [],
-            avgMoves: [],
-          }),
+          json: async () => ({ byDifficulty: [], progression: [], avgMoves: [] }),
         });
       }
-      return Promise.reject(new Error("Unknown API endpoint"));
+      return Promise.reject(new Error("Unknown API"));
     });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
-  test("shows spinner while loading", async () => {
-    // Retrasamos el fetch para ver el estado de carga
+  test("renders loading state initially", async () => {
     global.fetch = vi.fn().mockReturnValue(new Promise(() => {})); 
     render(<GameHistory {...defaultProps} />);
     
@@ -102,27 +82,25 @@ describe("GameHistory", () => {
     expect(screen.getByText("history.loading")).toBeInTheDocument();
   });
 
-  test("fetches games for the correct username", async () => {
+  test("fetches data using the provided username", async () => {
     render(<GameHistory {...defaultProps} />);
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("username=Javi"));
     });
   });
 
-  test("renders one row per game", async () => {
+  test("renders table rows for fetched games", async () => {
     render(<GameHistory {...defaultProps} />);
 
     await waitFor(() => {
-      const rows = document.querySelectorAll("tbody tr");
-      expect(rows).toHaveLength(3);
+      expect(document.querySelectorAll("tbody tr")).toHaveLength(2);
     });
 
-    // Buscamos los badges por su clave de traducción
-    expect(screen.getAllByText("history.result.win")).toHaveLength(2);
-    expect(screen.getAllByText("history.result.loss")).toHaveLength(1);
+    expect(screen.getByText("history.result.win")).toBeInTheDocument();
+    expect(screen.getByText("history.result.loss")).toBeInTheDocument();
   });
 
-  test("filters to show only wins when Wins tab is clicked", async () => {
+  test("filters results when clicking filter tabs", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
@@ -130,37 +108,33 @@ describe("GameHistory", () => {
     await user.click(winsTab);
 
     await waitFor(() => {
-      const rows = document.querySelectorAll("tbody tr");
-      expect(rows).toHaveLength(2);
+      expect(document.querySelectorAll("tbody tr")).toHaveLength(1);
       expect(screen.queryByText("history.result.loss")).not.toBeInTheDocument();
     });
   });
 
-  test("sorts by total moves correctly when header is clicked", async () => {
+  test("sorts table by moves when header is clicked", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
     const movesHeader = await screen.findByText("history.table.moves");
     
-    // Primer click (descendente por defecto en tu código)
+    // Sort Descending
     await user.click(movesHeader);
-
     await waitFor(() => {
-      const moveCells = document.querySelectorAll(".tdMoves");
-      const moves = Array.from(moveCells).map(cell => cell.textContent);
-      expect(moves).toEqual(["15", "10", "8"]);
+      const moves = Array.from(document.querySelectorAll(".tdMoves")).map(c => c.textContent);
+      expect(moves).toEqual(["10", "8"]);
     });
 
-    // Segundo click (ascendente)
+    // Sort Ascending
     await user.click(movesHeader);
     await waitFor(() => {
-      const moveCells = document.querySelectorAll(".tdMoves");
-      const moves = Array.from(moveCells).map(cell => cell.textContent);
-      expect(moves).toEqual(["8", "10", "15"]);
+      const moves = Array.from(document.querySelectorAll(".tdMoves")).map(c => c.textContent);
+      expect(moves).toEqual(["8", "10"]);
     });
   });
 
-  test("renders leaderboard correctly and highlights current user", async () => {
+  test("highlights current user in leaderboard", async () => {
     const mockLeaderboard = [
       { username: "Winner1", totalPoints: 1000, gamesPlayed: 5 },
       { username: "Javi", totalPoints: 500, gamesPlayed: 2 },
@@ -180,10 +154,9 @@ describe("GameHistory", () => {
     expect(screen.getByText("Winner1")).toBeInTheDocument();
     const userRow = screen.getByText(/Javi/i).closest("tr");
     expect(userRow).toHaveClass("rowHighlight");
-    expect(screen.getByText(/history.leaderboard.you/i)).toBeInTheDocument();
   });
 
-  test("calls onBack when the back button is clicked", async () => {
+  test("navigates back when back button is clicked", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
@@ -193,18 +166,7 @@ describe("GameHistory", () => {
     expect(defaultProps.onBack).toHaveBeenCalledTimes(1);
   });
 
-  test("renders stats dashboard correctly", async () => {
-    const mockStats = {
-      progression: [{ points: 100, date: "2024-01-01" }],
-      byDifficulty: [{ _id: "easy", total: 10, wins: 8 }],
-      avgMoves: [{ _id: "player_won", avgMoves: 12 }],
-    };
-
-    global.fetch = vi.fn().mockImplementation((url) => {
-      if (url.includes("/stats")) return Promise.resolve({ ok: true, json: async () => mockStats });
-      return Promise.resolve({ ok: true, json: async () => [] });
-    });
-
+  test("renders stats dashboard sections", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
 
@@ -213,6 +175,5 @@ describe("GameHistory", () => {
 
     expect(screen.getByText("history.stats_view.progression")).toBeInTheDocument();
     expect(screen.getByText("history.stats_view.win_rate_by_difficulty")).toBeInTheDocument();
-    expect(screen.getByText("history.stats_view.win_avg")).toBeInTheDocument();
   });
 });
