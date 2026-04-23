@@ -118,16 +118,23 @@ image::05_level_3.png[Level 3 Architecture Diagram, width=400]
 * **`username`**: Unique identifier for the user.
 * **`password`**: Salted and hashed using BCrypt for security.
 * **`email`**: Used for account recovery and notifications.
+* **`createdAt`**: Timestamp of account creation used for verification and logging.
 
-**Directory/File Location:** `./data/db/users`
+
+**Directory/File Location:** `./users/users-service.js` & `./users/db.js`
 
 ==== Matches Collection
 **Purpose/Responsibility:** Maintains a persistent record of all games played, allowing for match history tracking and game state resumption.
 
-* **`players`**: References to the Users collection for both participants.
-* **`moves`**: Array of moves stored in **YEN notation** to recreate the game state.
-* **`status`**: Indicates the current state of the game (Ongoing, Finished, or Draw).
+* **`username`**: Unique identifier for the user.
+* **`result`**: (Enum) The outcome of the match; strictly restricted to player_won or bot_won.
+* **`board`**: (Object) A snapshot of the final state of the game board.
+* **`points`**: Calculated score based on difficulty, board size, and moves efficiency.
+* **`totalMoves`**: The count of moves made during the game.
+* **`difficulty`**: The level chosen.
+* **`boardSize`**: Dimensions of the board.
+* **`playedAt`**: Timestamp of the match, used for progression tracking.
 
-**Directory/File Location:** ./data/db/matches
+**Directory/File Location:** `./users/users-service.js` & `./users/db.js`
 
 
