@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import LanguageSwitcher from './LanguageSwitcher';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 // Mock i18next with a spy for the changeLanguage function
 const mockChangeLanguage = vi.fn();
