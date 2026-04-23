@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginForm from "../RegisterForm";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {beforeEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
 
 vi.mock("react-i18next", () => ({
