@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor , within} from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GameHistory from '../GameHistory';
 
@@ -309,7 +309,7 @@ describe('GameHistory – leaderboard view', () => {
     await renderAndWait();
     fireEvent.click(screen.getByText('history.view.leaderboard'));
 
-    expect(screen.getByText(/★/)).toBeInTheDocument();
+    expect(screen.getAllByText(/★/)).toHaveLength(2);
   });
 });
 
@@ -408,6 +408,7 @@ describe('GameHistory – points fallback (0 when undefined)', () => {
     await waitFor(() => expect(screen.queryByText('history.loading')).not.toBeInTheDocument());
 
     // points ?? 0 → cell should show "0"
-    expect(screen.getByText('0')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+expect(within(table).getAllByText('0')[0]).toBeInTheDocument();
   });
 });
