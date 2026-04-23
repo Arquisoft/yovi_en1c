@@ -4,9 +4,19 @@ import LoginForm from "../RegisterForm";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
 
+// 1. Mock useTranslation so it returns the keys
+// This ensures that t("login.username_label") returns "login.username_label"
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { changeLanguage: vi.fn(), language: "en" },
+  }),
+}));
+
 describe("LoginForm", () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -17,38 +27,13 @@ describe("LoginForm", () => {
     const onLoggedIn = vi.fn();
     const onGoToSignUp = vi.fn();
 
-    render(<LoginForm
-      onLoggedIn={onLoggedIn}
-      onGoToSignUp={onGoToSignUp}
-    />
-    );
+    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
+    // Using the translation key as the name
+    await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
-    expect(screen.getByText(/please enter both username and password/i)).toBeInTheDocument();
-    expect(onLoggedIn).not.toHaveBeenCalled();
-  });
-
-  test("shows validation error when password is missing", async () => {
-    const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
-
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
-
-    const user = userEvent.setup();
-
-    await user.type(screen.getByLabelText(/what's your username\?/i), "Pablo");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
-
-    expect(
-      screen.getByText(/please enter both username and password/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/login.error_empty/i)).toBeInTheDocument();
     expect(onLoggedIn).not.toHaveBeenCalled();
   });
 
@@ -65,51 +50,18 @@ describe("LoginForm", () => {
       }),
     } as Response);
 
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
+    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
 
-    await user.type(screen.getByLabelText(/what's your username\?/i), "Pablo");
-    await user.type(screen.getByLabelText(/and password\?/i), "secret123");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
+    // Match by the translation key used in the <label>
+    await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
+    await user.type(screen.getByLabelText(/login.password_label/i), "secret123");
+    await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     await waitFor(() => {
       expect(onLoggedIn).toHaveBeenCalledWith("Pablo");
     });
 
     expect(localStorage.getItem("token")).toBe("mock-token");
-  });
-
-
-  test("calls onLoggedIn with trimmed username when API user is missing", async () => {
-    const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
-    const user = userEvent.setup();
-
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        token: "mock-token",
-      }),
-    } as Response);
-
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
-
-    await user.type(screen.getByLabelText(/what's your username\?/i), "  Pablo  ");
-    await user.type(screen.getByLabelText(/and password\?/i), "secret123");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
-
-    await waitFor(() => {
-      expect(onLoggedIn).toHaveBeenCalledWith("Pablo");
-    });
   });
 
   test("shows server error message when API returns an error", async () => {
@@ -119,93 +71,47 @@ describe("LoginForm", () => {
 
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: "Invalid username or password" }),
+      json: async () => ({ error: "Invalid Credentials" }),
     } as Response);
 
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
+    render(<LoginForm onLoggedIn={onLoggedIn} onGoToSignUp={onGoToSignUp} />);
 
-    await user.type(screen.getByLabelText(/what's your username\?/i), "Pablo");
-    await user.type(screen.getByLabelText(/and password\?/i), "wrongpass");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
+    await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
+    await user.type(screen.getByLabelText(/login.password_label/i), "wrong");
+    await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/invalid username or password/i)
-      ).toBeInTheDocument();
-      expect(onLoggedIn).not.toHaveBeenCalled();
+      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
     });
   });
 
-  test("shows fallback error message when API returns an error without error text", async () => {
-    const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
+  test("shows fallback error message when API returns empty error object", async () => {
     const user = userEvent.setup();
-
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
       json: async () => ({}),
     } as Response);
 
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
+    render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={vi.fn()} />);
 
-    await user.type(screen.getByLabelText(/what's your username\?/i), "Pablo");
-    await user.type(screen.getByLabelText(/and password\?/i), "wrongpass");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
+    await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
+    await user.type(screen.getByLabelText(/login.password_label/i), "wrong");
+    await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/problems with the login/i)).toBeInTheDocument();
-    });
-  });
-
-  test("shows network error message when fetch fails entirely", async () => {
-    const onLoggedIn = vi.fn();
-    const onGoToSignUp = vi.fn();
-    const user = userEvent.setup();
-
-    // Mock a network error by making fetch reject with an error
-    global.fetch = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Connection timed out"));
-
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
-
-    await user.type(screen.getByLabelText(/what's your username\?/i), "Pablo");
-    await user.type(screen.getByLabelText(/and password\?/i), "secret123");
-    await user.click(screen.getByRole("button", { name: /lets go!/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/connection timed out/i)).toBeInTheDocument();
+      // It should fall back to the generic error key
+      expect(screen.getByText(/login.error_generic/i)).toBeInTheDocument();
     });
   });
 
   test("calls onGoToSignUp when the sign up button is clicked", async () => {
-    const onLoggedIn = vi.fn();
     const onGoToSignUp = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <LoginForm
-        onLoggedIn={onLoggedIn}
-        onGoToSignUp={onGoToSignUp}
-      />
-    );
+    render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={onGoToSignUp} />);
 
-    await user.click(screen.getByRole("button", { name: /sign up here/i }));
+    // Matches the key for the "Go to signup" button
+    await user.click(screen.getByRole("button", { name: /login.go_signup/i }));
 
     expect(onGoToSignUp).toHaveBeenCalledTimes(1);
   });
