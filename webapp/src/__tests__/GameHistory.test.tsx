@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import GameHistory from '../components/GameHistory'; 
+import GameHistory from '../GameHistory'; 
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
