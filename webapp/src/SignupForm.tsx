@@ -63,19 +63,16 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
             if (res.ok) {
 
                 if(data.token && data.username){
-                    const rawToken = String(data.token);
-                    const rawUsername = String(data.username);
+                  const tokenStr: string = String(data.token);
+                  const userStr: string = String(data.username);
 
-                    const isTokenSafe = /^[a-zA-Z0-9._-]+$/.test(rawToken);
-                    const isUserSafe = /^[a-zA-Z0-9._-]+$/.test(rawUsername);
+                  const cleanToken = tokenStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
+                  const cleanUsername = userStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
                    
-                    if(isTokenSafe && isUserSafe){
-                    localStorage.setItem("token", rawToken); 
-                    localStorage.setItem("username", rawUsername); 
-                    } else {
-                        localStorage.setItem("token", rawToken.replaceAll(/[^\w.-]/g, ''));
-                        localStorage.setItem("username", rawUsername.replaceAll(/[^\w.-]/g, ''));
-                    }  
+                   if (cleanToken.length > 0 && cleanUsername.length > 0) {
+                        localStorage.setItem("token", cleanToken);
+                        localStorage.setItem("username", cleanUsername);
+    }
                     
                 }
                 
