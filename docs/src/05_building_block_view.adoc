@@ -8,7 +8,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 The building block view shows the static decomposition of the system into building blocks and their dependencies.
 
 **Motivation:**
-Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).
+Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB). All controlled by the gateway.
 
 **Contained Building Blocks:**
 
@@ -18,6 +18,7 @@ image::05_level_1.png[Level 1 Architecture Diagram]
 |===
 | **Name** | **Responsibility**
 | Frontend(React) | Provides the user interface for playing Game Y and user registration.
+| API Gateway | Acts as entry point for all requests, the frontent is another client of the gateway.
 | Backend Services | Coordinates game logic, authentication, and service communication.
 | MongoDB | **(Database)** Acts as the primary NoSQL data store for user profiles and history.
 |===
@@ -27,10 +28,20 @@ Provides the user interface for playing Game Y, handling user registration, and 
 
 **Interface(s):**
 * **Web UI:** React-based frontend accessible via browser.
-* **API Consumer:** Communicates with Backend Services via REST/JSON.
+* **API Consumer:** Communicates with the gateway via REST/JSON.
 
 **Directory/File Location:**
-`./apps/webapp`
+`./webapp`
+
+==== API Gateway
+**Purpose/Responsibility:**
+Provides the backend interface for Game Y, handling all rerouting requests and validating them.
+
+**Interface(s):**
+* **API Consumer:** Communicates with Services via REST/JSON.
+
+**Directory/File Location:**
+`./gateway`
 
 ==== Backend Services
 **Purpose/Responsibility:**
@@ -38,17 +49,17 @@ Acts as the central orchestrator. It manages authentication, coordinates game lo
 
 **Interface(s):**
 * **REST API:** Provides endpoints for login and game actions.
-* **Engine Connector:** Internal communication with the Rust Game Engine.
+* **Engine Connector:** Internal communication with the Rust Game Engine and users service.
 
 **Directory/File Location:**
-`./apps/backend`
+`./gamey` , `./users`
 
 ==== MongoDB
 **Purpose/Responsibility:**
 Stores persistent data including user credentials and match history.
 
 **Directory/File Location:**
-`./data/db`
+`./users`
 **Important Interfaces:**
 * **REST API:** Communication between frontend and backend via JSON.
 * **Database Connection:** Backend access to MongoDB on port 27017.
@@ -66,32 +77,32 @@ image::05_level_2.png[Level 2 Architecture Diagram]
 [cols="1,2" options="header"]
 |===
 | **Name** | **Responsibility**
-| Auth Service | (Node.js) Manages user identity, registration, and security.
+| Users Service | (Node.js) Manages user identity, registration, security and data persistence.
 | Game Engine | (Rust) Handles the core rules and hexagonal grid logic for Game Y.
 |===
 
 ---
-==== Auth Service
+==== Users Service
 **Purpose/Responsibility:**
 Handles user registration, authentication, and session management. It issues JWT (JSON Web Tokens) for secure access to other services.
 
 **Interface(s):**
-* **HTTP POST /register:** Creates new user accounts.
+* **HTTP POST /createuser:** Creates new user accounts.
 * **HTTP POST /login:** Validates credentials and returns a token.
 
 **Directory/File Location:**
-`./apps/backend/services/auth`
+`./users`
 
 ==== Game Engine (Rust)
 **Purpose/Responsibility:**
-The core of the system. It handles the Game Y logic, validates hexagonal grid moves, and calculates win/loss conditions. Built in Rust for high performance.
+The core of the system. It handles the Game Y logic, validates hexagonal grid moves, and calculates win/loss conditions. Built in Rust.
 
 **Interface(s):**
 * **Rust-Node Bridge:** Internal API for receiving game moves and returning states.
 
 
 **Directory/File Location:**
-`./apps/backend/services/game-engine`
+`./gamey`
 
 
 
