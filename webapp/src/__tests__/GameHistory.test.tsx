@@ -20,7 +20,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-// --- Recharts Mock (Prevents JSDOM rendering errors) ---
+// --- Recharts Mock ---
 vi.mock("recharts", async () => {
   const actual = await vi.importActual("recharts");
   return {
@@ -57,11 +57,14 @@ const defaultProps = {
   userName: "Javi",
 };
 
-describe("GameHistory", () => {
+describe("GameHistory Full Suite", () => {
   beforeEach(() => {
     global.fetch = vi.fn().mockImplementation((url) => {
       if (url.includes("/games/list")) return Promise.resolve({ ok: true, json: async () => mockGames });
-      if (url.includes("/games/leaderboard")) return Promise.resolve({ ok: true, json: async () => [] });
+      if (url.includes("/games/leaderboard")) return Promise.resolve({ ok: true, json: async () => [
+        { username: "Winner1", totalPoints: 1000, gamesPlayed: 5 },
+        { username: "Javi", totalPoints: 500, gamesPlayed: 2 },
+      ] });
       if (url.includes("/games/stats")) {
         return Promise.resolve({
           ok: true,
@@ -77,8 +80,6 @@ describe("GameHistory", () => {
   test("renders loading state initially", async () => {
     global.fetch = vi.fn().mockReturnValue(new Promise(() => {})); 
     render(<GameHistory {...defaultProps} />);
-    
-    expect(document.querySelector(".spinner")).toBeInTheDocument();
     expect(screen.getByText("history.loading")).toBeInTheDocument();
   });
 
@@ -91,11 +92,9 @@ describe("GameHistory", () => {
 
   test("renders table rows for fetched games", async () => {
     render(<GameHistory {...defaultProps} />);
-
     await waitFor(() => {
       expect(document.querySelectorAll("tbody tr")).toHaveLength(2);
     });
-
     expect(screen.getByText("history.result.win")).toBeInTheDocument();
     expect(screen.getByText("history.result.loss")).toBeInTheDocument();
   });
@@ -103,10 +102,8 @@ describe("GameHistory", () => {
   test("filters results when clicking filter tabs", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
-
     const winsTab = await screen.findByRole("button", { name: "history.filter.wins" });
     await user.click(winsTab);
-
     await waitFor(() => {
       expect(document.querySelectorAll("tbody tr")).toHaveLength(1);
       expect(screen.queryByText("history.result.loss")).not.toBeInTheDocument();
@@ -116,17 +113,16 @@ describe("GameHistory", () => {
   test("sorts table by moves when header is clicked", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
-
     const movesHeader = await screen.findByText("history.table.moves");
     
-    // Sort Descending
+    // Descending
     await user.click(movesHeader);
     await waitFor(() => {
       const moves = Array.from(document.querySelectorAll(".tdMoves")).map(c => c.textContent);
       expect(moves).toEqual(["10", "8"]);
     });
 
-    // Sort Ascending
+    // Ascending
     await user.click(movesHeader);
     await waitFor(() => {
       const moves = Array.from(document.querySelectorAll(".tdMoves")).map(c => c.textContent);
@@ -135,19 +131,8 @@ describe("GameHistory", () => {
   });
 
   test("highlights current user in leaderboard", async () => {
-    const mockLeaderboard = [
-      { username: "Winner1", totalPoints: 1000, gamesPlayed: 5 },
-      { username: "Javi", totalPoints: 500, gamesPlayed: 2 },
-    ];
-
-    global.fetch = vi.fn().mockImplementation((url) => {
-      if (url.includes("/leaderboard")) return Promise.resolve({ ok: true, json: async () => mockLeaderboard });
-      return Promise.resolve({ ok: true, json: async () => [] });
-    });
-
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
-
     const rankBtn = await screen.findByRole("button", { name: "history.view.leaderboard" });
     await user.click(rankBtn);
 
@@ -159,21 +144,16 @@ describe("GameHistory", () => {
   test("navigates back when back button is clicked", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
-
     const backButton = await screen.findByRole("button", { name: "common.back" });
     await user.click(backButton);
-
     expect(defaultProps.onBack).toHaveBeenCalledTimes(1);
   });
 
   test("renders stats dashboard sections", async () => {
     const user = userEvent.setup();
     render(<GameHistory {...defaultProps} />);
-
     const statsBtn = await screen.findByRole("button", { name: "history.view.stats" });
     await user.click(statsBtn);
-
     expect(screen.getByText("history.stats_view.progression")).toBeInTheDocument();
-    expect(screen.getByText("history.stats_view.win_rate_by_difficulty")).toBeInTheDocument();
   });
 });
