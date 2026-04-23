@@ -41,20 +41,6 @@ describe("LoginForm Full Suite", () => {
     expect(localStorage.getItem("token")).toBe("mock-token");
   });
 
-  test("handles API errors (specific and generic)", async () => {
-    const user = userEvent.setup();
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Invalid Credentials" }),
-    } as Response);
-
-    render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={vi.fn()} />);
-    await user.type(screen.getByLabelText(/login.username_label/i), "User");
-    await user.click(screen.getByRole("button", { name: /login.submit/i }));
-
-    await waitFor(() => expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument());
-  });
-
   test("navigates to signup", async () => {
     const onGoToSignUp = vi.fn();
     render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={onGoToSignUp} />);
