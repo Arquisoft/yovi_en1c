@@ -89,6 +89,7 @@
       "result": "Result",
       "difficulty": "Difficulty",
       "size": "Size",
+      "points": "Points",
       "moves": "Moves",
       "date": "Date"
     },
@@ -100,6 +101,31 @@
       "random": "🎲 Random",
       "easy": "😊 Easy",
       "hard": "🔥 Hard"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Rank",
+      "username": "Username",
+      "total_points": "Total Points",
+      "games": "Games",
+      "you": "You"
+    },
+    "stats_view": {
+      "progression": "Point Progression (Last 10 Games)",
+      "game_session": "Game Session",
+      "win_rate_by_difficulty": "Win Rate by Difficulty",
+      "avg_moves": "Average Moves",
+      "win_avg": "🏆 Win Avg",
+      "loss_avg": "🤖 Loss Avg",
+      "moves_unit": "moves"
+    },
+    "view": {
+      "stats": "Stats",
+      "leaderboard": "Rank"
     }
   },
   "board": {

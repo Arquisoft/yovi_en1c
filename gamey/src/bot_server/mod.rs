@@ -43,7 +43,7 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
-        .route("/{api_version}/play", axum::routing::post(play::play))
+        .route("/{api_version}/play", axum::routing::get(play::play))
         .layer(CorsLayer::permissive())
         .with_state(state)
 }

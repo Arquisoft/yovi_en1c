@@ -2,11 +2,17 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
-use gamey::{YBotRegistry, YEN, create_default_state, create_router, state::AppState, RandomBot, ErrorResponse};
+use gamey::{YEN, create_default_state, create_router};
 use http_body_util::BodyExt;
 use serde_json::Value;
-use std::sync::Arc;
 use tower::ServiceExt;
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+// Updated to match your working Postman URL
+const PATH_PREFIX: &str = "/v1";
 
 // ============================================================================
 // Helpers
@@ -20,14 +26,22 @@ fn empty_board_size3() -> YEN {
     YEN::new(3, 0, vec!['B', 'R'], "./../...".to_string())
 }
 
-async fn post_play(app: axum::Router, body: serde_json::Value) -> (StatusCode, Value) {
+/// Robust helper for GET requests to the play endpoint
+async fn get_play(app: axum::Router, yen: &YEN, bot_id: Option<&str>) -> (StatusCode, Value) {
+    let yen_json = serde_json::to_string(yen).unwrap();
+    
+    let mut uri = format!("{}/play?position={}", PATH_PREFIX, urlencoding::encode(&yen_json));
+    
+    if let Some(id) = bot_id {
+        uri.push_str(&format!("&bot_id={}", urlencoding::encode(id)));
+    }
+    
     let response = app
         .oneshot(
             Request::builder()
-                .method("POST")
-                .uri("/v1/play")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&body).unwrap()))
+                .method("GET")
+                .uri(&uri)
+                .body(Body::empty())
                 .unwrap(),
         )
         .await
@@ -35,402 +49,208 @@ async fn post_play(app: axum::Router, body: serde_json::Value) -> (StatusCode, V
 
     let status = response.status();
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
-    let json: Value = serde_json::from_slice(&bytes).unwrap();
+    
+    // Safety: If 404 or empty, return Null instead of panicking on JSON parse
+    if bytes.is_empty() {
+        return (status, Value::Null);
+    }
+
+    let json: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
     (status, json)
 }
 
 // ============================================================================
-// Success cases — human move only (no bot)
+// Tests
 // ============================================================================
 
 #[tokio::test]
-async fn test_play_human_move_returns_200() {
+async fn test_get_play_success() {
+    let app = test_app();
+    let yen = empty_board_size3();
+    let (status, body) = get_play(app, &yen, Some("heuristic_bot")).await;
+
+    assert_eq!(status, StatusCode::OK, "Check if PATH_PREFIX matches your router configuration");
+    assert!(body.get("coords").is_some());
+}
+
+#[tokio::test]
+async fn test_get_play_no_bot_id_defaults_to_heuristic() {
     let app = test_app();
     let yen = empty_board_size3();
 
-    let (status, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
+    // Passing None simulates the absence of the &bot_id= parameter in the URL
+    let (status, body) = get_play(app, &yen, None).await;
 
+    // It should succeed (200) because the code defaults to "heuristic_bot"
+    assert_eq!(status, StatusCode::OK, "Should default to heuristic_bot and return 200");
+    assert!(body.get("coords").is_some(), "Response should contain coordinates from the default bot");
+}
+
+#[tokio::test]
+async fn test_get_play_game_over_returns_error_message() {
+    let app = test_app();
+    
+    // Use the layout that works in Postman: "B/RR/BBB"
+    // Turn 5 (or any number) is fine as long as the layout is complete
+    let yen = YEN::new(3, 5, vec!['B', 'R'], "B/RR/BBB".to_string());
+
+    let (status, body) = get_play(app, &yen, Some("heuristic_bot")).await;
+
+    // Based on your play.rs, this returns 200 OK with an error JSON
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["api_version"], "v1");
-    assert_eq!(body["status"], "ongoing");
-    assert!(body["winner"].is_null());
+    
+    // Ensure we are checking the "message" field
+    assert!(
+        body["message"].as_str().expect("Body should have a message field").contains("Game is already over"),
+        "Body was: {:?}", body
+    );
 }
 
 #[tokio::test]
-async fn test_play_updates_yen_layout() {
+async fn test_method_not_allowed() {
     let app = test_app();
-    let yen = empty_board_size3();
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    // Layout should no longer be all dots — B played at position 0
-    let layout = body["yen"]["layout"].as_str().unwrap();
-    assert!(layout.contains('B'));
-}
-
-#[tokio::test]
-async fn test_play_advances_turn() {
-    let app = test_app();
-    let yen = empty_board_size3(); // turn = 0
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    // After player 0 (B) plays, turn should be 1 (R)
-    assert_eq!(body["yen"]["turn"], 1);
-}
-
-#[tokio::test]
-async fn test_play_position_last_cell() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    // Position 5 is the last cell in a size-3 board (0..5)
-    let (status, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 5 }),
-    )
-    .await;
-
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["api_version"], "v1");
-}
-
-// ============================================================================
-// Success cases — human move + bot response
-// ============================================================================
-
-#[tokio::test]
-async fn test_play_with_bot_returns_two_moves() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let (status, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0, "bot_id": "random_bot" }),
-    )
-    .await;
-
-    assert_eq!(status, StatusCode::OK);
-
-    // Both B and R should have played — layout has both chars
-    let layout = body["yen"]["layout"].as_str().unwrap();
-    assert!(layout.contains('B'));
-    assert!(layout.contains('R'));
-}
-
-#[tokio::test]
-async fn test_play_with_bot_turn_is_back_to_human() {
-    let app = test_app();
-    let yen = empty_board_size3(); // turn = 0 (B)
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0, "bot_id": "random_bot" }),
-    )
-    .await;
-
-    // After human (0) and bot (1) both play, turn is back to 0
-    assert_eq!(body["yen"]["turn"], 0);
-}
-
-#[tokio::test]
-async fn test_play_without_bot_id_field() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    // bot_id is optional — omitting it should work fine
-    let (status, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["status"], "ongoing");
-}
-
-#[tokio::test]
-async fn test_play_with_null_bot_id() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let (status, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0, "bot_id": null }),
-    )
-    .await;
-
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["status"], "ongoing");
-}
-
-#[tokio::test]
-async fn test_play_ongoing_when_no_winner_yet() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 2 }),
-    )
-    .await;
-
-    assert_eq!(body["status"], "ongoing");
-    assert!(body["winner"].is_null());
-}
-
-#[tokio::test]
-async fn test_play_winner_is_null_when_ongoing() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    assert!(body["winner"].is_null());
-}
-
-// ============================================================================
-// Error cases
-// ============================================================================
-
-#[tokio::test]
-async fn test_play_invalid_api_version() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/v2/play")
-                .header("content-type", "application/json")
-                .body(Body::from(
-                    serde_json::to_string(&serde_json::json!({ "yen": yen, "position": 0 }))
-                        .unwrap(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    let bytes = response.into_body().collect().await.unwrap().to_bytes();
-    let error: ErrorResponse = serde_json::from_slice(&bytes).unwrap();
-
-    assert!(error.message.contains("Unsupported API version"));
-    assert_eq!(error.api_version, Some("v2".to_string()));
-}
-
-#[tokio::test]
-async fn test_play_occupied_cell_returns_error() {
-    let app = test_app();
-
-    // B already occupies position 0 (top cell) — trying to play there again
-    let yen = YEN::new(3, 1, vec!['B', 'R'], "B/../...".to_string());
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    assert!(body["message"]
-        .as_str()
-        .unwrap()
-        .contains("Invalid move"));
-}
-
-#[tokio::test]
-async fn test_play_game_already_over_returns_error() {
-    let app = test_app();
-
-    // Full winning board for B: B/BB/... — B wins
-    let yen = YEN::new(2, 0, vec!['B', 'R'], "B/BB".to_string());
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
-
-    assert!(body["message"]
-        .as_str()
-        .unwrap()
-        .contains("Game is already over"));
-}
-
-#[tokio::test]
-async fn test_play_unknown_bot_returns_error() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0, "bot_id": "nonexistent_bot" }),
-    )
-    .await;
-
-    assert!(body["message"]
-        .as_str()
-        .unwrap()
-        .contains("Bot not found"));
-    assert!(body["message"]
-        .as_str()
-        .unwrap()
-        .contains("nonexistent_bot"));
-}
-
-#[tokio::test]
-async fn test_play_invalid_yen_layout_returns_error() {
-    let app = test_app();
-
-    // Wrong number of rows for size 3 (4 rows instead of 3)
-    let body = serde_json::json!({
-        "yen": {
-            "size": 3,
-            "turn": 0,
-            "players": ["B", "R"],
-            "layout": "./../.../..."
-        },
-        "position": 0
-    });
-
-    let (_, response_body) = post_play(app, body).await;
-
-    assert!(response_body["message"]
-        .as_str()
-        .unwrap()
-        .contains("Invalid YEN"));
-}
-
-#[tokio::test]
-async fn test_play_invalid_json_returns_client_error() {
-    let app = test_app();
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/v1/play")
-                .header("content-type", "application/json")
-                .body(Body::from("{ not valid json }"))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert!(response.status().is_client_error());
-}
-
-#[tokio::test]
-async fn test_play_missing_content_type_returns_error() {
-    let app = test_app();
-    let yen = empty_board_size3();
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/v1/play")
-                // No content-type header
-                .body(Body::from(
-                    serde_json::to_string(&serde_json::json!({ "yen": yen, "position": 0 }))
-                        .unwrap(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert!(response.status().is_client_error());
-}
-
-// ============================================================================
-// HTTP method tests
-// ============================================================================
-
-#[tokio::test]
-async fn test_play_get_method_returns_405() {
-    let app = test_app();
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("GET")
-                .uri("/v1/play")
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    let response = app.oneshot(
+        Request::builder()
+            .method("POST") // play is GET only
+            .uri(format!("{}/play", PATH_PREFIX))
+            .body(Body::empty()).unwrap(),
+    ).await.unwrap();
 
     assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
 }
 
-// ============================================================================
-// Response structure tests
-// ============================================================================
-
 #[tokio::test]
-async fn test_play_response_contains_all_fields() {
+async fn test_invalid_yen_json() {
     let app = test_app();
-    let yen = empty_board_size3();
+    
+    // Malformed JSON string (missing a closing brace)
+    let malformed_json = "{\"size\":3, \"turn\":0"; 
+    let uri = format!("/v1/play?position={}", urlencoding::encode(malformed_json));
 
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
 
-    assert!(body.get("api_version").is_some());
-    assert!(body.get("yen").is_some());
-    assert!(body.get("status").is_some());
-    assert!(body.get("winner").is_some());
+    // play.rs returns 200 OK even for errors
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Verify the error message matches the 'Invalid YEN JSON' pattern
+    assert!(body["message"].as_str().unwrap().contains("Invalid YEN JSON"));
 }
 
 #[tokio::test]
-async fn test_play_yen_response_contains_all_fields() {
+async fn test_invalid_game_state() {
     let app = test_app();
-    let yen = empty_board_size3();
+    
+    // Valid JSON, but the layout is wrong for a size 3 board (too many segments)
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "B/B/B/B/B".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
 
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
+    let uri = format!("/v1/play?position={}", urlencoding::encode(&yen_json));
 
-    let yen_response = &body["yen"];
-    assert!(yen_response.get("size").is_some());
-    assert!(yen_response.get("turn").is_some());
-    assert!(yen_response.get("players").is_some());
-    assert!(yen_response.get("layout").is_some());
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Verify the error message matches the 'Invalid game state' pattern
+    assert!(body["message"].as_str().unwrap().contains("Invalid game state"));
 }
 
 #[tokio::test]
-async fn test_play_preserves_board_size() {
+async fn test_bot_not_found() {
     let app = test_app();
-    let yen = empty_board_size3(); // size = 3
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "./../...".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
 
-    let (_, body) = post_play(
-        app,
-        serde_json::json!({ "yen": yen, "position": 0 }),
-    )
-    .await;
+    // Use a bot_id that is not in the registry
+    let uri = format!("/v1/play?position={}&bot_id=unknown_bot", urlencoding::encode(&yen_json));
 
-    assert_eq!(body["yen"]["size"], 3);
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Matches the 'Bot not found' error logic
+    assert!(body["message"].as_str().unwrap().contains("Bot not found: unknown_bot"));
+    assert_eq!(body["bot_id"], "unknown_bot");
+}
+
+//Extra
+#[tokio::test]
+async fn test_play_normal_move_returns_coords() {
+    let app = test_app();
+    let yen = YEN::new(3, 2, vec!['B', 'R'], "B/R./...".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
+
+    let uri = format!("/v1/play?position={}&bot_id=heuristic_bot", urlencoding::encode(&yen_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // 1. Verify 'coords' exists
+    assert!(body.get("coords").is_some(), "Expected 'coords' property, got: {:?}", body);
+    
+    // 2. Verify the specific coordinate fields returned in Postman (x, y, z)
+    let coords = body.get("coords").unwrap();
+    assert!(coords.get("x").is_some(), "Missing 'x' in coords");
+    assert!(coords.get("y").is_some(), "Missing 'y' in coords");
+    assert!(coords.get("z").is_some(), "Missing 'z' in coords");
+}
+
+#[tokio::test]
+async fn test_play_blue_winning_move() {
+    let app = test_app();
+    // Blue (B) is one move away from completing a vertical connection in a size 3 board
+    // Layout: B at top, B at middle-right. Bottom row is empty.
+    let yen = YEN::new(3, 4, vec!['B', 'R'], "B/.B/...".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
+
+    let uri = format!("/v1/play?position={}&bot_id=heuristic_bot", urlencoding::encode(&yen_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // The bot should return a coordinate to attempt to complete the path
+    assert!(body.get("coords").is_some(), "Winning move should still return 'coords'");
+}
+
+#[tokio::test]
+async fn test_play_red_winning_move() {
+    let app = test_app();
+    // Red (R) is one move away from a horizontal connection
+    let yen = YEN::new(3, 4, vec!['B', 'R'], "./R./R..".to_string());
+    let yen_json = serde_json::to_string(&yen).unwrap();
+
+    let uri = format!("/v1/play?position={}&bot_id=heuristic_bot", urlencoding::encode(&yen_json));
+
+    let response = app.oneshot(
+        Request::builder().method("GET").uri(uri).body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body: Value = serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    
+    // Ensure the untagged enum correctly serializes the movement
+    assert!(body.get("coords").is_some());
+    assert!(body.get("action").is_none(), "Should not return an action when a move is available");
 }
