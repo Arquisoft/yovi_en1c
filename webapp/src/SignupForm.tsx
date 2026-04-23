@@ -7,6 +7,30 @@ type Props = {
   onGoToLogin: () => void;
 };
 
+export function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      {["en", "es"].map((lang) => (
+        <button
+          key={lang}
+          type="button"
+          onClick={() => i18n.changeLanguage(lang)}
+          style={{
+            fontWeight: i18n.language === lang ? "bold" : "normal",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          {lang === "en" ? "🇬🇧 EN" : "🇪🇸 ES"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
@@ -67,84 +91,87 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="signup-form">
-      <h2>{t("signup.title")}</h2>
-      <p>{t("signup.subtitle")}</p>
+    <>
+      <LanguageSwitcher />
+      <form onSubmit={handleSubmit} className="signup-form">
+        <h2>{t("signup.title")}</h2>
+        <p>{t("signup.subtitle")}</p>
 
-      <div className="form-group">
-        <label htmlFor="signup-username">{t("signup.username_label")}</label>
-        <input
-          type="text"
-          id="signup-username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="signup-email">{t("signup.email_label")}</label>
-        <input
-          type="email"
-          id="signup-email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="signup-password">{t("signup.password_label")}</label>
-        <input
-          type="password"
-          id="signup-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="signup-confirm-password">
-          {t("signup.confirm_password_label")}
-        </label>
-        <input
-          type="password"
-          id="signup-confirm-password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="form-input"
-        />
-      </div>
-
-      <button type="submit" className="submit-button">
-        {t("signup.submit")}
-      </button>
-
-      <p style={{ marginTop: 16 }}>
-        {t("signup.have_account")}{" "}
-        <button
-          type="button"
-          onClick={onGoToLogin}
-          style={{
-            background: "none",
-            border: "none",
-            padding: 0,
-            color: "#4f46e5",
-            cursor: "pointer",
-            textDecoration: "underline",
-          }}
-        >
-          {t("signup.go_login")}
-        </button>
-      </p>
-
-      {error && (
-        <div className="error-message" style={{ marginTop: 12, color: "red" }}>
-          {error}
+        <div className="form-group">
+          <label htmlFor="signup-username">{t("signup.username_label")}</label>
+          <input
+            type="text"
+            id="signup-username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="form-input"
+          />
         </div>
-      )}
-    </form>
+
+        <div className="form-group">
+          <label htmlFor="signup-email">{t("signup.email_label")}</label>
+          <input
+            type="email"
+            id="signup-email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="signup-password">{t("signup.password_label")}</label>
+          <input
+            type="password"
+            id="signup-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="signup-confirm-password">
+            {t("signup.confirm_password_label")}
+          </label>
+          <input
+            type="password"
+            id="signup-confirm-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <button type="submit" className="submit-button">
+          {t("signup.submit")}
+        </button>
+
+        <p style={{ marginTop: 16 }}>
+          {t("signup.have_account")}{" "}
+          <button
+            type="button"
+            onClick={onGoToLogin}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#4f46e5",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            {t("signup.go_login")}
+          </button>
+        </p>
+
+        {error && (
+          <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+            {error}
+          </div>
+        )}
+      </form>
+    </>
   );
 };
 
