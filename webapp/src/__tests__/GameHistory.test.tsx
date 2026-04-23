@@ -1,7 +1,8 @@
+import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import GameHistory from '../GameHistory';
-import '@testing-library/jest-dom';
+import GameHistory from '../components/GameHistory'; // Verify this path matches your structure
+
 // Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -26,12 +27,6 @@ const mockGames = [
   { _id: "2", result: "bot_won", totalMoves: 15, playedAt: "2023-01-02T10:00:00Z", difficulty: "hard", boardSize: "large", points: 20 }
 ];
 
-const mockStats = {
-  byDifficulty: [{ _id: "easy", total: 1, wins: 1 }],
-  progression: [{ points: 100, date: "2023-01-01" }],
-  avgMoves: [{ _id: "player_won", avgMoves: 10 }]
-};
-
 describe('GameHistory Coverage Boost', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -48,11 +43,18 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText(/API Failure/i)).toBeInTheDocument();
     });
     
-    // Covers the 'Retry' button branch
+    // Fix for window.location.reload
+    const originalLocation = window.location;
+    delete (window as any).location;
+    window.location = { ...originalLocation, reload: vi.fn() } as any;
+
     const retryBtn = screen.getByText('common.retry');
-    const reloadSpy = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
     fireEvent.click(retryBtn);
-    expect(reloadSpy).toHaveBeenCalled();
+    
+    expect(window.location.reload).toHaveBeenCalled();
+
+    // Restore original location
+    window.location = originalLocation;
   });
 
   it('should filter and sort games correctly', async () => {
@@ -67,22 +69,21 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText('history.stats.total')).toBeInTheDocument();
     });
 
-    // Test FILTERS (Covers setFilter branches)
+    // Test FILTERS
     const winsFilter = screen.getByText('history.filter.wins');
     fireEvent.click(winsFilter);
     expect(screen.queryByText('history.result.loss')).not.toBeInTheDocument();
 
-    // Test SORTING (Covers handleSort and multiple cmp branches in the sort function)
+    // Test SORTING
     const movesHeader = screen.getByText(/history.table.moves/i);
-    fireEvent.click(movesHeader); // First click: default sort
-    fireEvent.click(movesHeader); // Second click: toggles direction (asc/desc)
+    fireEvent.click(movesHeader); // First click
+    fireEvent.click(movesHeader); // Second click (desc)
     
     const pointsHeader = screen.getByText(/history.table.points/i);
-    fireEvent.click(pointsHeader); // Covers points sorting logic
+    fireEvent.click(pointsHeader);
   });
 
   it('should navigate between tabs (History, Stats, Leaderboard)', async () => {
-    // Provide successful responses for all 3 Promise.all calls
     (global.fetch as any).mockImplementation(() => 
         Promise.resolve({
             ok: true,
@@ -92,25 +93,26 @@ describe('GameHistory Coverage Boost', () => {
 
     render(<GameHistory onBack={() => {}} userName={mockUserName} />);
 
-    // Switch to Stats view (Covers switch case "stats")
+    // Switch to Stats view
     const statsBtn = screen.getByText('history.view.stats');
     fireEvent.click(statsBtn);
     
-    // Switch to Leaderboard view (Covers switch case "leaderboard")
+    // Switch to Leaderboard view
     const leaderBtn = screen.getByText('history.view.leaderboard');
     fireEvent.click(leaderBtn);
 
     // Test back button
     const onBackMock = vi.fn();
     render(<GameHistory onBack={onBackMock} userName={mockUserName} />);
-    fireEvent.click(screen.getAllByText('common.back')[1]); 
+    // Select the back button from the rendered header
+    const backButtons = screen.getAllByText('common.back');
+    fireEvent.click(backButtons[0]); 
     expect(onBackMock).toHaveBeenCalled();
   });
 
   it('should handle cases with missing optional data', async () => {
     const incompleteGames = [{
       _id: "3", result: "player_won", playedAt: "2023-01-01T10:00:00Z"
-      // Missing difficulty, boardSize, and points to trigger fallbacks
     }];
 
     (global.fetch as any).mockResolvedValue({
@@ -121,7 +123,6 @@ describe('GameHistory Coverage Boost', () => {
     render(<GameHistory onBack={() => {}} userName={mockUserName} />);
     
     await waitFor(() => {
-      // Verify that the "—" fallback is rendered (Covers ternary branches)
       const emptyCells = screen.getAllByText('—');
       expect(emptyCells.length).toBeGreaterThan(0);
     });
