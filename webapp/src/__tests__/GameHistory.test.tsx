@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import GameHistory from '../components/GameHistory'; // Verify this path matches your structure
+import GameHistory from '../GameHistory';
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
@@ -11,7 +11,6 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-// Mock Recharts to avoid DOM dimension errors in JSDOM
 vi.mock('recharts', async () => {
   const actual = await vi.importActual('recharts');
   return {
@@ -34,7 +33,6 @@ describe('GameHistory Coverage Boost', () => {
   });
 
   it('should show error state when API fails', async () => {
-    // Force a fetch rejection to cover the 'catch' block
     (global.fetch as any).mockRejectedValueOnce(new Error("API Failure"));
 
     render(<GameHistory onBack={() => {}} userName={mockUserName} />);
@@ -43,8 +41,7 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText(/API Failure/i)).toBeInTheDocument();
     });
     
-    // Fix for window.location.reload
-    const originalLocation = window.location;
+     const originalLocation = window.location;
     delete (window as any).location;
     window.location = { ...originalLocation, reload: vi.fn() } as any;
 
@@ -53,7 +50,6 @@ describe('GameHistory Coverage Boost', () => {
     
     expect(window.location.reload).toHaveBeenCalled();
 
-    // Restore original location
     window.location = originalLocation;
   });
 

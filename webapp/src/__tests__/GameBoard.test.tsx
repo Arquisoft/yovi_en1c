@@ -5,7 +5,6 @@ import "@testing-library/jest-dom";
 import GameBoard from "../GameBoard";
 import type { GameConfig } from "../GameMenu";
 
-// --- i18n Mock ---
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
