@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import GameHistory from '../GameHistory';
+import GameHistory from '../components/GameHistory'; 
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
@@ -11,6 +11,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Mock Recharts to avoid DOM dimension errors in JSDOM
 vi.mock('recharts', async () => {
   const actual = await vi.importActual('recharts');
   return {
@@ -41,7 +42,8 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText(/API Failure/i)).toBeInTheDocument();
     });
     
-     const originalLocation = window.location;
+    // Patch window.location.reload to avoid "Cannot redefine property" error
+    const originalLocation = window.location;
     delete (window as any).location;
     window.location = { ...originalLocation, reload: vi.fn() } as any;
 
@@ -50,6 +52,7 @@ describe('GameHistory Coverage Boost', () => {
     
     expect(window.location.reload).toHaveBeenCalled();
 
+    // Restore location
     window.location = originalLocation;
   });
 
@@ -65,48 +68,46 @@ describe('GameHistory Coverage Boost', () => {
       expect(screen.getByText('history.stats.total')).toBeInTheDocument();
     });
 
-    // Test FILTERS
+    // Test filtering by wins
     const winsFilter = screen.getByText('history.filter.wins');
     fireEvent.click(winsFilter);
     expect(screen.queryByText('history.result.loss')).not.toBeInTheDocument();
 
-    // Test SORTING
+    // Test table sorting (moves and points)
     const movesHeader = screen.getByText(/history.table.moves/i);
-    fireEvent.click(movesHeader); // First click
-    fireEvent.click(movesHeader); // Second click (desc)
+    fireEvent.click(movesHeader); 
+    fireEvent.click(movesHeader); 
     
     const pointsHeader = screen.getByText(/history.table.points/i);
     fireEvent.click(pointsHeader);
   });
 
-  it('should navigate between tabs (History, Stats, Leaderboard)', async () => {
-    (global.fetch as any).mockImplementation(() => 
-        Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockGames) 
-        })
-    );
+  it('should navigate between tabs and call onBack', async () => {
+    (global.fetch as any).mockResolvedValue({
+      ok: true,
+      json: async () => mockGames,
+    });
 
-    render(<GameHistory onBack={() => {}} userName={mockUserName} />);
-
-    // Switch to Stats view
-    const statsBtn = screen.getByText('history.view.stats');
-    fireEvent.click(statsBtn);
-    
-    // Switch to Leaderboard view
-    const leaderBtn = screen.getByText('history.view.leaderboard');
-    fireEvent.click(leaderBtn);
-
-    // Test back button
     const onBackMock = vi.fn();
     render(<GameHistory onBack={onBackMock} userName={mockUserName} />);
-    // Select the back button from the rendered header
-    const backButtons = screen.getAllByText('common.back');
-    fireEvent.click(backButtons[0]); 
-    expect(onBackMock).toHaveBeenCalled();
+
+    await waitFor(() => {
+        expect(screen.getByText('history.view.stats')).toBeInTheDocument();
+    });
+
+    // Switch to Stats view
+    fireEvent.click(screen.getByText('history.view.stats'));
+    
+    // Switch to Leaderboard view
+    fireEvent.click(screen.getByText('history.view.leaderboard'));
+
+    const backBtn = screen.getAllByText('common.back')[0];
+    fireEvent.click(backBtn); 
+    
+    expect(onBackMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should handle cases with missing optional data', async () => {
+  it('should handle cases with missing optional data (edge cases)', async () => {
     const incompleteGames = [{
       _id: "3", result: "player_won", playedAt: "2023-01-01T10:00:00Z"
     }];
