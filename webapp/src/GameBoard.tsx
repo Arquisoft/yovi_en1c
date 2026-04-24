@@ -314,7 +314,13 @@ export default function GameBoard({ config, onBack, userName }: Props) {
             ← Back
           </button>
 
-          <h2 className="boardTitle">Game On</h2>
+          {gameStatus !== "ongoing" ? (
+            <button className="btn resetBtn infoReset" onClick={resetGame}>
+              New game
+            </button>
+          ) : (
+            <h2 className="boardTitle">Game on</h2>
+          )}
 
           <div className="boardInfoStack">
             <div className="infoRow">
@@ -331,11 +337,6 @@ export default function GameBoard({ config, onBack, userName }: Props) {
               </span>
             </div>
 
-            {gameStatus !== "ongoing" && (
-              <button className="btn resetBtn infoReset" onClick={resetGame}>
-                New game
-              </button>
-            )}
           </div>
 
         </div>
