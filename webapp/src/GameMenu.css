@@ -18,70 +18,83 @@
 
 .p {
   color: #b8c6e0;
-  font-size: 1rem;
+  font-size: 2rem;
   line-height: 1.5;
+  padding-bottom: 1.5rem;
 }
 
 .triviaHelp {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: inline-block;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 .triviaButton {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: none;
-  color: #f90000;
-  font-size: 3rem;
-  font-weight: 700;
-  cursor: pointer;
+  z-index: 2;
+}
+
+.triviaCard {
+  position: absolute;
+  right: 0;
+  top: 120%;
+  width: 240px;
+  height: 140px;
+  perspective: 900px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.triviaHelp.isOpen .triviaCard {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.triviaCardInner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+  transition: transform 0.5s ease;
+}
+
+.triviaHelp.isOpen .triviaCardInner {
+  transform: rotateY(0deg);
+}
+
+.triviaCardFront,
+.triviaCardBack {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: slowFlip 5s ease-in-out infinite;
-  transform-origin: center;
+  padding: 1rem;
 }
 
-.triviaButton:hover {
-  background: rgba(255, 255, 255, 0.14);
+.triviaCardFront {
+  background: #1f2937;
+  color: white;
+  font-size: 2rem;
 }
 
-.triviaPopup {
-  .triviaPopup {
-    position: absolute;
-    top: calc(100% + 0.6rem);
-    left: 0;
-    right: auto;
-    width: 260px;
-    padding: 0.9rem 1rem;
-    border-radius: 12px;
-    background: rgba(26, 26, 31, 0.97);
-    color: #e8f1ff;
-    border: 1px solid rgba(124, 115, 255, 0.45);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    font-size: 0.92rem;
-    line-height: 1.45;
-    z-index: 20;
-  }
+.triviaCardBack {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1f2937;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
-@keyframes slowFlip {
-
-  0%,
-  45% {
+@keyframes suave {
+  from {
     transform: rotate(0deg);
   }
 
-  55%,
-  95% {
-    transform: rotate(180deg);
-  }
-
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }

@@ -6,7 +6,6 @@ export type GameMode = "standard";
 export type Difficulty = "random" | "easy" | "hard";
 export type LayoutStyle = "classic" | "wooden";
 
-// This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
   boardSize: BoardSize;
   mode: GameMode;
@@ -14,11 +13,25 @@ export interface GameConfig {
   layout: LayoutStyle;
 }
 
+const TRIVIA_SNIPPETS = [
+  "Y was created by a game named Ea Ea, believe it or not.",
+  "Corners connect two sides of the board, but the distance to the third side is long.",
+  "Hex grids are used in strategy games because they avoid diagonal imbalance.",
+  "When you are playing the bot, you are actually battling Rust!",
+  "Y belongs to the same family as Hex and Havannah, but it has its own unique strategies and tactics.",
+  "Random bots have the reckless wild card charm, if the more difficult bot gets too boring for you.",
+];
+
+function getRandomTrivia() {
+  return TRIVIA_SNIPPETS[Math.floor(Math.random() * TRIVIA_SNIPPETS.length)];
+}
+
 export function TriviaHelp() {
   const [open, setOpen] = useState(false);
+  const [trivia] = useState(getRandomTrivia);
 
   return (
-    <div className="triviaHelp">
+    <div className={`triviaHelp ${open ? "isOpen" : ""}`}>
       <button
         type="button"
         className="triviaButton"
@@ -29,12 +42,15 @@ export function TriviaHelp() {
         ¿
       </button>
 
-      {open && (
-        <div className="triviaPopup" role="dialog" aria-live="polite">
-          Y is inspired by strategy games where small layout changes can
-          completely change the opening possibilities.
+      <div className="triviaCard" aria-hidden={!open}>
+        <div className="triviaCardInner">
+          <div className="triviaCardFront">?</div>
+
+          <div className="triviaCardBack" role="dialog" aria-live="polite">
+            {trivia}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -64,14 +80,6 @@ const boardSizes = [
   },
 ];
 
-/* const gameModes = [
-  {
-    value: "standard" as GameMode,
-    title: "Standard",
-    description: "Classic Y rules",
-  },
-]; */
-
 const difficulties = [
   {
     value: "random" as Difficulty,
@@ -100,9 +108,8 @@ const layouts = [
     value: "wooden" as LayoutStyle,
     title: "Wooden",
     description: "Wooden-themed board layout",
-  }
+  },
 ];
-
 
 export default function GameMenu({
   userName,
@@ -111,7 +118,6 @@ export default function GameMenu({
   onViewHistory,
 }: Props) {
   const [boardIndex, setBoardIndex] = useState(0);
-  /* const [modeIndex] = useState(0); */
   const [difficultyIndex, setDifficultyIndex] = useState(0);
   const [layoutIndex, setLayoutIndex] = useState(0);
 
@@ -135,12 +141,12 @@ export default function GameMenu({
       <div className="menuCard">
         <div className="menuHeader">
           <div className="menuTitleRow">
-            <h2 className="menuTitle">Game Lobby</h2>
+            <h2 className="menuTitle">Welcome, {userName}.</h2>
             <TriviaHelp />
           </div>
-          <p className="menuSubtitle">
-            Welcome, {userName}. Choose your setup for Y.
-          </p>
+
+          <p className="menuSubtitle">Choose your setup for Y.</p>
+
           <button
             className="btn btnSecondary"
             type="button"
@@ -165,9 +171,7 @@ export default function GameMenu({
             </button>
 
             <div className="carouselCard">
-              <span className="optionTitle">
-                {boardSizes[boardIndex].title}
-              </span>
+              <span className="optionTitle">{boardSizes[boardIndex].title}</span>
               <span className="optionDescription">
                 {boardSizes[boardIndex].description}
               </span>
@@ -192,7 +196,9 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setLayoutIndex(goPrev(layoutIndex, layouts.length))}
+              onClick={() =>
+                setLayoutIndex(goPrev(layoutIndex, layouts.length))
+              }
               aria-label="Previous board layout"
             >
               ‹
@@ -208,8 +214,10 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setLayoutIndex(goNext(layoutIndex, layouts.length))}
-              aria-label="Next board layout "
+              onClick={() =>
+                setLayoutIndex(goNext(layoutIndex, layouts.length))
+              }
+              aria-label="Next board layout"
             >
               ›
             </button>

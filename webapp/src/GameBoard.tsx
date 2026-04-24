@@ -122,7 +122,7 @@ async function saveGame(
 
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}`},
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
 
     body: JSON.stringify({
       result,
@@ -314,8 +314,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
             ← Back
           </button>
 
-          <h2 className="boardTitle">Yovi — Y Game</h2>
-
+          <h2 className="boardTitle">Game On</h2>
 
           <div className="boardInfoStack">
             <div className="infoRow">
