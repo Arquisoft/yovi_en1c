@@ -22,11 +22,38 @@ const GameSchema = new mongoose.Schema({
   difficulty: { type: String, required: true },
   boardSize: { type: String, required: true },
   playedAt: { type: Date, default: Date.now },
+  points: { type: Number, default: 0 },
 });
 const Game = mongoose.models.Game || mongoose.model("Game", GameSchema);
 
-// CORS and Middleware
-// ─── CORS ─────────────────────────────────────────────────────────────────────
+const calculatePoints = (difficulty, boardSize, totalMoves, result) => {
+  // If the player lost, they get a flat participation score (or 0)
+  if (result !== "player_won") return 0;
+
+  const difficultyMultipliers = {
+    random: 1,
+    easy: 2,
+    hard: 5,
+  };
+
+  const sizeMultipliers = {
+    small: 1,
+    medium: 1.5,
+    large: 2,
+  };
+
+  // Base points for a win
+  const basePoints = 100;
+
+  const diffMult = difficultyMultipliers[difficulty.toLowerCase()] || 1;
+  const sizeMult = sizeMultipliers[boardSize] || 1;
+
+  // Efficiency Factor: Higher moves decrease the bonus
+  // We assume a 'par' score; if they finish very fast, they get more.
+  const efficiencyBonus = Math.max(5, 50 - totalMoves);
+
+  return Math.floor((basePoints + efficiencyBonus) * diffMult * sizeMult);
+};
 
 // CORS and Middleware
 // ─── CORS ─────────────────────────────────────────────────────────────────────
@@ -63,8 +90,16 @@ app.post("/signup", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
+
+    const token = jwt.sign(
+      { userId: savedUser._id, username: savedUser.name },
+       JWT_SECRET,
+       { expiresIn: "2h" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
+      token: token,
       user: { id: savedUser._id, username: savedUser.name },
     });
   } catch (err) {
@@ -152,6 +187,8 @@ app.post("/savegame", async (req, res) => {
   const { result, board, totalMoves, username, difficulty, boardSize } =
     req.body;
   try {
+    const points = calculatePoints(difficulty, boardSize, totalMoves, result);
+
     const game = new Game({
       result,
       board,
@@ -159,6 +196,7 @@ app.post("/savegame", async (req, res) => {
       username,
       difficulty,
       boardSize,
+      points,
     });
     const saved = await game.save();
     res.json({ message: "Game saved!", id: saved._id });
@@ -193,6 +231,98 @@ app.get("/games/list", async (req, res) => {
     res
       .status(500)
       .json({ error: "Could not fetch games", details: err.message });
+  }
+});
+
+app.get("/games/stats", async (req, res) => {
+  const { username } = req.query;
+  if (!username) return res.status(400).json({ error: "Username required" });
+
+  try {
+    const stats = await Game.aggregate([
+      { $match: { username: String(username) } },
+      {
+        $facet: {
+          // Win rate by difficulty
+          byDifficulty: [
+            {
+              $group: {
+                _id: "$difficulty",
+                total: { $sum: 1 },
+                wins: {
+                  $sum: { $cond: [{ $eq: ["$result", "player_won"] }, 1, 0] },
+                },
+              },
+            },
+          ],
+          // Points progression (last 10 games)
+          progression: [
+            { $sort: { playedAt: 1 } },
+            {
+              $project: {
+                points: { $ifNull: ["$points", 0] },
+                date: "$playedAt",
+              },
+            },
+            { $limit: 10 },
+          ],
+          // Average moves by result
+          avgMoves: [
+            {
+              $group: {
+                _id: "$result",
+                avgMoves: { $avg: "$totalMoves" },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    res.json(stats[0]);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Could not fetch stats", details: err.message });
+  }
+});
+
+app.get("/games/leaderboard", async (req, res) => {
+  try {
+    const leaderboard = await Game.aggregate([
+      // 1. Group by username and sum their points
+      {
+        $group: {
+          _id: "$username",
+          totalPoints: { $sum: "$points" },
+          gamesPlayed: { $sum: 1 },
+        },
+      },
+      // 2. Sort by totalPoints in descending order
+      {
+        $sort: { totalPoints: -1 },
+      },
+      // 3. Take only the top 10
+      {
+        $limit: 10,
+      },
+      // 4. Project the fields to make the output clean
+      {
+        $project: {
+          _id: 0,
+          username: "$_id",
+          totalPoints: 1,
+          gamesPlayed: 1,
+        },
+      },
+    ]);
+
+    res.json(leaderboard);
+  } catch (err) {
+    res.status(500).json({
+      error: "Could not fetch leaderboard",
+      details: err.message,
+    });
   }
 });
 

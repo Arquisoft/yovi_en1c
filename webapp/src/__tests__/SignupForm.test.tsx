@@ -81,10 +81,15 @@ describe("SignUpForm", () => {
 
     it("calls onRegistered with username on successful signup", async () => {
     const user = userEvent.setup();
+
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ message: "User created" }),
-    });
+      
+    json: async () => ({ token: "fake-jwt-token", username: "Pablo" }), 
+    text: async () => JSON.stringify({ token: "fake-jwt-token", username: "Pablo" }), 
+     });
 
     render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
@@ -93,6 +98,8 @@ describe("SignUpForm", () => {
 
     await waitFor(() => {
       expect(onRegistered).toHaveBeenCalledWith("Pablo");
+      expect(setItemSpy).toHaveBeenCalledWith("token", expect.any(String));
+      expect(setItemSpy).toHaveBeenCalledWith("username", "Pablo");
     });
   });
 
@@ -168,4 +175,34 @@ describe("SignUpForm", () => {
       expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
     });
     });
+
+    it("covers the sanitization logic (else block) when data is unsafe", async () => {
+  const user = userEvent.setup();
+  const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ 
+      token: "dirty+token!", 
+      username: "pablo<script>" 
+    }),
+    text: async () => JSON.stringify({ token: "dirty+token!", username: "pablo<script>" }),
+  });
+
+  render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
+
+  await user.type(screen.getByLabelText(/username/i), "pablo");
+  await user.type(screen.getByLabelText(/email/i), "pablo@test.com");
+  await user.type(screen.getByLabelText(/^password$/i), "123456");
+  await user.type(screen.getByLabelText(/confirm password/i), "123456");
+  await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+  await waitFor(() => {
+    expect(setItemSpy).toHaveBeenCalledWith("token", "dirtytoken"); 
+    expect(setItemSpy).toHaveBeenCalledWith("username", "pabloscript");
+  });
+
+  setItemSpy.mockRestore();
+});
+
 });
