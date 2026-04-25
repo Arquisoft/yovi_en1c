@@ -7,6 +7,7 @@ import "@testing-library/jest-dom";
 describe("LoginForm", () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -78,9 +79,9 @@ describe("LoginForm", () => {
 
     await waitFor(() => {
       expect(onLoggedIn).toHaveBeenCalledWith("Pablo");
+      expect(localStorage.getItem("token")).toBe("mock-token");
+      expect(localStorage.getItem("username")).toBe("Pablo");
     });
-
-    expect(localStorage.getItem("token")).toBe("mock-token");
   });
 
 
