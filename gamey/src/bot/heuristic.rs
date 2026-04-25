@@ -3,6 +3,9 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 const WIN_SCORE: i32 = 1_000_000;
 const MINIMAX_DEPTH: u32 = 3;
+// Minimum relative improvement required to prefer a steal over a placement.
+// 0.82 means the steal must reduce connection cost to ≤82% of the placement cost.
+const STEAL_THRESHOLD: f32 = 0.82;
 
 // ─────────────────────────────────────────────────────────────
 // Small utilities
@@ -12,7 +15,6 @@ fn other_player(player: PlayerId) -> PlayerId {
     if player.id() == 0 { PlayerId::new(1) } else { PlayerId::new(0) }
 }
 
-// Returns up to 6 neighbours of a cell. All neighbours keep x+y+z = n-1.
 fn neighbours(coords: Coordinates) -> Vec<Coordinates> {
     let mut nb = Vec::with_capacity(6);
     let (x, y, z) = (coords.x(), coords.y(), coords.z());
@@ -31,7 +33,6 @@ fn neighbours(coords: Coordinates) -> Vec<Coordinates> {
     nb
 }
 
-// All valid cells on a board of `size` (where x+y+z == size-1).
 fn all_coords(size: u32) -> Vec<Coordinates> {
     let n = size - 1;
     (0..=n)
@@ -40,7 +41,7 @@ fn all_coords(size: u32) -> Vec<Coordinates> {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Virtual connection cost  (core evaluation idea)
+// Virtual connection cost
 // ─────────────────────────────────────────────────────────────
 
 fn traverse_cost(board: &GameY, coords: Coordinates, player: PlayerId) -> Option<u32> {
@@ -109,7 +110,7 @@ fn virtual_connection_cost(board: &GameY, player: PlayerId) -> u32 {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Static board evaluation (used at minimax leaf nodes)
+// Static board evaluation
 // ─────────────────────────────────────────────────────────────
 
 fn evaluate_board(board: &GameY, bot_player: PlayerId) -> i32 {
@@ -119,8 +120,7 @@ fn evaluate_board(board: &GameY, bot_player: PlayerId) -> i32 {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Cheap heuristic — only used to ORDER moves before expanding
-// them in minimax (better ordering → more alpha-beta pruning)
+// Move ordering heuristic
 // ─────────────────────────────────────────────────────────────
 
 fn group_info(
@@ -168,6 +168,7 @@ fn score_placement(board: &GameY, coords: Coordinates, player: PlayerId) -> i32 
 
 // ─────────────────────────────────────────────────────────────
 // Minimax with alpha-beta pruning
+// Includes steal moves so the bot reasons about rob mode properly.
 // ─────────────────────────────────────────────────────────────
 
 fn minimax(
@@ -177,6 +178,7 @@ fn minimax(
     mut beta: i32,
     maximizing: bool,
     bot_player: PlayerId,
+    rob_mode: bool,
 ) -> i32 {
     match board.status() {
         GameStatus::Finished { winner } if *winner == bot_player => return WIN_SCORE,
@@ -190,45 +192,89 @@ fn minimax(
     }
 
     let current_player = if maximizing { bot_player } else { other_player(bot_player) };
+    let opponent = other_player(current_player);
     let size = board.board_size();
 
-    // Sort moves best-first so alpha-beta prunes more branches.
-    let mut candidates: Vec<Coordinates> = available
+    // Build candidate moves: placements + steals (if rob mode)
+    let mut placement_candidates: Vec<Coordinates> = available
         .iter()
         .map(|&idx| Coordinates::from_index(idx, size))
         .collect();
-    candidates.sort_by_key(|&c| -score_placement(board, c, current_player));
+    placement_candidates.sort_by_key(|&c| -score_placement(board, c, current_player));
+
+    // Limit candidates for performance
+    let max_candidates = 12usize;
+    placement_candidates.truncate(max_candidates);
+
+    // Steal candidates: only top-3 opponent cells by connection cost impact
+    let steal_candidates: Vec<Coordinates> = if rob_mode {
+        let mut opp: Vec<(Coordinates, u32)> = all_coords(size)
+            .into_iter()
+            .filter(|c| board.cell_at(c) == Cell::Occupied(opponent))
+            .filter_map(|c| {
+                let mut sim = board.clone();
+                sim.add_move(Movement::Steal { player: current_player, coords: c }).ok()?;
+                Some((c, virtual_connection_cost(&sim, current_player)))
+            })
+            .collect();
+        opp.sort_by_key(|&(_, cost)| cost);
+        opp.truncate(3);
+        opp.into_iter().map(|(c, _)| c).collect()
+    } else {
+        vec![]
+    };
 
     if maximizing {
         let mut value = i32::MIN;
-        for coords in candidates {
+
+        for coords in &placement_candidates {
             let mut sim = board.clone();
-            if sim.add_move(Movement::Placement { player: current_player, coords }).is_ok() {
-                value = value.max(minimax(&sim, depth - 1, alpha, beta, false, bot_player));
+            if sim.add_move(Movement::Placement { player: current_player, coords: *coords }).is_ok() {
+                value = value.max(minimax(&sim, depth - 1, alpha, beta, false, bot_player, rob_mode));
                 alpha = alpha.max(value);
                 if alpha >= beta { break; }
             }
         }
+
+        for coords in &steal_candidates {
+            let mut sim = board.clone();
+            if sim.add_move(Movement::Steal { player: current_player, coords: *coords }).is_ok() {
+                value = value.max(minimax(&sim, depth - 1, alpha, beta, false, bot_player, rob_mode));
+                alpha = alpha.max(value);
+                if alpha >= beta { break; }
+            }
+        }
+
         value
     } else {
         let mut value = i32::MAX;
-        for coords in candidates {
+
+        for coords in &placement_candidates {
             let mut sim = board.clone();
-            if sim.add_move(Movement::Placement { player: current_player, coords }).is_ok() {
-                value = value.min(minimax(&sim, depth - 1, alpha, beta, true, bot_player));
+            if sim.add_move(Movement::Placement { player: current_player, coords: *coords }).is_ok() {
+                value = value.min(minimax(&sim, depth - 1, alpha, beta, true, bot_player, rob_mode));
                 beta = beta.min(value);
                 if alpha >= beta { break; }
             }
         }
+
+        for coords in &steal_candidates {
+            let mut sim = board.clone();
+            if sim.add_move(Movement::Steal { player: current_player, coords: *coords }).is_ok() {
+                value = value.min(minimax(&sim, depth - 1, alpha, beta, true, bot_player, rob_mode));
+                beta = beta.min(value);
+                if alpha >= beta { break; }
+            }
+        }
+
         value
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// Core move selection
+// Core placement selection
 // ─────────────────────────────────────────────────────────────
 
-/// Selects the best move using minimax up to the given depth.
 fn best_move_with_depth(board: &GameY, depth: u32) -> Option<Coordinates> {
     let available = board.available_cells().clone();
     if available.is_empty() {
@@ -247,7 +293,7 @@ fn best_move_with_depth(board: &GameY, depth: u32) -> Option<Coordinates> {
                 .add_move(Movement::Placement { player: bot_player, coords })
                 .is_ok()
             {
-                minimax(&sim, depth - 1, i32::MIN + 1, i32::MAX, false, bot_player)
+                minimax(&sim, depth - 1, i32::MIN + 1, i32::MAX, false, bot_player, false)
             } else {
                 i32::MIN
             };
@@ -262,31 +308,267 @@ fn best_move(board: &GameY) -> Option<Coordinates> {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Rob-mode helpers
+// ─────────────────────────────────────────────────────────────
+
+fn opponent_cells(board: &GameY, opponent: PlayerId) -> Vec<Coordinates> {
+    all_coords(board.board_size())
+        .into_iter()
+        .filter(|c| board.cell_at(c) == Cell::Occupied(opponent))
+        .collect()
+}
+
+fn cost_after_steal(board: &GameY, thief: PlayerId, target: Coordinates) -> Option<u32> {
+    let mut sim = board.clone();
+    sim.add_move(Movement::Steal { player: thief, coords: target }).ok()?;
+    Some(virtual_connection_cost(&sim, thief))
+}
+
+fn cost_after_placement(board: &GameY, player: PlayerId, coords: Coordinates) -> Option<u32> {
+    let mut sim = board.clone();
+    sim.add_move(Movement::Placement { player, coords }).ok()?;
+    Some(virtual_connection_cost(&sim, player))
+}
+
+/// Best steal by resulting virtual_connection_cost. None if no opponent cells.
+fn best_steal(board: &GameY, bot_player: PlayerId) -> Option<(Coordinates, u32)> {
+    let opponent = other_player(bot_player);
+    opponent_cells(board, opponent)
+        .into_iter()
+        .filter_map(|c| Some((c, cost_after_steal(board, bot_player, c)?)))
+        .min_by_key(|&(_, cost)| cost)
+}
+
+/// Best placement by resulting virtual_connection_cost. None if board is full.
+fn best_placement_by_cost(board: &GameY, bot_player: PlayerId) -> Option<(Coordinates, u32)> {
+    let size = board.board_size();
+    board
+        .available_cells()
+        .iter()
+        .filter_map(|&idx| {
+            let coords = Coordinates::from_index(idx, size);
+            Some((coords, cost_after_placement(board, bot_player, coords)?))
+        })
+        .min_by_key(|&(_, cost)| cost)
+}
+
+/// Returns true if stealing is significantly better than placing.
+/// Uses a relative threshold to avoid stealing when the gain is marginal.
+fn steal_is_worth_it(s_cost: u32, p_cost: u32) -> bool {
+    if p_cost == 0 {
+        return false; // placement already wins, no need to steal
+    }
+    (s_cost as f32) < (p_cost as f32) * STEAL_THRESHOLD
+}
+
+// ─────────────────────────────────────────────────────────────
+// RobBot difficulty strategy
+// ─────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RobDifficulty {
+    /// 50/50 random choice between steal and placement.
+    Random,
+    /// Greedy: compare best steal vs best placement by virtual_connection_cost.
+    /// No lookahead — fast but exploitable.
+    Easy,
+    /// Hard: uses full minimax including steal moves in the search tree.
+    Hard,
+}
+
+/// Core decision function. Returns `(coords, is_steal)`.
+fn rob_choose(board: &GameY, difficulty: RobDifficulty) -> Option<(Coordinates, bool)> {
+    let bot_player = board.next_player()?;
+    let opponent   = other_player(bot_player);
+
+    match difficulty {
+        RobDifficulty::Random => {
+            let opp_cells = opponent_cells(board, opponent);
+            let try_steal = !opp_cells.is_empty()
+                && pseudo_random_bool(board.board_size(), opp_cells.len() as u32);
+
+            if try_steal {
+                let idx = pseudo_random_index(opp_cells.len(), board.board_size());
+                return Some((opp_cells[idx], true));
+            }
+
+            let available = board.available_cells();
+            if available.is_empty() { return None; }
+            let idx = pseudo_random_index(available.len(), board.board_size());
+            Some((Coordinates::from_index(available[idx], board.board_size()), false))
+        }
+
+        RobDifficulty::Easy => {
+            let steal_opt = best_steal(board, bot_player);
+            let place_opt = best_placement_by_cost(board, bot_player);
+            match (steal_opt, place_opt) {
+                (Some((sc, s_cost)), Some((pc, p_cost))) => {
+                    if steal_is_worth_it(s_cost, p_cost) {
+                        Some((sc, true))
+                    } else {
+                        Some((pc, false))
+                    }
+                }
+                (Some((sc, _)), None) => Some((sc, true)),
+                (None, Some((pc, _))) => Some((pc, false)),
+                (None, None) => None,
+            }
+        }
+
+        RobDifficulty::Hard => {
+            // Use minimax with rob_mode=true so the search tree includes steals.
+            // Then separately determine if the best top-level move is a steal.
+            let size = board.board_size();
+            let available = board.available_cells().clone();
+            let steal_candidates: Vec<Coordinates> = {
+                let mut opp: Vec<(Coordinates, u32)> = opponent_cells(board, opponent)
+                    .into_iter()
+                    .filter_map(|c| Some((c, cost_after_steal(board, bot_player, c)?)))
+                    .collect();
+                opp.sort_by_key(|&(_, cost)| cost);
+                opp.truncate(5);
+                opp.into_iter().map(|(c, _)| c).collect()
+            };
+
+            let mut best_score = i32::MIN;
+            let mut best_coords = None;
+            let mut best_is_steal = false;
+
+            // Evaluate placements
+            let mut placement_candidates: Vec<Coordinates> = available
+                .iter()
+                .map(|&idx| Coordinates::from_index(idx, size))
+                .collect();
+            placement_candidates.sort_by_key(|&c| -score_placement(board, c, bot_player));
+            placement_candidates.truncate(15);
+
+            for coords in placement_candidates {
+                let mut sim = board.clone();
+                if sim.add_move(Movement::Placement { player: bot_player, coords }).is_ok() {
+                    let score = minimax(
+                        &sim,
+                        MINIMAX_DEPTH - 1,
+                        i32::MIN + 1,
+                        i32::MAX,
+                        false,
+                        bot_player,
+                        true,
+                    );
+                    if score > best_score {
+                        best_score = score;
+                        best_coords = Some(coords);
+                        best_is_steal = false;
+                    }
+                }
+            }
+
+            // Evaluate steals
+            for coords in steal_candidates {
+                let mut sim = board.clone();
+                if sim.add_move(Movement::Steal { player: bot_player, coords }).is_ok() {
+                    let score = minimax(
+                        &sim,
+                        MINIMAX_DEPTH - 1,
+                        i32::MIN + 1,
+                        i32::MAX,
+                        false,
+                        bot_player,
+                        true,
+                    );
+                    // Apply steal threshold: only prefer steal if score is meaningfully better
+                    let adjusted_score = (score as f32 * STEAL_THRESHOLD) as i32;
+                    if adjusted_score > best_score {
+                        best_score = adjusted_score;
+                        best_coords = Some(coords);
+                        best_is_steal = true;
+                    }
+                }
+            }
+
+            best_coords.map(|c| (c, best_is_steal))
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Deterministic pseudo-random helpers
+// ─────────────────────────────────────────────────────────────
+
+fn pseudo_random_bool(board_size: u32, salt: u32) -> bool {
+    let t = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .subsec_nanos();
+    (t.wrapping_add(board_size).wrapping_mul(salt)) % 2 == 0
+}
+
+fn pseudo_random_index(len: usize, salt: u32) -> usize {
+    let t = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .subsec_nanos();
+    (t.wrapping_add(salt) as usize) % len
+}
+
+// ─────────────────────────────────────────────────────────────
 // Public bot structs
 // ─────────────────────────────────────────────────────────────
 
-/// Plays with a shallow minimax (depth 1).
-/// Has basic strategy but cannot see threats more than 1 move ahead.
 pub struct EasyBot;
-
 impl YBot for EasyBot {
     fn name(&self) -> &str { "easy_bot" }
-
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
         std::thread::sleep(std::time::Duration::from_millis(500));
         best_move_with_depth(board, 1)
     }
 }
 
-/// Always plays the best move via minimax + virtual connection evaluation.
 pub struct HeuristicBot;
-
 impl YBot for HeuristicBot {
     fn name(&self) -> &str { "heuristic_bot" }
-
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
         std::thread::sleep(std::time::Duration::from_millis(600));
         best_move(board)
+    }
+}
+
+/// Rob-mode bot with three difficulty levels registered as separate bot ids:
+/// - `rob_bot_random`
+/// - `rob_bot_easy`
+/// - `rob_bot_hard`
+pub struct RobBot {
+    difficulty: RobDifficulty,
+}
+
+impl RobBot {
+    pub const fn random() -> Self { Self { difficulty: RobDifficulty::Random } }
+    pub const fn easy()   -> Self { Self { difficulty: RobDifficulty::Easy } }
+    pub const fn hard()   -> Self { Self { difficulty: RobDifficulty::Hard } }
+}
+
+impl YBot for RobBot {
+    fn name(&self) -> &str {
+        match self.difficulty {
+            RobDifficulty::Random => "rob_bot_random",
+            RobDifficulty::Easy   => "rob_bot_easy",
+            RobDifficulty::Hard   => "rob_bot_hard",
+        }
+    }
+
+    fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
+        std::thread::sleep(std::time::Duration::from_millis(550));
+        rob_choose(board, self.difficulty).map(|(coords, _)| coords)
+    }
+
+    fn choose_action(&self, board: &GameY) -> Option<(Coordinates, bool)> {
+        std::thread::sleep(std::time::Duration::from_millis(550));
+        rob_choose(board, self.difficulty)
+    }
+
+    fn wants_to_steal(&self, board: &GameY) -> bool {
+        rob_choose(board, self.difficulty)
+            .map(|(_, is_steal)| is_steal)
+            .unwrap_or(false)
     }
 }
 
@@ -303,23 +585,19 @@ mod tests {
         Movement::Placement { player: PlayerId::new(player), coords }
     }
 
-    #[test]
-    fn test_heuristic_bot_name() {
-        assert_eq!(HeuristicBot.name(), "heuristic_bot");
-    }
+    // ── Existing tests ────────────────────────────────────────
 
     #[test]
-    fn test_easy_bot_name() {
-        assert_eq!(EasyBot.name(), "easy_bot");
-    }
+    fn test_heuristic_bot_name() { assert_eq!(HeuristicBot.name(), "heuristic_bot"); }
+
+    #[test]
+    fn test_easy_bot_name() { assert_eq!(EasyBot.name(), "easy_bot"); }
 
     #[test]
     fn test_returns_valid_move_on_empty_board() {
         let game = GameY::new(5);
-        let mv = best_move(&game);
-        assert!(mv.is_some());
-        let coords = mv.unwrap();
-        assert!(game.available_cells().contains(&coords.to_index(game.board_size())));
+        let mv = best_move(&game).unwrap();
+        assert!(game.available_cells().contains(&mv.to_index(game.board_size())));
     }
 
     #[test]
@@ -338,14 +616,13 @@ mod tests {
         game.add_move(make_placement(1, Coordinates::new(2, 0, 0))).unwrap();
         game.add_move(make_placement(0, Coordinates::new(1, 1, 0))).unwrap();
         game.add_move(make_placement(1, Coordinates::new(0, 2, 0))).unwrap();
-
-        let chosen = best_move(&game).expect("bot must return a move");
+        let chosen = best_move(&game).unwrap();
         let mut sim = game.clone();
         sim.add_move(make_placement(0, chosen)).unwrap();
-        assert!(
-            matches!(sim.status(), GameStatus::Finished { winner } if *winner == PlayerId::new(0)),
-            "Bot should have taken the winning move, chose {:?}", chosen
-        );
+        assert!(matches!(
+            sim.status(),
+            GameStatus::Finished { winner } if *winner == PlayerId::new(0)
+        ));
     }
 
     #[test]
@@ -356,23 +633,8 @@ mod tests {
         game.add_move(make_placement(0, Coordinates::new(1, 1, 0))).unwrap();
         game.add_move(make_placement(1, Coordinates::new(1, 0, 1))).unwrap();
         game.add_move(make_placement(0, Coordinates::new(0, 1, 1))).unwrap();
-
-        let chosen = best_move(&game).expect("bot must return a move");
-        assert_eq!(
-            chosen,
-            Coordinates::new(0, 0, 2),
-            "Bot should block the winning cell, chose {:?}", chosen
-        );
-    }
-
-    #[test]
-    fn test_returns_a_valid_move_on_empty_board() {
-        let game = GameY::new(7);
-        let chosen = best_move(&game).expect("should have a move");
-        assert!(
-            game.available_cells().contains(&chosen.to_index(game.board_size())),
-            "Bot chose an unavailable cell: {:?}", chosen
-        );
+        let chosen = best_move(&game).unwrap();
+        assert_eq!(chosen, Coordinates::new(0, 0, 2));
     }
 
     #[test]
@@ -383,24 +645,160 @@ mod tests {
         game.add_move(make_placement(0, Coordinates::new(1, 0, 1))).unwrap();
         game.add_move(make_placement(1, Coordinates::new(0, 2, 0))).unwrap();
         game.add_move(make_placement(0, Coordinates::new(1, 1, 0))).unwrap();
-
-        let cost = virtual_connection_cost(&game, PlayerId::new(0));
-        assert_eq!(cost, 0, "A group touching all three sides should cost 0");
+        assert_eq!(virtual_connection_cost(&game, PlayerId::new(0)), 0);
     }
 
     #[test]
     fn test_virtual_cost_decreases_with_better_positions() {
         let mut game = GameY::new(5);
         let cost_empty = virtual_connection_cost(&game, PlayerId::new(0));
-
         game.add_move(make_placement(0, Coordinates::new(1, 1, 2))).unwrap();
         game.add_move(make_placement(1, Coordinates::new(4, 0, 0))).unwrap();
         let cost_after = virtual_connection_cost(&game, PlayerId::new(0));
+        assert!(cost_after <= cost_empty);
+    }
 
-        assert!(
-            cost_after <= cost_empty,
-            "Cost should not increase after placing a central stone ({} -> {})",
-            cost_empty, cost_after
-        );
+    // ── RobBot names ──────────────────────────────────────────
+
+    #[test]
+    fn test_rob_bot_names() {
+        assert_eq!(RobBot::random().name(), "rob_bot_random");
+        assert_eq!(RobBot::easy().name(),   "rob_bot_easy");
+        assert_eq!(RobBot::hard().name(),   "rob_bot_hard");
+    }
+
+    // ── All difficulties: valid move on empty board ────────────
+
+    #[test]
+    fn test_all_rob_difficulties_return_valid_move_on_empty_board() {
+        for bot in [RobBot::random(), RobBot::easy(), RobBot::hard()] {
+            let game = GameY::new(5);
+            let mv = bot.choose_move(&game).expect("should return a move");
+            assert!(
+                game.available_cells().contains(&mv.to_index(game.board_size())),
+                "{} chose an invalid cell on empty board", bot.name()
+            );
+        }
+    }
+
+    // ── All difficulties: no steal on empty board ─────────────
+
+    #[test]
+    fn test_all_rob_difficulties_no_steal_on_empty_board() {
+        for bot in [RobBot::random(), RobBot::easy(), RobBot::hard()] {
+            let game = GameY::new(5);
+            // Use choose_action to test both coords and is_steal consistently
+            let (_, is_steal) = bot.choose_action(&game).expect("should return an action");
+            assert!(
+                !is_steal,
+                "{} should not want to steal with no opponent cells", bot.name()
+            );
+        }
+    }
+
+    // ── Steal target must be an opponent cell (using choose_action) ───────
+
+    #[test]
+    fn test_steal_target_is_opponent_cell_easy() {
+        let mut game = GameY::new(5);
+        game.add_move(make_placement(0, Coordinates::new(1, 1, 2))).unwrap();
+        let bot = RobBot::easy();
+        let (coords, is_steal) = bot.choose_action(&game).unwrap();
+        if is_steal {
+            assert_eq!(
+                game.cell_at(&coords),
+                Cell::Occupied(PlayerId::new(0)),
+                "easy bot stole its own cell"
+            );
+        }
+    }
+
+    #[test]
+    fn test_steal_target_is_opponent_cell_hard() {
+        let mut game = GameY::new(5);
+        game.add_move(make_placement(0, Coordinates::new(1, 1, 2))).unwrap();
+        let bot = RobBot::hard();
+        let (coords, is_steal) = bot.choose_action(&game).unwrap();
+        if is_steal {
+            assert_eq!(
+                game.cell_at(&coords),
+                Cell::Occupied(PlayerId::new(0)),
+                "hard bot stole its own cell"
+            );
+        }
+    }
+
+    // ── choose_action and choose_move return consistent coords ────────────
+
+    #[test]
+    fn test_choose_action_consistent_with_steal_flag() {
+        let mut game = GameY::new(5);
+        // Give bot player 1 something to potentially steal
+        game.add_move(make_placement(0, Coordinates::new(2, 1, 1))).unwrap();
+        game.add_move(make_placement(0, Coordinates::new(1, 2, 1))).unwrap();
+
+        for bot in [RobBot::easy(), RobBot::hard()] {
+            let (coords, is_steal) = bot.choose_action(&game).unwrap();
+            if is_steal {
+                // Must be an opponent cell
+                assert_eq!(
+                    game.cell_at(&coords),
+                    Cell::Occupied(PlayerId::new(0)),
+                    "{} stole a non-opponent cell", bot.name()
+                );
+            } else {
+                // Must be an empty cell
+                assert_eq!(
+                    game.cell_at(&coords),
+                    Cell::Empty,
+                    "{} placed on a non-empty cell", bot.name()
+                );
+            }
+        }
+    }
+
+    // ── steal_is_worth_it threshold ───────────────────────────
+
+    #[test]
+    fn test_steal_threshold_rejects_marginal_steal() {
+        // s_cost = 9, p_cost = 10 → 9/10 = 0.9 > STEAL_THRESHOLD(0.82) → not worth it
+        assert!(!steal_is_worth_it(9, 10));
+    }
+
+    #[test]
+    fn test_steal_threshold_accepts_good_steal() {
+        // s_cost = 5, p_cost = 10 → 5/10 = 0.5 < STEAL_THRESHOLD(0.82) → worth it
+        assert!(steal_is_worth_it(5, 10));
+    }
+
+    #[test]
+    fn test_steal_threshold_rejects_when_placement_wins() {
+        // p_cost = 0 means placement already wins → never steal
+        assert!(!steal_is_worth_it(0, 0));
+    }
+
+    // ── Helper unit tests ─────────────────────────────────────
+
+    #[test]
+    fn test_best_steal_none_when_no_opponent_cells() {
+        let game = GameY::new(5);
+        assert!(best_steal(&game, PlayerId::new(1)).is_none());
+    }
+
+    #[test]
+    fn test_best_steal_returns_opponent_cell() {
+        let mut game = GameY::new(5);
+        game.add_move(make_placement(0, Coordinates::new(1, 1, 2))).unwrap();
+        let (coords, _) = best_steal(&game, PlayerId::new(1)).unwrap();
+        assert_eq!(game.cell_at(&coords), Cell::Occupied(PlayerId::new(0)));
+    }
+
+    #[test]
+    fn test_cost_after_steal_does_not_worsen_connectivity() {
+        let mut game = GameY::new(5);
+        game.add_move(make_placement(0, Coordinates::new(1, 1, 2))).unwrap();
+        let before = virtual_connection_cost(&game, PlayerId::new(1));
+        let after  = cost_after_steal(&game, PlayerId::new(1), Coordinates::new(1, 1, 2)).unwrap();
+        assert!(after <= before, "steal worsened connectivity: {} -> {}", before, after);
     }
 }

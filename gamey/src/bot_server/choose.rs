@@ -26,6 +26,8 @@ pub struct MoveResponse {
     pub bot_id: String,
     /// The coordinates where the bot chooses to place its piece.
     pub coords: Coordinates,
+    /// Allow us to know if the placement is a steal or not
+    pub is_steal: bool, 
 }
 
 /// Handler for the bot move selection endpoint.
@@ -73,21 +75,19 @@ pub async fn choose(
             )));
         }
     };
-    let coords = match bot.choose_move(&game_y) {
-        Some(coords) => coords,
-        None => {
-            // Handle the case where the bot has no valid moves
-            return Err(Json(ErrorResponse::error(
-                "No valid moves available for the bot",
-                Some(params.api_version),
-                Some(params.bot_id),
-            )));
-        }
-    };
+    let (coords, is_steal) = match bot.choose_action(&game_y) {
+    Some(action) => action,
+    None => return Err(Json(ErrorResponse::error(
+        "No valid moves available for the bot",
+        Some(params.api_version),
+        Some(params.bot_id),
+    ))),
+};
     let response = MoveResponse {
         api_version: params.api_version,
         bot_id: params.bot_id,
         coords,
+         is_steal,
     };
     Ok(Json(response))
 }

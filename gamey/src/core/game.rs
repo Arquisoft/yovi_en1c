@@ -88,6 +88,7 @@ impl GameY {
             let player = match movement {
                 Movement::Placement { player, .. } => *player,
                 Movement::Action { player, .. } => *player,
+                Movement::Steal { player, .. } => *player,
             };
             if player != next_player {
                 return Err(GameYError::InvalidPlayerTurn {
@@ -142,10 +143,42 @@ impl GameY {
             Movement::Action { player, action } => {
                 self.handle_action(*player, action);
             }
+            Movement::Steal { player, coords } => {  // ← añade esto
+                self.handle_steal(*player, *coords)?;
+            }
         }
         self.history.push(movement);
         Ok(())
     }
+
+    fn handle_steal(&mut self, player: PlayerId, coords: Coordinates) -> Result<()> {
+    match self.board_map.get(&coords) {
+        None => return Err(GameYError::Occupied { coordinates: coords, player }),
+        Some((_, owner)) if *owner == player => {
+            return Err(GameYError::Occupied { coordinates: coords, player })
+        }
+        _ => {}
+    }
+
+     let set_idx = if let Some((idx, owner)) = self.board_map.get_mut(&coords) {
+        *owner = player;
+        *idx
+    } else {
+        unreachable!()
+    };
+
+    self.sets[set_idx] = PlayerSet {
+        parent: set_idx,
+        touches_side_a: coords.touches_side_a(),
+        touches_side_b: coords.touches_side_b(),
+        touches_side_c: coords.touches_side_c(),
+    };
+
+    let won = self.connect_neighbors_and_check_win(coords, player, set_idx);
+    self.update_status_after_placement(player, won);
+
+    Ok(())
+}
 
     /// Orchestrates the placement logic
     fn handle_placement(&mut self, player: PlayerId, coords: Coordinates) -> Result<()> {

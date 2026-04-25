@@ -5,7 +5,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "error_network": "Network error",
-    "error_unexpected": "Unexpected server response. Please verify that the gateway and users service are running."
+    "error_unexpected": "Unexpected server response. Please verify that the gateway and user services are running."
   },
   "language_switcher": {
     "label": "Language"
@@ -13,31 +13,31 @@
   "login": {
     "title": "Welcome back!",
     "subtitle": "Please enter your username and password to log in.",
-    "username_label": "What's your username?",
-    "password_label": "And password?",
+    "username_label": "Username",
+    "password_label": "Password",
     "submit": "Let's go!",
     "no_account": "Don't have an account?",
     "go_signup": "Sign up here",
     "error_empty": "Please enter both username and password.",
-    "error_generic": "Problems with the login"
+    "error_generic": "Login failed. Please try again."
   },
   "signup": {
     "title": "Sign Up",
-    "subtitle": "Please fill this form to create an account.",
+    "subtitle": "Fill in the form to create an account.",
     "username_label": "Username",
     "email_label": "Email",
     "password_label": "Password",
-    "confirm_password_label": "Confirm Password",
-    "submit": "Sign Up",
+    "confirm_password_label": "Confirm password",
+    "submit": "Sign up",
     "have_account": "Already have an account?",
     "go_login": "Log in here",
     "error_empty": "Please fill in all fields.",
     "error_password_mismatch": "Passwords do not match.",
-    "error_generic": "Sign up error"
+    "error_generic": "Sign up failed."
   },
   "menu": {
     "title": "Game Lobby",
-    "subtitle": "Welcome, {{name}}. Choose your setup for Y.",
+    "subtitle": "Welcome, {{name}}. Choose your Y setup.",
     "view_history": "Game history",
     "board_size": "Board size",
     "game_mode": "Game mode",
@@ -48,25 +48,28 @@
     "board_size_aria": "board size",
     "game_mode_aria": "game mode",
     "difficulty_aria": "difficulty",
+    "rob_title": "Rob Mode",
     "board": {
       "small_title": "Small",
-      "small_desc": "5×5 board, suitable for quick games",
+      "small_desc": "5×5 board, great for quick games",
       "medium_title": "Medium",
       "medium_desc": "7×7 board, classic Y experience",
       "large_title": "Large",
-      "large_desc": "9×9 board, extensive Y gameplay"
+      "large_desc": "9×9 board, strategic Y gameplay"
     },
     "mode": {
       "standard_title": "Standard",
-      "standard_desc": "Classic Y rules"
+      "standard_desc": "Classic Y rules",
+      "rob_title": "Rob",
+      "rob_desc": "Steal opponent pieces"
     },
     "difficulty": {
       "random_title": "Random",
-      "random_desc": "Random moves",
+      "random_desc": "Makes random moves",
       "easy_title": "Easy",
-      "easy_desc": "A bit more difficult",
+      "easy_desc": "Plays with basic strategy",
       "hard_title": "Hard",
-      "hard_desc": "Full heuristic opponent"
+      "hard_desc": "Uses full heuristic strategy"
     }
   },
   "history": {
@@ -87,6 +90,7 @@
     "table": {
       "number": "#",
       "result": "Result",
+      "mode": "Mode",
       "difficulty": "Difficulty",
       "size": "Size",
       "points": "Points",
@@ -115,12 +119,12 @@
       "you": "You"
     },
     "stats_view": {
-      "progression": "Point Progression (Last 10 Games)",
-      "game_session": "Game Session",
-      "win_rate_by_difficulty": "Win Rate by Difficulty",
-      "avg_moves": "Average Moves",
-      "win_avg": "🏆 Win Avg",
-      "loss_avg": "🤖 Loss Avg",
+      "progression": "Point progression (last 10 games)",
+      "game_session": "Game session",
+      "win_rate_by_difficulty": "Win rate by difficulty",
+      "avg_moves": "Average moves",
+      "win_avg": "🏆 Win avg",
+      "loss_avg": "🤖 Loss avg",
       "moves_unit": "moves"
     },
     "view": {
@@ -132,22 +136,33 @@
     "title": "Yovi — Y Game",
     "info": {
       "standard": "Standard",
+      "rob": "Rob Mode",
       "pie_rule": "Pie rule",
-      "master_y": "Master Y"
+      "master_y": "Master Y",
+      "rob_active": "Choose a bot cell to rob"
+    },
+    "rob": {
+      "action": "Rob",
+      "cancel": "Cancel",
+      "cost_hint": "Steal a bot cell — costs 2 bot turns",
+      "select_hint": "Click a red cell to steal it"
     },
     "status": {
       "you_win": "🏆 You win!",
       "bot_wins": "🤖 Bot wins",
-      "thinking": "⏳ Bot thinking…",
+      "thinking": "⏳ Bot is thinking…",
       "your_turn": "🔵 Your turn",
-      "bot_turn": "🔴 Bot's turn"
+      "bot_turn": "🔴 Bot's turn",
+      "rob_active": "🗡 Select a cell to rob"
     },
     "new_game": "New game",
     "legend": {
       "you": "You (Blue)",
-      "bot": "Bot (Red)"
+      "bot": "Bot (Red)",
+      "rob": "Robbed cell"
     },
     "rules_hint": "Connect all three sides of the triangle with your pieces to win.",
+    "rules_hint_rob": "Rob a bot cell at any time — but it plays twice in return.",
     "difficulty_label": {
       "random": "🎲 Random",
       "easy": "😊 Easy",

@@ -14,6 +14,15 @@ pub enum Movement {
         /// The coordinates where the piece is placed.
         coords: Coordinates,
     },
+    /// Steal an opponent's piece, converting it to your own.
+    /// Only valid in game modes that allow stealing (e.g. Rob Mode).
+    /// The target cell must be occupied by the opponent.
+    Steal {
+        /// The player performing the steal.
+        player: PlayerId,
+        /// The coordinates of the opponent's piece to steal.
+        coords: Coordinates,
+    },
     /// A special game action (not a piece placement).
     Action {
         /// The player performing the action.
@@ -28,6 +37,9 @@ impl Display for Movement {
         match self {
             Movement::Placement { player, coords } => {
                 write!(f, "Player {} places at {}", player, coords)
+            }
+            Movement::Steal { player, coords } => {
+                write!(f, "Player {} steals at {}", player, coords)
             }
             Movement::Action { player, action } => {
                 write!(f, "Player {} performs action {}", player, action)
@@ -50,6 +62,15 @@ mod tests {
     }
 
     #[test]
+    fn test_steal_display() {
+        let movement = Movement::Steal {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(2, 1, 0),
+        };
+        assert_eq!(format!("{}", movement), "Player 1 steals at (2, 1, 0)");
+    }
+
+    #[test]
     fn test_action_swap_display() {
         let movement = Movement::Action {
             player: PlayerId::new(1),
@@ -68,8 +89,18 @@ mod tests {
     }
 
     #[test]
-    fn test_clone() {
+    fn test_clone_placement() {
         let movement = Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 2, 3),
+        };
+        let cloned = movement.clone();
+        assert_eq!(format!("{}", movement), format!("{}", cloned));
+    }
+
+    #[test]
+    fn test_clone_steal() {
+        let movement = Movement::Steal {
             player: PlayerId::new(0),
             coords: Coordinates::new(1, 2, 3),
         };

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import "./GameMenu.css";
 
 export type BoardSize = "small" | "medium" | "large";
-export type GameMode = "standard";
+export type GameMode = "standard" | "rob";
 export type Difficulty = "random" | "easy" | "hard";
 export type LayoutStyle = "classic";
 
@@ -22,7 +22,7 @@ type Props = {
 };
 
 const boardSizeValues: BoardSize[] = ["small", "medium", "large"];
-const gameModeValues: GameMode[] = ["standard"];
+const gameModeValues: GameMode[] = ["standard", "rob"];
 const difficultyValues: Difficulty[] = ["random", "easy", "hard"];
 
 export default function GameMenu({
@@ -46,19 +46,16 @@ export default function GameMenu({
   const goPrev = (index: number, length: number) => (index - 1 + length) % length;
   const goNext = (index: number, length: number) => (index + 1) % length;
 
-  // Board size labels from translation
   const boardLabels = boardSizeValues.map((v) => ({
     title: t(`menu.board.${v}_title`),
     description: t(`menu.board.${v}_desc`),
   }));
 
-  // Game mode labels (only standard for now)
-  const modeLabels = gameModeValues.map(() => ({
-    title: t("menu.mode.standard_title"),
-    description: t("menu.mode.standard_desc"),
+  const modeLabels = gameModeValues.map((v) => ({
+    title: t(`menu.mode.${v}_title`),
+    description: t(`menu.mode.${v}_desc`),
   }));
 
-  // Difficulty labels from translation
   const difficultyLabels = difficultyValues.map((v) => ({
     title: t(`menu.difficulty.${v}_title`),
     description: t(`menu.difficulty.${v}_desc`),
