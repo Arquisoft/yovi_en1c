@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import "./SignupForm.css";
+import { sanitizeToken, sanitizeUsername } from "./sanitize";
 
 // Using onGoToLogin callback to navigate
 // between login and signup forms without using react-router
@@ -60,21 +61,28 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
                 return;
             }
 
-            if (res.ok) {
-
-            const token = data?.token;
-            const usernameFromBackend = data?.user?.username;
+   if (res.ok) {
+        const token = data?.token;
+        const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
 
         if (token && usernameFromBackend) {
-          const cleanToken = String(token).replaceAll(/[<>]/g, "");
-          const cleanUsername = String(usernameFromBackend).replaceAll(/[<>]/g, "");
+          try {
+            const cleanToken = sanitizeToken(token);
+            const cleanUsername = sanitizeUsername(usernameFromBackend);
 
-          localStorage.setItem("token", cleanToken);
-          localStorage.setItem("username", cleanUsername);
+            localStorage.setItem("token", cleanToken);
+            localStorage.setItem("username", cleanUsername);
+          } catch (sanitizeErr: unknown) {
+            const msg = sanitizeErr instanceof Error 
+              ? sanitizeErr.message 
+              : "Invalid data from server.";
+            setError(msg);
+            return; 
+          }
         }
-        
         onRegistered(trimmedUsername);
-      } else {
+      }
+ else {
                 setError(data.error || "Sign up error");
             }
         } catch (err: any) {

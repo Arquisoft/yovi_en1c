@@ -87,7 +87,7 @@ describe("SignUpForm", () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
    const mockResponse = JSON.stringify({ 
-            token: "fake-jwt-token", 
+            token: "abc.def.ghi", 
             user: { username: "Pablo" } 
         });
 
@@ -187,7 +187,7 @@ describe("SignUpForm", () => {
   const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
  const mockDirtyResponse = JSON.stringify({ 
-            token: "dirty+token!", 
+            token: "valid.token.format", 
             user: { username: "pablo<script>" } 
         });
 
@@ -205,10 +205,10 @@ describe("SignUpForm", () => {
   await user.click(screen.getByRole("button", { name: /sign up/i }));
 
   await waitFor(() => {
-    expect(setItemSpy).toHaveBeenCalledWith("token", "dirty+token!"); 
+    expect(setItemSpy).toHaveBeenCalledWith("token", "valid.token.format"); 
     expect(setItemSpy).toHaveBeenCalledWith("username", "pabloscript");
   });
-
+setItemSpy.mockRestore();
 });
 
 });

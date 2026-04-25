@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./RegisterForm.css";
+import { sanitizeToken, sanitizeUsername } from "./sanitize";
 
 // React hooks for managing form state and error handling
 // Using onGoToLogin and onGoToSignUp callbacks to navigate
@@ -42,18 +43,24 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
 
       const data = await res.json();
 
-      if (res.ok) {
-        if (data.token) {
-          localStorage.setItem("token", data.token);
+  if (res.ok) {  try {    
+    if (data.token) {  
+        const cleanToken = sanitizeToken(data.token);
+        localStorage.setItem("token", cleanToken);    
+      }    
+      const rawUsername = data.user?.username || trimmed;    
+      const cleanUsername = sanitizeUsername(rawUsername);    
+      localStorage.setItem("username", cleanUsername);    
+      onLoggedIn(cleanUsername);  
+    } catch (sanitizeErr: unknown) {    
+      const msg =      
+      sanitizeErr instanceof Error       
+       ? sanitizeErr.message        
+       : "Invalid data from server.";    
+       setError(msg);
         }
-
-        const sanitizedUsername = (data.user?.username || trimmed).toString().replaceAll(/[<>]/g, "");
-        localStorage.setItem("username", sanitizedUsername);
-        onLoggedIn(sanitizedUsername);
-
-      } else {
-        setError(data.error || "Problems with the login");
-      }
+      } else {  
+        setError(data.error || "Problems with the login");}
     } catch (err: any) {
       setError(err.message || "Network error");
     }
