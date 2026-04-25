@@ -62,20 +62,20 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
 
             if (res.ok) {
 
-                if(data.token && data.username){
-                  const tokenStr: string = String(data.token);
-                  const userStr: string = String(data.username);
+                if (data.token && data.username) {
+                    const tokenStr: string = String(data.token);
+                    const userStr: string = String(data.username);
 
-                  const cleanToken = tokenStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
-                  const cleanUsername = userStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
-                   
-                   if (cleanToken.length > 0 && cleanUsername.length > 0) {
+                    const cleanToken = tokenStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
+                    const cleanUsername = userStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
+
+                    if (cleanToken.length > 0 && cleanUsername.length > 0) {
                         localStorage.setItem("token", cleanToken);
                         localStorage.setItem("username", cleanUsername);
-    }
-                    
+                    }
+
                 }
-                
+
                 onRegistered(trimmedUsername);
             } else {
                 setError(data.error || "Sign up error");
@@ -89,84 +89,82 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
     // and error handling for empty fields and password mismatch
 
     return (
-        <div className="hexBackground">
-            <form onSubmit={handleSubmit} className="signup-form">
-                <h2>Sign Up</h2>
-                <p>Please fill this form to create an account.</p>
+        <form onSubmit={handleSubmit} className="signup-form">
+            <h2>Sign Up</h2>
+            <p>Please fill this form to create an account.</p>
 
-                <div className="form-group">
-                    <label htmlFor="signup-username">Username</label>
-                    <input
-                        type="text"
-                        id="signup-username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="form-input"
-                    />
-                </div>
+            <div className="form-group">
+                <label htmlFor="signup-username">Username</label>
+                <input
+                    type="text"
+                    id="signup-username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="form-input"
+                />
+            </div>
 
-                <div className="form-group">
-                    <label htmlFor="signup-email">Email</label>
-                    <input
-                        type="email"
-                        id="signup-email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="form-input"
-                    />
-                </div>
+            <div className="form-group">
+                <label htmlFor="signup-email">Email</label>
+                <input
+                    type="email"
+                    id="signup-email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="form-input"
+                />
+            </div>
 
-                <div className="form-group">
-                    <label htmlFor="signup-password">Password</label>
-                    <input
-                        type="password"
-                        id="signup-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="form-input"
-                    />
-                </div>
+            <div className="form-group">
+                <label htmlFor="signup-password">Password</label>
+                <input
+                    type="password"
+                    id="signup-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="form-input"
+                />
+            </div>
 
-                <div className="form-group">
-                    <label htmlFor="signup-confirm-password">Confirm Password</label>
-                    <input
-                        type="password"
-                        id="signup-confirm-password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="form-input"
-                    />
-                </div>
+            <div className="form-group">
+                <label htmlFor="signup-confirm-password">Confirm Password</label>
+                <input
+                    type="password"
+                    id="signup-confirm-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="form-input"
+                />
+            </div>
 
-                <button type="submit" className="submit-button">
-                    Sign Up
+            <button type="submit" className="submit-button">
+                Sign Up
+            </button>
+
+            <p style={{ marginTop: 16 }}>
+                Already have an account?{" "}
+                <button
+                    type="button"
+                    onClick={onGoToLogin}
+                    style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        color: "#4f46e5",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                    }}
+                >
+                    Log in here
                 </button>
+            </p>
 
-                <p style={{ marginTop: 16 }}>
-                    Already have an account?{" "}
-                    <button
-                        type="button"
-                        onClick={onGoToLogin}
-                        style={{
-                            background: "none",
-                            border: "none",
-                            padding: 0,
-                            color: "#4f46e5",
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                        }}
-                    >
-                        Log in here
-                    </button>
-                </p>
-
-                {error && (
-                    <div className="error-message" style={{ marginTop: 12, color: "red" }}>
-                        {error}
-                    </div>
-                )}
-            </form>
-        </div>
+            {error && (
+                <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+                    {error}
+                </div>
+            )}
+        </form>
     );
 };
 

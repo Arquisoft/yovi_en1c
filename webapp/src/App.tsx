@@ -49,13 +49,8 @@ function App() {
   return (
     <div className="App hexBackground">
       <div className="authPage">
-        <div>
-          <a href="https://react.dev" target="_blank" rel="noreferrer">
-            <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
-          </a>
-        </div>
 
-        <h2>Welcome to play the game of Y</h2>
+        <img src="/logo-game-y.svg" className="logo" alt="Game Y" />
 
         {screen === "login" && (
           <LoginForm

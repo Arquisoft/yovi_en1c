@@ -309,24 +309,27 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   return (
     <div className="board hexBackground">
       <div className="boardCard">
-        <div className="boardTopBar">
-          <button className="btn" type="button" onClick={onBack}>
+        <div className="boardTopGrid">
+          <button className="btn boardBackBtn" type="button" onClick={onBack}>
             ← Back
           </button>
 
-          {gameStatus !== "ongoing" ? (
-            <button className="btn resetBtn infoReset" onClick={resetGame}>
-              New game
-            </button>
-          ) : (
-            <h2 className="boardTitle">Game on</h2>
-          )}
+          <div className="centerTop">
+            {gameStatus !== "ongoing" ? (
+              <button className="btn resetBtn" type="button" onClick={resetGame}>
+                New game
+              </button>
+            ) : (
+              <h2 className="boardTitle">Game on</h2>
+            )}
+          </div>
 
           <div className="boardInfoStack">
             <div className="infoRow">
               <span className="infoLabel">Board</span>
               <span className="infoValue">
-                {config.boardSize.charAt(0).toUpperCase() + config.boardSize.slice(1)} ({boardSize}×{boardSize})
+                {config.boardSize.charAt(0).toUpperCase() + config.boardSize.slice(1)}{" "}
+                ({boardSize}×{boardSize})
               </span>
             </div>
 
@@ -336,27 +339,31 @@ export default function GameBoard({ config, onBack, userName }: Props) {
                 {difficultyLabel[config.difficulty]}
               </span>
             </div>
-
           </div>
 
+          <div className="playerBadge playerBadgeTop">
+            <div className="avatar avatarRed">🤖</div>
+            <div className="playerText">
+              <span className="playerName">Bot</span>
+              <span className="playerRole">Red player</span>
+            </div>
+          </div>
+
+          <div className={`statusTag ${statusClass}`}>{statusLabel}</div>
+
+          {gameStatus !== "ongoing" && (
+            <div className={`gameResult result-${gameStatus}`}>
+              {gameStatus === "player_won" ? "YOU WIN!" : "YOU LOST"}
+            </div>
+          )}
+
+
+          <div className="boardTopEmpty" />
         </div>
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
         <div className="boardMiddle">
-          <div className="boardUpper">
-            <div className="playerBadge playerBadgeTop">
-              <div className="avatar avatarRed">🤖</div>
-              <div className="playerText">
-                <span className="playerName">Bot</span>
-                <span className="playerRole">Red player</span>
-              </div>
-            </div>
-
-            <div className={`statusTag ${statusClass}`}>{statusLabel}</div>
-
-          </div>
-
           {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
           <div className={`svgWrapper ${layoutClass}`}>
             <div className="boardSurface">
@@ -466,9 +473,11 @@ export default function GameBoard({ config, onBack, userName }: Props) {
           </div>
         </div>
 
-        <p className="rulesHint">
-          Connect all three sides of the triangle with your pieces to win.
-        </p>
+        <div className="rulesHint">
+          <p>
+            Connect all three sides of the triangle with your pieces to win.
+          </p>
+        </div>
       </div>
     </div>
   );

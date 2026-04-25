@@ -14,12 +14,12 @@ export interface GameConfig {
 }
 
 const TRIVIA_SNIPPETS = [
-  "Y was created by a game named Ea Ea, believe it or not.",
-  "Corners connect two sides of the board, but the distance to the third side is long.",
+  "Y was created by a guy named Ea Ea! Believe it or not.",
+  "Corners connect two sides of the board, but the dash to the other side can feel like an eternity.",
   "Hex grids are used in strategy games because they avoid diagonal imbalance.",
   "When you are playing the bot, you are actually battling Rust!",
-  "Y belongs to the same family as Hex and Havannah, but it has its own unique strategies and tactics.",
-  "Random bots have the reckless wild card charm, if the more difficult bot gets too boring for you.",
+  "Y belongs to the same family as Hex and Havannah, but it has its own unique tactics.",
+  "Random bot has the reckless wild card charm, if the more difficult bot gets too boring for you.",
 ];
 
 function getRandomTrivia() {
@@ -48,6 +48,13 @@ export function TriviaHelp() {
 
           <div className="triviaCardBack" role="dialog" aria-live="polite">
             {trivia}
+            <button
+              className="triviaClose"
+              onClick={() => setOpen(false)}
+              aria-label="Close trivia"
+            >
+              ×
+            </button>
           </div>
         </div>
       </div>
@@ -141,19 +148,22 @@ export default function GameMenu({
       <div className="menuCard">
         <div className="menuHeader">
           <div className="menuTitleRow">
+            <div className="historyButton historyButton--desktop">
+              <button
+                className="btn btnSecondary"
+                type="button"
+                onClick={onViewHistory}
+              >
+                Game history
+              </button>
+            </div>
             <h2 className="menuTitle">Welcome, {userName}.</h2>
+
             <TriviaHelp />
           </div>
 
           <p className="menuSubtitle">Choose your setup for Y.</p>
 
-          <button
-            className="btn btnSecondary"
-            type="button"
-            onClick={onViewHistory}
-          >
-            Game history
-          </button>
         </div>
 
         <section className="menuSection">
@@ -268,6 +278,18 @@ export default function GameMenu({
           >
             Start game
           </button>
+
+
+          <div className="historyButton historyButton--mobile">
+            <button
+              className="btn btnSecondary"
+              type="button"
+              onClick={onViewHistory}
+            >
+              Game history
+            </button>
+          </div>
+
 
           <button className="btn btnSecondary" type="button" onClick={onLogOut}>
             Log out

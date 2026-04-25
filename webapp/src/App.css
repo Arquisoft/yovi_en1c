@@ -79,7 +79,7 @@
 }
 
 /* Register Form Styles */
-.register-form {
+/* .register-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -129,4 +129,4 @@
 
 .submit-button:hover {
   background-color: #0056b3;
-}
+} */

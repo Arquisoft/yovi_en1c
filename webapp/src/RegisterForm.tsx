@@ -58,7 +58,7 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
   return (
     <div className="login-form hexBackground">
       <form onSubmit={handleSubmit} className="register-form">
-        <h2>Welcome back!</h2>
+        <h2>Welcome to play the game of Y!</h2>
         <p>Please enter your username and password to log in.</p>
 
         <div className="form-group">
