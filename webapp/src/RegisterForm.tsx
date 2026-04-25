@@ -46,7 +46,12 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
         if (data.token) {
           localStorage.setItem("token", data.token);
         }
-        onLoggedIn(data.user?.username || trimmed);
+
+        const finalUsername = data.user?.username || trimmed;
+        localStorage.setItem("username", finalUsername);
+
+        onLoggedIn(finalUsername);
+
       } else {
         setError(data.error || "Problems with the login");
       }

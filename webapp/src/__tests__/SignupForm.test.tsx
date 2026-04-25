@@ -9,7 +9,9 @@ describe("SignUpForm", () => {
         const onGoToLogin = vi.fn();
 
         beforeEach(() => {
-    vi.clearAllMocks();
+        vi.clearAllMocks();
+
+        global.fetch = vi.fn();
   });
 
   const fillForm = async (
@@ -84,12 +86,15 @@ describe("SignUpForm", () => {
 
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      
-    json: async () => ({ token: "fake-jwt-token", username: "Pablo" }), 
-    text: async () => JSON.stringify({ token: "fake-jwt-token", username: "Pablo" }), 
-     });
+   const mockResponse = JSON.stringify({ 
+            token: "fake-jwt-token", 
+            user: { username: "Pablo" } 
+        });
+
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            text: async () => mockResponse,
+        });
 
     render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
 
@@ -101,6 +106,7 @@ describe("SignUpForm", () => {
       expect(setItemSpy).toHaveBeenCalledWith("token", expect.any(String));
       expect(setItemSpy).toHaveBeenCalledWith("username", "Pablo");
     });
+    setItemSpy.mockRestore();
   });
 
   it("shows server error message when signup fails", async () => {
@@ -180,13 +186,14 @@ describe("SignUpForm", () => {
   const user = userEvent.setup();
   const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
-  global.fetch = vi.fn().mockResolvedValue({
+ const mockDirtyResponse = JSON.stringify({ 
+            token: "dirty+token!", 
+            user: { username: "pablo<script>" } 
+        });
+
+        global.fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ 
-      token: "dirty+token!", 
-      username: "pablo<script>" 
-    }),
-    text: async () => JSON.stringify({ token: "dirty+token!", username: "pablo<script>" }),
+    text: async () => mockDirtyResponse,
   });
 
   render(<SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />);
@@ -202,7 +209,6 @@ describe("SignUpForm", () => {
     expect(setItemSpy).toHaveBeenCalledWith("username", "pabloscript");
   });
 
-  setItemSpy.mockRestore();
 });
 
 });
