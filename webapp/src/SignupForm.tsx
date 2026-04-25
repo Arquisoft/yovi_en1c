@@ -62,23 +62,19 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
 
             if (res.ok) {
 
-                if(data.token && data.user && data.user.username){
-                  const tokenStr: string = String(data.token);
-                  const userStr: string = String(data.user.username);
+            const token = data?.token;
+            const usernameFromBackend = data?.user?.username;
 
-                  const cleanToken = tokenStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
-                  const cleanUsername = userStr.split('').filter(char => /[a-zA-Z0-9._-]/.test(char)).join('');
-                   
-                   if (cleanToken.length > 0 && cleanUsername.length > 0) {
-                        localStorage.setItem("token", cleanToken);
-                        localStorage.setItem("username", cleanUsername);
-    }
-                    
-                }
-                
-                onRegistered(trimmedUsername);
-                
-            } else {
+        if (token && usernameFromBackend) {
+          const cleanToken = String(token).replaceAll(/[<>]/g, "");
+          const cleanUsername = String(usernameFromBackend).replaceAll(/[<>]/g, "");
+
+          localStorage.setItem("token", cleanToken);
+          localStorage.setItem("username", cleanUsername);
+        }
+        
+        onRegistered(trimmedUsername);
+      } else {
                 setError(data.error || "Sign up error");
             }
         } catch (err: any) {

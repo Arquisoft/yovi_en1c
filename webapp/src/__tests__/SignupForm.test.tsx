@@ -205,7 +205,7 @@ describe("SignUpForm", () => {
   await user.click(screen.getByRole("button", { name: /sign up/i }));
 
   await waitFor(() => {
-    expect(setItemSpy).toHaveBeenCalledWith("token", "dirtytoken"); 
+    expect(setItemSpy).toHaveBeenCalledWith("token", "dirty+token!"); 
     expect(setItemSpy).toHaveBeenCalledWith("username", "pabloscript");
   });
 

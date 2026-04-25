@@ -47,9 +47,7 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
           localStorage.setItem("token", data.token);
         }
 
-        const sanitizedUsername = (data.user?.username || trimmed).replace(/[<>]/g, ""); 
-        localStorage.setItem("username", sanitizedUsername);
-
+        const sanitizedUsername = (data.user?.username || trimmed).toString().replaceAll(/[<>]/g, "");        localStorage.setItem("username", sanitizedUsername);
         onLoggedIn(sanitizedUsername);
 
       } else {
