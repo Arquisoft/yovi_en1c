@@ -64,7 +64,11 @@ function parseKey(key: string): [number, number, number] {
   return [x, y, z];
 }
 
-function getNeighbors(x: number, y: number, z: number): [number, number, number][] {
+function getNeighbors(
+  x: number,
+  y: number,
+  z: number,
+): [number, number, number][] {
   const neighbors: [number, number, number][] = [];
   if (x > 0) {
     neighbors.push([x - 1, y + 1, z]);
@@ -85,7 +89,9 @@ function checkWin(boardMap: BoardMap, player: Player): boolean {
   const visited = new Set<string>();
   for (const key of Object.keys(boardMap)) {
     if (boardMap[key] !== player || visited.has(key)) continue;
-    let touchA = false, touchB = false, touchC = false;
+    let touchA = false,
+      touchB = false,
+      touchC = false;
     const queue: string[] = [key];
     while (queue.length > 0) {
       const cur = queue.pop()!;
@@ -111,12 +117,21 @@ async function saveGame(
   username: string,
   difficulty: Difficulty,
   boardSize: GameConfig["boardSize"],
+  mode: "standard" | "rob",
 ) {
   const totalMoves = Object.keys(board).length;
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ result, board, totalMoves, username, difficulty, boardSize }),
+    body: JSON.stringify({
+      result,
+      board,
+      totalMoves,
+      username,
+      difficulty,
+      boardSize,
+      mode,
+    }),
   }).catch(console.error);
 }
 
@@ -156,13 +171,16 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   const { t } = useTranslation();
   const isRobMode = config.mode === "rob";
   const boardSize = BOARD_SIZE_MAP[config.boardSize];
-  const botId = config.mode === "rob"
-  ? ROB_BOT_ID_MAP[config.difficulty]
-  : BOT_ID_MAP[config.difficulty];
+  const botId =
+    config.mode === "rob"
+      ? ROB_BOT_ID_MAP[config.difficulty]
+      : BOT_ID_MAP[config.difficulty];
   const layoutClass = LAYOUT_CLASS_MAP[config.layout];
 
   const svgWidth =
-    BOARD_MARGIN * 2 + (boardSize - 1) * HEX_HORIZONTAL_SPACING + HEX_HORIZONTAL_SPACING;
+    BOARD_MARGIN * 2 +
+    (boardSize - 1) * HEX_HORIZONTAL_SPACING +
+    HEX_HORIZONTAL_SPACING;
   const svgHeight =
     BOARD_MARGIN * 2 + (boardSize - 1) * HEX_VERTICAL_SPACING + HEX_RADIUS * 2;
 
@@ -173,7 +191,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [lastBotMove, setLastBotMove] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
+  const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
   // Rob-mode UI state
   // When true, the player has activated rob mode and must click a bot cell.
   const [robModeActive, setRobModeActive] = useState(false);
@@ -214,8 +232,13 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
    * In rob mode, the bot has BOT_ROB_PROBABILITY chance of robbing a player cell
    * instead of placing a new piece.
    */
-  async function runBotTurn(currentBoard: BoardMap): Promise<{ board: BoardMap; wasSteal: boolean }> {
-    const data = await fetchBotMove(botId, buildYEN(currentBoard, 1, boardSize));
+  async function runBotTurn(
+    currentBoard: BoardMap,
+  ): Promise<{ board: BoardMap; wasSteal: boolean }> {
+    const data = await fetchBotMove(
+      botId,
+      buildYEN(currentBoard, 1, boardSize),
+    );
     const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
 
     if (data.is_steal) {
@@ -227,126 +250,180 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
     }
 
     return { board: { ...currentBoard, [botKey]: 1 }, wasSteal: data.is_steal };
-}
+  }
 
   // ─── Player robs a bot cell ───────────────────────────────────────────────
 
   const handleRobCell = useCallback(
-  async (key: string) => {
-    if (!robModeActive || gameStatus !== "ongoing" || loading) return;
+    async (key: string) => {
+      if (!robModeActive || gameStatus !== "ongoing" || loading) return;
 
-    setRobModeActive(false);
-    setErrorMsg(null);
+      setRobModeActive(false);
+      setErrorMsg(null);
 
-    const afterRob: BoardMap = { ...boardMap, [key]: 0 };
-    setLastRobbedKey(key);
-    setBoardMap(afterRob);
+      const afterRob: BoardMap = { ...boardMap, [key]: 0 };
+      setLastRobbedKey(key);
+      setBoardMap(afterRob);
 
-    if (checkWin(afterRob, 0)) {
-      setGameStatus("player_won");
-      saveGame("player_won", afterRob, userName, config.difficulty, config.boardSize);
-      return;
-    }
-
-    setCurrentTurn(1);
-    setLoading(true);
-
-    try {
-      const { board: afterBot1 } = await runBotTurn(afterRob);  
-      setBoardMap(afterBot1);
-
-      if (checkWin(afterBot1, 1)) {
-        setGameStatus("bot_won");
-        saveGame("bot_won", afterBot1, userName, config.difficulty, config.boardSize);
+      if (checkWin(afterRob, 0)) {
+        setGameStatus("player_won");
+        saveGame(
+          "player_won",
+          afterRob,
+          userName,
+          config.difficulty,
+          config.boardSize,
+          config.mode,
+        );
         return;
       }
 
-      await new Promise((r) => setTimeout(r, 600));
+      setCurrentTurn(1);
+      setLoading(true);
 
-      const { board: afterBot2 } = await runBotTurn(afterBot1);  
-      setBoardMap(afterBot2);
+      try {
+        const { board: afterBot1 } = await runBotTurn(afterRob);
+        setBoardMap(afterBot1);
 
-      if (checkWin(afterBot2, 1)) {
-        setGameStatus("bot_won");
-        saveGame("bot_won", afterBot2, userName, config.difficulty, config.boardSize);
-      } else {
+        if (checkWin(afterBot1, 1)) {
+          setGameStatus("bot_won");
+          saveGame(
+            "bot_won",
+            afterBot1,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
+          return;
+        }
+
+        await new Promise((r) => setTimeout(r, 600));
+
+        const { board: afterBot2 } = await runBotTurn(afterBot1);
+        setBoardMap(afterBot2);
+
+        if (checkWin(afterBot2, 1)) {
+          setGameStatus("bot_won");
+          saveGame(
+            "bot_won",
+            afterBot2,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
+        } else {
+          setCurrentTurn(0);
+        }
+      } catch (err) {
+        setErrorMsg(
+          t("board.bot_error", {
+            message: err instanceof Error ? err.message : "Unknown error",
+          }),
+        );
         setCurrentTurn(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setErrorMsg(
-        t("board.bot_error", {
-          message: err instanceof Error ? err.message : "Unknown error",
-        }),
-      );
-      setCurrentTurn(0);
-    } finally {
-      setLoading(false);
-    }
-  },
-  [robModeActive, boardMap, gameStatus, loading, boardSize, userName, botId, t],
-);
+    },
+    [
+      robModeActive,
+      boardMap,
+      gameStatus,
+      loading,
+      boardSize,
+      userName,
+      botId,
+      t,
+    ],
+  );
   // ─── Player places a normal cell ─────────────────────────────────────────
 
   const handleCellClick = useCallback(
-  async (x: number, y: number, z: number) => {
-    const key = coordKey(x, y, z);
+    async (x: number, y: number, z: number) => {
+      const key = coordKey(x, y, z);
 
-    if (robModeActive) {
-      if (boardMap[key] === 1) handleRobCell(key);
-      return;
-    }
-
-    if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
-    if (boardMap[key] !== undefined) return;
-
-    setErrorMsg(null);
-    const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
-    setBoardMap(afterPlayer);
-    setLastRobbedKey(null);
-
-    if (checkWin(afterPlayer, 0)) {
-      setGameStatus("player_won");
-      saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
-      return;
-    }
-
-    if (playerBonusTurn) {
-      setPlayerBonusTurn(false);
-      return;
-    }
-
-    setCurrentTurn(1);
-    setLoading(true);
-
-    try {
-      const { board: afterBot, wasSteal } = await runBotTurn(afterPlayer);
-      setBoardMap(afterBot);
-
-      if (checkWin(afterBot, 1)) {
-        setGameStatus("bot_won");
-        saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
+      if (robModeActive) {
+        if (boardMap[key] === 1) handleRobCell(key);
         return;
       }
 
-      if (wasSteal) {
-        setPlayerBonusTurn(true);
+      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
+      if (boardMap[key] !== undefined) return;
+
+      setErrorMsg(null);
+      const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
+      setBoardMap(afterPlayer);
+      setLastRobbedKey(null);
+
+      if (checkWin(afterPlayer, 0)) {
+        setGameStatus("player_won");
+        saveGame(
+          "player_won",
+          afterPlayer,
+          userName,
+          config.difficulty,
+          config.boardSize,
+          config.mode,
+        );
+        return;
       }
 
-      setCurrentTurn(0);
-    } catch (err) {
-      setErrorMsg(
-        t("board.bot_error", {
-          message: err instanceof Error ? err.message : "Unknown error",
-        }),
-      );
-      setCurrentTurn(0);
-    } finally {
-      setLoading(false);
-    }
-  },
-  [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId,
-   robModeActive, playerBonusTurn, t],
-);
+      if (playerBonusTurn) {
+        setPlayerBonusTurn(false);
+        return;
+      }
+
+      setCurrentTurn(1);
+      setLoading(true);
+
+      try {
+        const { board: afterBot, wasSteal } = await runBotTurn(afterPlayer);
+        setBoardMap(afterBot);
+
+        if (checkWin(afterBot, 1)) {
+          setGameStatus("bot_won");
+          saveGame(
+            "bot_won",
+            afterBot,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
+          return;
+        }
+
+        if (wasSteal) {
+          setPlayerBonusTurn(true);
+        }
+
+        setCurrentTurn(0);
+      } catch (err) {
+        setErrorMsg(
+          t("board.bot_error", {
+            message: err instanceof Error ? err.message : "Unknown error",
+          }),
+        );
+        setCurrentTurn(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      boardMap,
+      currentTurn,
+      gameStatus,
+      loading,
+      boardSize,
+      userName,
+      botId,
+      robModeActive,
+      playerBonusTurn,
+      t,
+    ],
+  );
 
   // ─── Labels ───────────────────────────────────────────────────────────────
 
@@ -375,13 +452,15 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
             : "status-bot";
 
   const modeLabel =
-    config.mode === "standard"
-      ? t("board.info.standard")
-      : t("board.info.rob");
+    config.mode === "standard" ? t("board.info.standard") : t("board.info.rob");
 
   // ─── Per-cell visual logic ────────────────────────────────────────────────
 
-  function getCellStyle(key: string, occupied: Player | undefined, isHovered: boolean) {
+  function getCellStyle(
+    key: string,
+    occupied: Player | undefined,
+    isHovered: boolean,
+  ) {
     const isLastBot = lastBotMove === key;
     const isRobbed = lastRobbedKey === key;
     const isRobTarget = robModeActive && occupied === 1; // bot cell highlightable for rob
@@ -392,9 +471,7 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
     let filter: string | undefined;
 
     if (occupied === 0) {
-      fill = isRobbed
-        ? "rgba(56, 189, 248, 1)"       
-        : "rgba(56, 189, 248, 0.9)";
+      fill = isRobbed ? "rgba(56, 189, 248, 1)" : "rgba(56, 189, 248, 0.9)";
       stroke = "#7dd3fc";
       strokeW = 2;
     } else if (occupied === 1) {
@@ -435,7 +512,8 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  const canPlayerAct = gameStatus === "ongoing" && currentTurn === 0 && !loading;
+  const canPlayerAct =
+    gameStatus === "ongoing" && currentTurn === 0 && !loading;
   const canRob =
     isRobMode &&
     canPlayerAct &&
@@ -455,7 +533,8 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
 
         <div className="boardMeta">
           <span className="infoTag">
-            {config.boardSize.charAt(0).toUpperCase() + config.boardSize.slice(1)}{" "}
+            {config.boardSize.charAt(0).toUpperCase() +
+              config.boardSize.slice(1)}{" "}
             ({boardSize}×{boardSize})
           </span>
           <span className="infoTag">{modeLabel}</span>
@@ -522,9 +601,14 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
                   ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
                   col * HEX_HORIZONTAL_SPACING +
                   HEX_HORIZONTAL_SPACING / 2;
-                const cy = BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
+                const cy =
+                  BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
-                const { fill, stroke, strokeW, filter } = getCellStyle(key, occupied, isHovered);
+                const { fill, stroke, strokeW, filter } = getCellStyle(
+                  key,
+                  occupied,
+                  isHovered,
+                );
 
                 const isClickable =
                   canPlayerAct &&
@@ -545,7 +629,9 @@ const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
                       transition: "fill 0.15s, stroke 0.15s",
                     }}
                     onClick={() => handleCellClick(x, y, z)}
-                    onMouseEnter={() => { if (isClickable) setHoveredKey(key); }}
+                    onMouseEnter={() => {
+                      if (isClickable) setHoveredKey(key);
+                    }}
                     onMouseLeave={() => setHoveredKey(null)}
                   />
                 );
