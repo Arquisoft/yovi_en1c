@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LineChart,
   Line,
@@ -25,6 +26,7 @@ interface GameRecord {
   board: Record<string, 0 | 1>;
   difficulty?: Difficulty;
   boardSize?: BoardSize;
+  mode?: "standard" | "rob";
   points?: number;
 }
 
@@ -46,7 +48,8 @@ type SortField =
   | "result"
   | "difficulty"
   | "boardSize"
-  | "points";
+  | "points"
+  | "mode";
 type SortDir = "asc" | "desc";
 
 interface Props {
@@ -55,6 +58,7 @@ interface Props {
 }
 
 export default function GameHistory({ onBack, userName }: Props) {
+  const { t, i18n } = useTranslation();
   const [view, setView] = useState<"history" | "leaderboard" | "stats">(
     "history",
   );
@@ -69,16 +73,25 @@ export default function GameHistory({ onBack, userName }: Props) {
   const [filter, setFilter] = useState<"all" | GameResult>("all");
 
   const difficultyLabel: Record<Difficulty, string> = {
-    random: "🎲 Rand",
-    easy: "😊 Easy",
-    hard: "🔥 Hard",
+    random: t("history.difficulty_label.random"),
+    easy: t("history.difficulty_label.easy"),
+    hard: t("history.difficulty_label.hard"),
   };
 
   const boardSizeLabel: Record<BoardSize, string> = {
-    small: "5×5",
-    medium: "7×7",
-    large: "9×9",
+    small: t("history.board_size.small"),
+    medium: t("history.board_size.medium"),
+    large: t("history.board_size.large"),
   };
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleString(i18n.resolvedLanguage, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,18 +149,29 @@ export default function GameHistory({ onBack, userName }: Props) {
   );
 
   const sorted = [...filtered].sort((a, b) => {
-    let valA: string | number = a[sortField] ?? "";
-    let valB: string | number = b[sortField] ?? "";
-
+    let cmp = 0;
     if (sortField === "playedAt") {
-      valA = new Date(a.playedAt).getTime();
-      valB = new Date(b.playedAt).getTime();
+      cmp = new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime();
+    } else if (sortField === "totalMoves") {
+      cmp = (a.totalMoves ?? 0) - (b.totalMoves ?? 0);
+    } else if (sortField === "points") {
+      cmp = (a.points ?? 0) - (b.points ?? 0);
+    } else if (sortField === "result") {
+      cmp = a.result.localeCompare(b.result);
+    } else if (sortField === "difficulty") {
+      cmp = (a.difficulty ?? "").localeCompare(b.difficulty ?? "");
+    } else if (sortField === "boardSize") {
+      cmp = (a.boardSize ?? "").localeCompare(b.boardSize ?? "");
+    } else if (sortField === "mode") {
+      cmp = (a.mode ?? "").localeCompare(b.mode ?? "");
     }
-
-    if (valA < valB) return sortDir === "asc" ? -1 : 1;
-    if (valA > valB) return sortDir === "asc" ? 1 : -1;
-    return 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
+
+  const wins = games.filter((g) => g.result === "player_won").length;
+  const losses = games.filter((g) => g.result === "bot_won").length;
+  const winRate =
+    games.length > 0 ? Math.round((wins / games.length) * 100) : 0;
 
   const sortIcon = (field: SortField) => {
     if (sortField !== field)
@@ -162,6 +186,7 @@ export default function GameHistory({ onBack, userName }: Props) {
       return (
         <div className="historyCenter">
           <div className="spinner" />
+          <p className="loadingText">{t("history.loading")}</p>
         </div>
       );
     }
@@ -169,7 +194,10 @@ export default function GameHistory({ onBack, userName }: Props) {
     if (error) {
       return (
         <div className="historyCenter">
-          <p className="errorText">Error: {error}</p>
+          <p className="errorText">⚠️ {error}</p>
+          <button className="btn" onClick={() => window.location.reload()}>
+            {t("common.retry")}
+          </button>
         </div>
       );
     }
@@ -178,99 +206,158 @@ export default function GameHistory({ onBack, userName }: Props) {
       case "history":
         return (
           <>
-            <div className="filterTabs">
-              {(["all", "player_won", "bot_won"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={`filterTab ${filter === f ? "activeTab" : ""}`}
-                  onClick={() => setFilter(f)}
-                >
-                  {f === "all"
-                    ? "All"
-                    : f === "player_won"
-                      ? "🏆 Wins"
-                      : "🤖 Losses"}
-                </button>
-              ))}
-            </div>
-            <div className="tableWrapper">
-              <table className="historyTable">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("result")}
+            {games.length > 0 && (
+              <div className="statsBar">
+                <div className="statItem">
+                  <span className="statValue">{games.length}</span>
+                  <span className="statLabel">{t("history.stats.total")}</span>
+                </div>
+                <div className="statDivider" />
+                <div className="statItem">
+                  <span className="statValue statWin">{wins}</span>
+                  <span className="statLabel">{t("history.stats.wins")}</span>
+                </div>
+                <div className="statDivider" />
+                <div className="statItem">
+                  <span className="statValue statLoss">{losses}</span>
+                  <span className="statLabel">{t("history.stats.losses")}</span>
+                </div>
+                <div className="statDivider" />
+                <div className="statItem">
+                  <span className="statValue">{winRate}%</span>
+                  <span className="statLabel">
+                    {t("history.stats.win_rate")}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {games.length === 0 ? (
+              <div className="historyCenter">
+                <p className="emptyText">{t("history.empty")}</p>
+              </div>
+            ) : (
+              <>
+                <div className="filterTabs">
+                  {(["all", "player_won", "bot_won"] as const).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      className={`filterTab ${filter === f ? "activeTab" : ""}`}
+                      onClick={() => setFilter(f)}
                     >
-                      Result {sortIcon("result")}
-                    </th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("difficulty")}
-                    >
-                      Difficulty {sortIcon("difficulty")}
-                    </th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("boardSize")}
-                    >
-                      Size {sortIcon("boardSize")}
-                    </th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("points")}
-                    >
-                      Points {sortIcon("points")}
-                    </th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("totalMoves")}
-                    >
-                      Moves {sortIcon("totalMoves")}
-                    </th>
-                    <th
-                      className="sortable"
-                      onClick={() => handleSort("playedAt")}
-                    >
-                      Date {sortIcon("playedAt")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.map((game, i) => (
-                    <tr
-                      key={game._id}
-                      className={
-                        game.result === "player_won" ? "rowWin" : "rowLoss"
-                      }
-                    >
-                      <td className="tdIndex">{i + 1}</td>
-                      <td>
-                        <span
-                          className={`resultBadge ${game.result === "player_won" ? "badgeWin" : "badgeLoss"}`}
-                        >
-                          {game.result === "player_won" ? "🏆 Win" : "🤖 Loss"}
-                        </span>
-                      </td>
-                      <td className="tdDifficulty">
-                        {game.difficulty
-                          ? difficultyLabel[game.difficulty]
-                          : "—"}
-                      </td>
-                      <td className="tdBoardSize">
-                        {game.boardSize ? boardSizeLabel[game.boardSize] : "—"}
-                      </td>
-                      <td className="tdPoints">{game.points ?? 0}</td>
-                      <td className="tdMoves">{game.totalMoves ?? "—"}</td>
-                      <td className="tdDate">
-                        {new Date(game.playedAt).toLocaleDateString()}
-                      </td>
-                    </tr>
+                      {f === "all"
+                        ? t("history.filter.all")
+                        : f === "player_won"
+                          ? t("history.filter.wins")
+                          : t("history.filter.losses")}
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+
+                <div className="tableWrapper">
+                  <table className="historyTable">
+                    <thead>
+                      <tr>
+                        <th className="colIndex">
+                          {t("history.table.number")}
+                        </th>
+                        <th
+                          className="sortable colResult"
+                          onClick={() => handleSort("result")}
+                        >
+                          {t("history.table.result")} {sortIcon("result")}
+                        </th>
+                        <th
+                          className="sortable colMode"
+                          onClick={() => handleSort("mode")}
+                        >
+                          {t("history.table.mode")} {sortIcon("mode")}
+                        </th>
+                        <th
+                          className="sortable colDifficulty"
+                          onClick={() => handleSort("difficulty")}
+                        >
+                          {t("history.table.difficulty")}{" "}
+                          {sortIcon("difficulty")}
+                        </th>
+                        <th
+                          className="sortable colSize"
+                          onClick={() => handleSort("boardSize")}
+                        >
+                          {t("history.table.size")} {sortIcon("boardSize")}
+                        </th>
+                        <th
+                          className="sortable colPoints"
+                          onClick={() => handleSort("points")}
+                        >
+                          {t("history.table.points")} {sortIcon("points")}
+                        </th>
+                        <th
+                          className="sortable colMoves"
+                          onClick={() => handleSort("totalMoves")}
+                        >
+                          {t("history.table.moves")} {sortIcon("totalMoves")}
+                        </th>
+                        <th
+                          className="sortable colDate"
+                          onClick={() => handleSort("playedAt")}
+                        >
+                          {t("history.table.date")} {sortIcon("playedAt")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sorted.map((game, i) => (
+                        <tr
+                          key={game._id}
+                          className={
+                            game.result === "player_won" ? "rowWin" : "rowLoss"
+                          }
+                        >
+                          <td className="tdIndex">{i + 1}</td>
+                          <td>
+                            <span
+                              className={`resultBadge ${
+                                game.result === "player_won"
+                                  ? "badgeWin"
+                                  : "badgeLoss"
+                              }`}
+                            >
+                              {game.result === "player_won"
+                                ? t("history.result.win")
+                                : t("history.result.loss")}
+                            </span>
+                          </td>
+                          <td className="tdMode">
+                            <span
+                              className={`modeBadge ${game.mode === "rob" ? "modeRob" : "modeStandard"}`}
+                            >
+                              {game.mode === "rob" ? "🗡 Rob" : "⬡ Standard"}
+                            </span>
+                          </td>
+                          <td className="tdDifficulty">
+                            {game.difficulty
+                              ? difficultyLabel[game.difficulty]
+                              : "—"}
+                          </td>
+                          <td className="tdBoardSize">
+                            {game.boardSize
+                              ? boardSizeLabel[game.boardSize]
+                              : "—"}
+                          </td>
+                          <td className="tdPoints">{game.points ?? 0}</td>
+                          <td className="tdMoves">{game.totalMoves ?? "—"}</td>
+                          <td className="tdDate">
+                            {formatDate(game.playedAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </>
         );
 
@@ -280,10 +367,10 @@ export default function GameHistory({ onBack, userName }: Props) {
             <table className="historyTable">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Username</th>
-                  <th>Total Points</th>
-                  <th>Games</th>
+                  <th>{t("history.leaderboard.rank")}</th>
+                  <th>{t("history.leaderboard.username")}</th>
+                  <th>{t("history.leaderboard.total_points")}</th>
+                  <th>{t("history.leaderboard.games")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -296,7 +383,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                   >
                     <td className="tdIndex">{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>
-                      {entry.username} {entry.username === userName && "(You)"}
+                      {entry.username}{" "}
+                      {entry.username === userName &&
+                        `(${t("history.leaderboard.you")})`}
                     </td>
                     <td className="tdPoints" style={{ color: "#fbbf24" }}>
                       ★ {entry.totalPoints.toLocaleString()}
@@ -315,7 +404,7 @@ export default function GameHistory({ onBack, userName }: Props) {
             {stats && (
               <>
                 <div className="chartCard">
-                  <h3>Point Progression (Last 10 Games)</h3>
+                  <h3>{t("history.stats_view.progression")}</h3>
                   <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer>
                       <LineChart data={stats.progression}>
@@ -333,7 +422,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                             borderRadius: "8px",
                           }}
                           itemStyle={{ color: "#818cf8" }}
-                          labelFormatter={() => "Game Session"}
+                          labelFormatter={() =>
+                            t("history.stats_view.game_session")
+                          }
                         />
                         <Line
                           type="monotone"
@@ -350,7 +441,7 @@ export default function GameHistory({ onBack, userName }: Props) {
 
                 <div className="chartGrid">
                   <div className="chartCard">
-                    <h3>Win Rate by Difficulty</h3>
+                    <h3>{t("history.stats_view.win_rate_by_difficulty")}</h3>
                     <div style={{ width: "100%", height: 200 }}>
                       <ResponsiveContainer>
                         <BarChart data={stats.byDifficulty}>
@@ -382,17 +473,18 @@ export default function GameHistory({ onBack, userName }: Props) {
                   </div>
 
                   <div className="chartCard">
-                    <h3>Average Moves</h3>
+                    <h3>{t("history.stats_view.avg_moves")}</h3>
                     <div className="avgMovesList">
                       {stats.avgMoves.map((m) => (
                         <div key={m._id} className="avgMoveItem">
                           <span className="label">
                             {m._id === "player_won"
-                              ? "🏆 Win Avg"
-                              : "🤖 Loss Avg"}
+                              ? t("history.stats_view.win_avg")
+                              : t("history.stats_view.loss_avg")}
                           </span>
                           <span className="value">
-                            {Math.round(m.avgMoves)} moves
+                            {Math.round(m.avgMoves)}{" "}
+                            {t("history.stats_view.moves_unit")}
                           </span>
                         </div>
                       ))}
@@ -403,6 +495,7 @@ export default function GameHistory({ onBack, userName }: Props) {
             )}
           </div>
         );
+
       default:
         return null;
     }
@@ -413,26 +506,26 @@ export default function GameHistory({ onBack, userName }: Props) {
       <div className="historyCard">
         <div className="historyHeader">
           <button className="btn" type="button" onClick={onBack}>
-            ← Back
+            {t("common.back")}
           </button>
           <div className="viewToggle">
             <button
               className={`toggleBtn ${view === "history" ? "active" : ""}`}
               onClick={() => setView("history")}
             >
-              History
+              {t("history.title")}
             </button>
             <button
               className={`toggleBtn ${view === "stats" ? "active" : ""}`}
               onClick={() => setView("stats")}
             >
-              Stats
+              {t("history.view.stats")}
             </button>
             <button
               className={`toggleBtn ${view === "leaderboard" ? "active" : ""}`}
               onClick={() => setView("leaderboard")}
             >
-              Rank
+              {t("history.view.leaderboard")}
             </button>
           </div>
           <div style={{ width: "80px" }} />

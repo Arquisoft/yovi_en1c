@@ -1,0 +1,158 @@
+{
+  "common": {
+    "back": "← Takaisin",
+    "logout": "Kirjaudu ulos",
+    "loading": "Ladataan…",
+    "retry": "Yritä uudelleen",
+    "error_network": "Verkkovirhe",
+    "error_unexpected": "Odottamaton vastaus palvelimelta. Varmista, että gateway- ja käyttäjäpalvelut ovat käynnissä."
+  },
+  "language_switcher": {
+    "label": "Kieli"
+  },
+  "login": {
+    "title": "Tervetuloa takaisin!",
+    "subtitle": "Kirjaudu sisään syöttämällä käyttäjätunnus ja salasana.",
+    "username_label": "Mikä on käyttäjätunnuksesi?",
+    "password_label": "Entä salasana?",
+    "submit": "Mennään!",
+    "no_account": "Eikö sinulla ole tiliä?",
+    "go_signup": "Rekisteröidy tästä",
+    "error_empty": "Syötä sekä käyttäjätunnus että salasana.",
+    "error_generic": "Kirjautumisessa tapahtui virhe"
+  },
+  "signup": {
+    "title": "Rekisteröidy",
+    "subtitle": "Luo tili täyttämällä tämä lomake.",
+    "username_label": "Käyttäjätunnus",
+    "email_label": "Sähköposti",
+    "password_label": "Salasana",
+    "confirm_password_label": "Vahvista salasana",
+    "submit": "Rekisteröidy",
+    "have_account": "Onko sinulla jo tili?",
+    "go_login": "Kirjaudu tästä",
+    "error_empty": "Täytä kaikki kentät.",
+    "error_password_mismatch": "Salasanat eivät täsmää.",
+    "error_generic": "Virhe rekisteröitymisessä"
+  },
+  "menu": {
+    "title": "Peliaula",
+    "subtitle": "Tervetuloa, {{name}}. Valitse Y-pelin asetukset.",
+    "view_history": "Pelihistoria",
+    "board_size": "Laudan koko",
+    "game_mode": "Pelitila",
+    "opponent_style": "Vastustajan tyyli",
+    "start_game": "Aloita peli",
+    "prev_aria": "Edellinen {{section}}",
+    "next_aria": "Seuraava {{section}}",
+    "board_size_aria": "laudan koko",
+    "game_mode_aria": "pelitila",
+    "difficulty_aria": "vaikeusaste",
+    "board": {
+      "small_title": "Pieni",
+      "small_desc": "5×5 lauta, sopii nopeisiin peleihin",
+      "medium_title": "Keskikokoinen",
+      "medium_desc": "7×7 lauta, klassinen Y-kokemus",
+      "large_title": "Suuri",
+      "large_desc": "9×9 lauta, laaja Y-pelikokemus"
+    },
+    "mode": {
+      "standard_title": "Standardi",
+      "standard_desc": "Klassiset Y-säännöt"
+    },
+    "difficulty": {
+      "random_title": "Satunnainen",
+      "random_desc": "Satunnaiset siirrot",
+      "easy_title": "Helppo",
+      "easy_desc": "Hieman haastavampi",
+      "hard_title": "Vaikea",
+      "hard_desc": "Täysi heuristinen vastustaja"
+    }
+  },
+  "history": {
+    "title": "Pelihistoria",
+    "loading": "Ladataan historiaa…",
+    "empty": "Ei vielä pelattuja pelejä. Mene pelaamaan! 🎮",
+    "stats": {
+      "total": "Pelejä yhteensä",
+      "wins": "Voitot",
+      "losses": "Häviöt",
+      "win_rate": "Voittoprosentti"
+    },
+    "filter": {
+      "all": "Kaikki",
+      "wins": "🏆 Voitot",
+      "losses": "🤖 Häviöt"
+    },
+    "table": {
+      "number": "#",
+      "result": "Tulos",
+      "difficulty": "Vaikeusaste",
+      "size": "Koko",
+      "points": "Pisteet",
+      "moves": "Siirrot",
+      "date": "Päivämäärä"
+    },
+    "result": {
+      "win": "🏆 Voitto",
+      "loss": "🤖 Häviö"
+    },
+    "difficulty_label": {
+      "random": "🎲 Satunnainen",
+      "easy": "😊 Helppo",
+      "hard": "🔥 Vaikea"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Sija",
+      "username": "Käyttäjätunnus",
+      "total_points": "Pisteet yhteensä",
+      "games": "Pelit",
+      "you": "Sinä"
+    },
+    "stats_view": {
+      "progression": "Pistekehitys (viimeiset 10 peliä)",
+      "game_session": "Pelitapahtuma",
+      "win_rate_by_difficulty": "Voittoprosentti vaikeusasteittain",
+      "avg_moves": "Siirtojen keskiarvo",
+      "win_avg": "🏆 Voittojen keskiarvo",
+      "loss_avg": "🤖 Häviöiden keskiarvo",
+      "moves_unit": "siirtoa"
+    },
+    "view": {
+      "stats": "Tilastot",
+      "leaderboard": "Sijoitukset"
+    }
+  },
+  "board": {
+    "title": "Yovi — Y-peli",
+    "info": {
+      "standard": "Standardi",
+      "pie_rule": "Pie-sääntö",
+      "master_y": "Master Y"
+    },
+    "status": {
+      "you_win": "🏆 Voitit!",
+      "bot_wins": "🤖 Botti voitti",
+      "thinking": "⏳ Botti miettii…",
+      "your_turn": "🔵 Sinun vuorosi",
+      "bot_turn": "🔴 Botin vuoro"
+    },
+    "new_game": "Uusi peli",
+    "legend": {
+      "you": "Sinä (Sininen)",
+      "bot": "Botti (Punainen)"
+    },
+    "rules_hint": "Yhdistä kolmion kaikki kolme sivua nappuloillasi voittaaksesi.",
+    "difficulty_label": {
+      "random": "🎲 Satunnainen",
+      "easy": "😊 Helppo",
+      "hard": "🤖 Vaikea"
+    },
+    "bot_error": "Bottivirhe: {{message}}"
+  }
+}

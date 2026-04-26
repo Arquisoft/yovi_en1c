@@ -21,6 +21,7 @@ const GameSchema = new mongoose.Schema({
   totalMoves: { type: Number },
   difficulty: { type: String, required: true },
   boardSize: { type: String, required: true },
+  mode: { type: String, enum: ["standard", "rob"], required: true },
   playedAt: { type: Date, default: Date.now },
   points: { type: Number, default: 0 },
 });
@@ -184,7 +185,7 @@ app.delete("/deleteuser/:username", async (req, res) => {
 // ─── Games ────────────────────────────────────────────────────────────────────
 
 app.post("/savegame", async (req, res) => {
-  const { result, board, totalMoves, username, difficulty, boardSize } =
+  const { result, board, totalMoves, username, difficulty, boardSize, mode } =
     req.body;
   try {
     const points = calculatePoints(difficulty, boardSize, totalMoves, result);
@@ -196,6 +197,7 @@ app.post("/savegame", async (req, res) => {
       username,
       difficulty,
       boardSize,
+      mode,
       points,
     });
     const saved = await game.save();

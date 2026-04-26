@@ -31,7 +31,7 @@ pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
 
-use crate::{EasyBot, GameYError, HeuristicBot, RandomBot, YBotRegistry, state::AppState};
+use crate::{EasyBot, GameYError, HeuristicBot, RandomBot, RobBot, YBotRegistry, state::AppState};
 
 /// Creates the Axum router with the given state.
 ///
@@ -50,12 +50,21 @@ pub fn create_router(state: AppState) -> axum::Router {
 
 /// Creates the default application state with all the standard bot registry.
 ///
-/// The default state includes the type of bots in other to know the algorithms which selects moves randomly.
+/// Registered bots:
+/// - `random_bot`    – picks a random empty cell
+/// - `easy_bot`      – shallow minimax (depth 1)
+/// - `heuristic_bot` – full minimax + virtual connection evaluation
+/// - `rob_bot`       – rob-mode bot: compares best steal vs best placement
+///                     each turn and picks whichever lowers its own
+///                     virtual connection cost the most
 pub fn create_default_state() -> AppState {
     let bots = YBotRegistry::new()
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(EasyBot))
-        .with_bot(Arc::new(HeuristicBot));
+        .with_bot(Arc::new(HeuristicBot))
+        .with_bot(Arc::new(RobBot::random()))
+        .with_bot(Arc::new(RobBot::easy()))
+        .with_bot(Arc::new(RobBot::hard()));
     AppState::new(bots)
 }
 
