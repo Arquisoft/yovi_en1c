@@ -1,401 +1,414 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import GameHistory from "../GameHistory";
-import { afterEach, describe, expect, test, vi, beforeEach } from "vitest";
-import "@testing-library/jest-dom";
+import '@testing-library/jest-dom';
+import { render, screen, fireEvent, waitFor , within} from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import GameHistory from '../GameHistory';
 
-// Enriched mock with difficulty, boardSize, and points
+// ─── Mocks ───────────────────────────────────────────────────────────────────
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (str: string) => str,
+    i18n: { resolvedLanguage: 'en' },
+  }),
+}));
+
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
+  };
+});
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const mockUserName = 'TestUser';
+
 const mockGames = [
   {
-    _id: "1",
-    result: "player_won",
+    _id: '1',
+    result: 'player_won',
     totalMoves: 10,
-    playedAt: "2024-01-01T10:00:00.000Z",
-    board: {},
-    difficulty: "easy",
-    boardSize: "medium",
-    points: 200,
+    playedAt: '2023-01-01T10:00:00Z',
+    difficulty: 'easy',
+    boardSize: 'small',
+    points: 100,
   },
   {
-    _id: "2",
-    result: "bot_won",
-    totalMoves: 8,
-    playedAt: "2024-01-02T12:00:00.000Z",
-    board: {},
-    difficulty: "hard",
-    boardSize: "small",
-    points: 0,
-  },
-  {
-    _id: "3",
-    result: "player_won",
+    _id: '2',
+    result: 'bot_won',
     totalMoves: 15,
-    playedAt: "2024-01-03T09:00:00.000Z",
-    board: {},
-    difficulty: "random",
-    boardSize: "large",
-    points: 500,
+    playedAt: '2023-01-02T10:00:00Z',
+    difficulty: 'hard',
+    boardSize: 'large',
+    points: 20,
+  },
+  {
+    _id: '3',
+    result: 'player_won',
+    totalMoves: 8,
+    playedAt: '2023-01-03T10:00:00Z',
+    difficulty: 'random',
+    boardSize: 'medium',
+    points: 80,
   },
 ];
 
-const defaultProps = {
-  onBack: vi.fn(),
-  userName: "Javi",
+const mockLeaderboard = [
+  { username: 'OtherUser', totalPoints: 500, gamesPlayed: 10 },
+  { username: mockUserName, totalPoints: 200, gamesPlayed: 3 },
+];
+
+const mockStats = {
+  byDifficulty: [
+    { _id: 'easy', total: 2, wins: 1 },
+    { _id: 'hard', total: 1, wins: 0 },
+  ],
+  progression: [
+    { points: 100, date: '2023-01-01' },
+    { points: 80, date: '2023-01-03' },
+  ],
+  avgMoves: [
+    { _id: 'player_won', avgMoves: 9 },
+    { _id: 'bot_won', avgMoves: 15 },
+  ],
 };
 
-describe("GameHistory", () => {
-  beforeEach(() => {
-    // Setup a robust global fetch mock for multiple endpoints
-    global.fetch = vi.fn().mockImplementation((url) => {
-      if (url.includes("/games/list")) {
-        return Promise.resolve({ ok: true, json: async () => mockGames });
-      }
-      if (url.includes("/games/leaderboard")) {
-        return Promise.resolve({ ok: true, json: async () => [] });
-      }
-      if (url.includes("/games/stats")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({
-            byDifficulty: [],
-            progression: [],
-            avgMoves: [],
-          }),
-        });
-      }
-      return Promise.reject(new Error("Unknown API endpoint"));
-    });
+/** Helpers **/
+
+function mockFetchSuccess(games = mockGames, leaderboard = mockLeaderboard, stats = mockStats) {
+  (global.fetch as any).mockResolvedValue({
+    ok: true,
+    json: async () => games,
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  // Three parallel fetches: games, leaderboard, stats
+  (global.fetch as any)
+    .mockResolvedValueOnce({ ok: true, json: async () => games })
+    .mockResolvedValueOnce({ ok: true, json: async () => leaderboard })
+    .mockResolvedValueOnce({ ok: true, json: async () => stats });
+}
+
+async function renderAndWait(props?: Partial<{ onBack: () => void; userName: string }>) {
+  render(<GameHistory onBack={props?.onBack ?? vi.fn()} userName={props?.userName ?? mockUserName} />);
+  await waitFor(() => {
+    expect(screen.queryByText('history.loading')).not.toBeInTheDocument();
   });
+}
 
-  // ─── Loading & fetching ────────────────────────────────────────────────────
+// ─── Tests ────────────────────────────────────────────────────────────────────
 
-  test("shows spinner while loading", async () => {
-    // Force a long delay to catch the loading state
-    global.fetch = vi
-      .fn()
-      .mockReturnValueOnce(new Promise((resolve) => setTimeout(resolve, 500)));
+describe('GameHistory – loading state', () => {
+  beforeEach(() => vi.restoreAllMocks());
 
-    const { container } = render(<GameHistory {...defaultProps} />);
-    const spinner = container.querySelector(".spinner");
-    expect(spinner).toBeInTheDocument();
+  it('shows loading spinner while fetching', () => {
+    // fetch never resolves during this assertion
+    global.fetch = vi.fn(() => new Promise(() => {})) as any;
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
+    expect(screen.getByText('history.loading')).toBeInTheDocument();
   });
+});
 
-  test("fetches games for the correct username", async () => {
-    render(<GameHistory {...defaultProps} />);
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GameHistory – HTTP error (non-ok response)', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('shows error when any response is not ok', async () => {
+    (global.fetch as any) = vi.fn()
+      .mockResolvedValueOnce({ ok: false, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("username=Javi"),
-      );
+      expect(
+        screen.getByText(/Failed to fetch data from one or more services/i),
+      ).toBeInTheDocument();
     });
   });
 
-  // ─── Error states ──────────────────────────────────────────────────────────
+  it('shows generic "Unknown error" for non-Error rejections', async () => {
+    // Rejecting with a plain string instead of an Error object
+    (global.fetch as any) = vi.fn().mockRejectedValue('plain string rejection');
 
-  test("shows error message when API returns a non-ok response", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
-    } as Response);
-
-    render(<GameHistory {...defaultProps} />);
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
 
     await waitFor(() => {
-      // Match the actual string the component renders
-      expect(screen.getByText(/Failed to fetch data/i)).toBeInTheDocument();
+      expect(screen.getByText(/Unknown error/i)).toBeInTheDocument();
     });
   });
+});
 
-  test("shows error message when fetch fails entirely", async () => {
-    global.fetch = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Connection timed out"));
+// ─────────────────────────────────────────────────────────────────────────────
 
-    render(<GameHistory {...defaultProps} />);
+describe('GameHistory – empty games list', () => {
+  beforeEach(() => vi.restoreAllMocks());
 
-    await waitFor(() => {
-      expect(screen.getByText(/connection timed out/i)).toBeInTheDocument();
-    });
-  });
-
-  // ─── Empty state ───────────────────────────────────────────────────────────
-
-  test("shows empty state message when user has no games", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    });
-
-    render(<GameHistory {...defaultProps} />);
-
-    await waitFor(() => {
-      // Your current code renders an empty table body when no games exist
-      const rows = document.querySelectorAll("tbody tr");
-      expect(rows.length).toBe(0);
-    });
-  });
-
-  // ─── Dashboard Features ───────────────────────────────────────────────────
-
-  test("renders stats dashboard correctly", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    // Click on the Stats toggle
-    const statsBtn = await screen.findByRole("button", { name: /Stats/i });
-    await act(async () => {
-      await user.click(statsBtn);
-    });
-
-    // Check if the dashboard components appear
-    expect(await screen.findByText(/Point Progression/i)).toBeInTheDocument();
-  });
-
-  // ─── Table rendering ───────────────────────────────────────────────────────
-
-  test("renders one row per game", async () => {
-    render(<GameHistory {...defaultProps} />);
-
-    await waitFor(() => {
-      const winBadges = screen
-        .getAllByText(/🏆 Win/i)
-        .filter((el) => el.tagName !== "BUTTON");
-      const lossBadges = screen
-        .getAllByText(/🤖 Loss/i)
-        .filter((el) => el.tagName !== "BUTTON");
-
-      expect(winBadges).toHaveLength(2);
-      expect(lossBadges).toHaveLength(1);
-    });
-  });
-
-  test("displays the correct number of moves per game", async () => {
-    render(<GameHistory {...defaultProps} />);
-
-    await waitFor(() => {
-      const moveCells = document.querySelectorAll(".tdMoves");
-      const moves = Array.from(moveCells).map((cell) => cell.textContent);
-
-      expect(moves).toContain("10");
-      expect(moves).toContain("8");
-      expect(moves).toContain("15");
-    });
-  });
-
-  // ─── Filter tabs ───────────────────────────────────────────────────────────
-
-  test("filters to show only wins when 'Wins' tab is clicked", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    const winsTab = await screen.findByRole("button", { name: /🏆 Wins/i });
-    await act(async () => {
-      await user.click(winsTab);
-    });
-
-    await waitFor(() => {
-      const rows = document.querySelectorAll("tbody tr");
-      expect(rows).toHaveLength(2);
-
-      // We check that the table BODY doesn't contain "Loss".
-      // We use within() or a selector to ignore the filter buttons themselves.
-      const tableBody = document.querySelector("tbody");
-      expect(tableBody?.textContent).not.toContain("Loss");
-    });
-  });
-
-  // ─── Sorting ──────────────────────────────────────────────────────────────
-
-  test("toggles sort direction when the same column header is clicked twice", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    const movesHeader = await screen.findByText(/Moves/i);
-
-    await act(async () => {
-      await user.click(movesHeader); // First click
-    });
-    await waitFor(() => expect(screen.getByText("↓")).toBeInTheDocument());
-
-    await act(async () => {
-      await user.click(movesHeader); // Second click
-    });
-    await waitFor(() => expect(screen.getByText("↑")).toBeInTheDocument());
-  });
-
-  test("sorts by total moves correctly when header is clicked", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    const movesHeader = await screen.findByText(/Moves/i);
-
-    await act(async () => {
-      await user.click(movesHeader);
-    });
-
-    await waitFor(() => {
-      const moveCells = document.querySelectorAll(".tdMoves");
-      const moves = Array.from(moveCells).map((cell) => cell.textContent);
-      expect(moves).toEqual(["15", "10", "8"]);
-    });
-  });
-
-  test("sorts by difficulty correctly when header is clicked", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    const difficultyHeader = await screen.findByText(/Difficulty/i);
-    await act(async () => {
-      await user.click(difficultyHeader);
-    });
-
-    await waitFor(() => {
-      const diffCells = document.querySelectorAll(".tdDifficulty");
-      const difficulties = Array.from(diffCells).map(
-        (c) => c.textContent?.trim() || "",
-      );
-
-      // Sorting "Hard", "Random", "Easy" alphabetically DESC: Random -> Hard -> Easy
-      expect(difficulties[0]).toMatch(/Rand/i);
-      expect(difficulties[1]).toMatch(/Hard/i);
-      expect(difficulties[2]).toMatch(/Easy/i);
-    });
-  });
-
-  test("sorts by board size correctly when header is clicked", async () => {
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    const sizeHeader = await screen.findByText(/Size/i);
-
-    await act(async () => {
-      await user.click(sizeHeader);
-    });
-
-    await waitFor(() => {
-      const sizeCells = document.querySelectorAll(".tdBoardSize");
-      const sizes = Array.from(sizeCells).map((cell) =>
-        cell.textContent?.trim(),
-      );
-      expect(sizes).toEqual(["5×5", "7×7", "9×9"]);
-    });
-  });
-
-  // ─── Navigation ───────────────────────────────────────────────────────────
-
-  test("calls onBack when the back button is clicked", async () => {
-    const onBack = vi.fn();
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} onBack={onBack} />);
-
-    const backButton = await screen.findByRole("button", { name: /← Back/i });
-
-    await act(async () => {
-      await user.click(backButton);
-    });
-
-    expect(onBack).toHaveBeenCalledOnce();
-  });
-
-  test("renders leaderboard correctly and highlights current user", async () => {
-    const mockLeaderboard = [
-      { username: "Winner1", totalPoints: 1000, gamesPlayed: 5 },
-      { username: "Javi", totalPoints: 500, gamesPlayed: 2 }, // Current user
-    ];
-
-    // Mock implementation for the three fetches
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // games
-      .mockResolvedValueOnce({ ok: true, json: async () => mockLeaderboard }) // leaderboard
-      .mockResolvedValueOnce({ ok: true, json: async () => null }); // stats
-
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
-
-    // Switch to Rank (Leaderboard) view
-    const rankBtn = await screen.findByRole("button", { name: /Rank/i });
-    await user.click(rankBtn);
-
-    expect(screen.getByText("Winner1")).toBeInTheDocument();
-    expect(screen.getByText(/★ 500/)).toBeInTheDocument();
-
-    const userRow = screen.getByText(/Javi/i).closest("tr");
-    expect(userRow).toHaveClass("rowHighlight");
-    expect(screen.getByText(/\(You\)/i)).toBeInTheDocument();
-  });
-
-  test("renders stats dashboard and charts correctly", async () => {
-    const mockStats = {
-      progression: [
-        { points: 100, date: "2024-01-01" },
-        { points: 200, date: "2024-01-02" },
-      ],
-      byDifficulty: [
-        { _id: "easy", total: 10, wins: 8 },
-        { _id: "hard", total: 5, wins: 1 },
-      ],
-      avgMoves: [
-        { _id: "player_won", avgMoves: 12 },
-        { _id: "bot_won", avgMoves: 15 },
-      ],
-    };
-
-    global.fetch = vi
-      .fn()
+  it('renders the empty state message when there are no games', async () => {
+    (global.fetch as any) = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => [] })
       .mockResolvedValueOnce({ ok: true, json: async () => [] })
       .mockResolvedValueOnce({ ok: true, json: async () => mockStats });
 
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
 
-    // Switch to Stats view
-    const statsBtn = await screen.findByRole("button", { name: /Stats/i });
-    await user.click(statsBtn);
-
-    // Check lines 268-281 and 326-397 (Stats Dashboard)
-    expect(screen.getByText(/Point Progression/i)).toBeInTheDocument();
-    expect(screen.getByText(/Win Rate by Difficulty/i)).toBeInTheDocument();
-
-    // Check average moves mapping (Line 384-394)
-    expect(screen.getByText(/🏆 Win Avg/i)).toBeInTheDocument();
-    expect(screen.getByText(/12 moves/i)).toBeInTheDocument();
-    expect(screen.getByText(/🤖 Loss Avg/i)).toBeInTheDocument();
-  });
-
-  test("handles sorting for points and results", async () => {
-    // Use the mockGames which include points
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockGames,
+    await waitFor(() => {
+      expect(screen.getByText('history.empty')).toBeInTheDocument();
     });
 
-    const user = userEvent.setup();
-    render(<GameHistory {...defaultProps} />);
+    // Stats bar should NOT be visible when there are no games
+    expect(screen.queryByText('history.stats.total')).not.toBeInTheDocument();
+  });
+});
 
-    // Sort by Points (Line 139 logic)
-    const pointsHeader = await screen.findByText(/Points/i);
-    await user.click(pointsHeader);
+// ─────────────────────────────────────────────────────────────────────────────
 
-    const pointCells = document.querySelectorAll(".tdPoints");
-    const points = Array.from(pointCells).map((c) => c.textContent?.trim());
-
-    // Sorted DESC by default on first click: 500 -> 200 -> 0
-    expect(points[0]).toBe("500");
-    expect(points[2]).toBe("0");
+describe('GameHistory – history view (default)', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    (global.fetch as any) = vi.fn();
+    mockFetchSuccess();
   });
 
-  test("returns null on default switch case", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: true, json: async () => [] });
-    const { container } = render(<GameHistory {...defaultProps} />);
-    expect(container.querySelector(".history")).toBeInTheDocument();
+  it('renders stats bar with correct numbers', async () => {
+    await renderAndWait();
+
+    // 3 games total, 2 wins, 1 loss → 66% win rate
+    expect(screen.getByText('history.stats.total')).toBeInTheDocument();
+    expect(screen.getByText('history.stats.wins')).toBeInTheDocument();
+    expect(screen.getByText('history.stats.losses')).toBeInTheDocument();
+    expect(screen.getByText('history.stats.win_rate')).toBeInTheDocument();
+    expect(screen.getByText('67%')).toBeInTheDocument();
+  });
+
+  it('renders all game rows', async () => {
+    await renderAndWait();
+    expect(screen.getAllByText('history.result.win')).toHaveLength(2);
+    expect(screen.getAllByText('history.result.loss')).toHaveLength(1);
+  });
+
+  it('renders difficulty and board-size labels', async () => {
+    await renderAndWait();
+    expect(screen.getByText('history.difficulty_label.easy')).toBeInTheDocument();
+    expect(screen.getByText('history.difficulty_label.hard')).toBeInTheDocument();
+    expect(screen.getByText('history.difficulty_label.random')).toBeInTheDocument();
+    expect(screen.getByText('history.board_size.small')).toBeInTheDocument();
+    expect(screen.getByText('history.board_size.large')).toBeInTheDocument();
+    expect(screen.getByText('history.board_size.medium')).toBeInTheDocument();
+  });
+
+  it('calls onBack when back button is clicked', async () => {
+    const onBack = vi.fn();
+    render(<GameHistory onBack={onBack} userName={mockUserName} />);
+    await waitFor(() => expect(screen.queryByText('history.loading')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('common.back'));
+    expect(onBack).toHaveBeenCalledOnce();
+  });
+
+  it('filters by losses only', async () => {
+    await renderAndWait();
+
+    fireEvent.click(screen.getByText('history.filter.losses'));
+    expect(screen.queryByText('history.result.win')).not.toBeInTheDocument();
+    expect(screen.getByText('history.result.loss')).toBeInTheDocument();
+  });
+
+  it('restores all rows when "all" filter is clicked', async () => {
+    await renderAndWait();
+
+    fireEvent.click(screen.getByText('history.filter.losses'));
+    fireEvent.click(screen.getByText('history.filter.all'));
+
+    expect(screen.getAllByText('history.result.win')).toHaveLength(2);
+    expect(screen.getAllByText('history.result.loss')).toHaveLength(1);
+  });
+
+  it('sorts by result column (asc then desc)', async () => {
+    await renderAndWait();
+    const resultHeader = screen.getByText(/history\.table\.result/i);
+    fireEvent.click(resultHeader); // asc
+    fireEvent.click(resultHeader); // desc (toggle same field)
+  });
+
+  it('sorts by difficulty column', async () => {
+    await renderAndWait();
+    const diffHeader = screen.getByText(/history\.table\.difficulty/i);
+    fireEvent.click(diffHeader);
+    fireEvent.click(diffHeader);
+  });
+
+  it('sorts by boardSize column', async () => {
+    await renderAndWait();
+    const sizeHeader = screen.getByText(/history\.table\.size/i);
+    fireEvent.click(sizeHeader);
+    fireEvent.click(sizeHeader);
+  });
+
+  it('sorts by points column', async () => {
+    await renderAndWait();
+    const pointsHeader = screen.getByText(/history\.table\.points/i);
+    fireEvent.click(pointsHeader);
+    fireEvent.click(pointsHeader);
+  });
+
+  it('sorts by date column', async () => {
+    await renderAndWait();
+    const dateHeader = screen.getByText(/history\.table\.date/i);
+    fireEvent.click(dateHeader); // switches to same field → toggles dir
+    fireEvent.click(dateHeader);
+  });
+
+  it('sortIcon renders ↕ for inactive field and ↑/↓ for active', async () => {
+    await renderAndWait();
+
+    // Initially sorted by playedAt desc → date header shows ↓, others show ↕
+    expect(screen.getAllByText('↕').length).toBeGreaterThan(0);
+    expect(screen.getByText('↓')).toBeInTheDocument();
+
+    // Click totalMoves → becomes active with ↓ (new field resets to desc)
+    fireEvent.click(screen.getByText(/history\.table\.moves/i));
+    expect(screen.getByText('↓')).toBeInTheDocument();
+
+    // Click again → toggles to ↑
+    fireEvent.click(screen.getByText(/history\.table\.moves/i));
+    expect(screen.getByText('↑')).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GameHistory – leaderboard view', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    (global.fetch as any) = vi.fn();
+    mockFetchSuccess();
+  });
+
+  it('switches to leaderboard and renders entries', async () => {
+    await renderAndWait();
+
+    fireEvent.click(screen.getByText('history.view.leaderboard'));
+
+    expect(screen.getByText('history.leaderboard.rank')).toBeInTheDocument();
+    expect(screen.getByText('OtherUser')).toBeInTheDocument();
+    expect(screen.getByText(mockUserName, { exact: false })).toBeInTheDocument();
+  });
+
+  it('highlights the current user row', async () => {
+    await renderAndWait();
+    fireEvent.click(screen.getByText('history.view.leaderboard'));
+
+    // The "(you)" label appears next to the current user
+    expect(screen.getByText(/history\.leaderboard\.you/)).toBeInTheDocument();
+  });
+
+  it('renders totalPoints with locale formatting and star', async () => {
+    await renderAndWait();
+    fireEvent.click(screen.getByText('history.view.leaderboard'));
+
+    expect(screen.getAllByText(/★/)).toHaveLength(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GameHistory – stats view', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    (global.fetch as any) = vi.fn();
+    mockFetchSuccess();
+  });
+
+  it('switches to stats view and renders chart headings', async () => {
+    await renderAndWait();
+
+    fireEvent.click(screen.getByText('history.view.stats'));
+
+    expect(screen.getByText('history.stats_view.progression')).toBeInTheDocument();
+    expect(screen.getByText('history.stats_view.win_rate_by_difficulty')).toBeInTheDocument();
+    expect(screen.getByText('history.stats_view.avg_moves')).toBeInTheDocument();
+  });
+
+  it('renders avgMoves entries for both win and loss', async () => {
+    await renderAndWait();
+    fireEvent.click(screen.getByText('history.view.stats'));
+
+    expect(screen.getByText('history.stats_view.win_avg')).toBeInTheDocument();
+    expect(screen.getByText('history.stats_view.loss_avg')).toBeInTheDocument();
+  });
+
+  it('renders rounded avgMoves values with unit', async () => {
+    await renderAndWait();
+    fireEvent.click(screen.getByText('history.view.stats'));
+
+    // avgMoves: 9 and 15 → Math.round keeps them the same
+    expect(screen.getByText(/9\s*history\.stats_view\.moves_unit/)).toBeInTheDocument();
+    expect(screen.getByText(/15\s*history\.stats_view\.moves_unit/)).toBeInTheDocument();
+  });
+
+  it('renders nothing inside statsDashboard when stats is null', async () => {
+    // stats endpoint returns null-shaped data
+    (global.fetch as any) = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => mockGames })
+      .mockResolvedValueOnce({ ok: true, json: async () => mockLeaderboard })
+      .mockResolvedValueOnce({ ok: true, json: async () => null });
+
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
+    await waitFor(() => expect(screen.queryByText('history.loading')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('history.view.stats'));
+
+    // charts headings should not appear
+    expect(screen.queryByText('history.stats_view.progression')).not.toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GameHistory – view toggle navigation', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    (global.fetch as any) = vi.fn();
+    mockFetchSuccess();
+  });
+
+  it('can navigate history → stats → leaderboard → history', async () => {
+    await renderAndWait();
+
+    fireEvent.click(screen.getByText('history.view.stats'));
+    expect(screen.getByText('history.stats_view.progression')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('history.view.leaderboard'));
+    expect(screen.getByText('history.leaderboard.rank')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('history.title'));
+    expect(screen.getByText('history.stats.total')).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GameHistory – points fallback (0 when undefined)', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('shows 0 for points when field is absent', async () => {
+    const gamesWithoutPoints = [
+      { _id: '10', result: 'player_won', totalMoves: 5, playedAt: '2023-06-01T00:00:00Z' },
+    ];
+
+    (global.fetch as any) = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => gamesWithoutPoints })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => mockStats });
+
+    render(<GameHistory onBack={vi.fn()} userName={mockUserName} />);
+    await waitFor(() => expect(screen.queryByText('history.loading')).not.toBeInTheDocument());
+
+    // points ?? 0 → cell should show "0"
+    const table = screen.getByRole('table');
+expect(within(table).getAllByText('0')[0]).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import "./GameBoard.css";
 import type { GameConfig, Difficulty } from "./GameMenu";
 
@@ -11,21 +12,18 @@ const HEX_HORIZONTAL_SPACING = HEX_RADIUS * Math.sqrt(3);
 const HEX_VERTICAL_SPACING = HEX_RADIUS * 1.5;
 const BOARD_MARGIN = HEX_RADIUS * 3;
 
-// Map the menu option to the actual board size number
 const BOARD_SIZE_MAP: Record<GameConfig["boardSize"], number> = {
   small: 5,
   medium: 7,
   large: 9,
 };
 
-// Map the difficulty option to the bot identifier registered in the Rust registry
 const BOT_ID_MAP: Record<Difficulty, string> = {
   random: "random_bot",
   easy: "easy_bot",
   hard: "heuristic_bot",
 };
 
-// Map layout style to CSS class applied to the SVG wrapper
 const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
   classic: "layout-classic",
 };
@@ -60,11 +58,7 @@ function parseKey(key: string): [number, number, number] {
   return [x, y, z];
 }
 
-function getNeighbors(
-  x: number,
-  y: number,
-  z: number,
-): [number, number, number][] {
+function getNeighbors(x: number, y: number, z: number): [number, number, number][] {
   const neighbors: [number, number, number][] = [];
   if (x > 0) {
     neighbors.push([x - 1, y + 1, z]);
@@ -85,9 +79,7 @@ function checkWin(boardMap: BoardMap, player: Player): boolean {
   const visited = new Set<string>();
   for (const key of Object.keys(boardMap)) {
     if (boardMap[key] !== player || visited.has(key)) continue;
-    let touchA = false,
-      touchB = false,
-      touchC = false;
+    let touchA = false, touchB = false, touchC = false;
     const queue: string[] = [key];
     while (queue.length > 0) {
       const cur = queue.pop()!;
@@ -118,14 +110,7 @@ async function saveGame(
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      result,
-      board,
-      totalMoves,
-      username,
-      difficulty,
-      boardSize,
-    }),
+    body: JSON.stringify({ result, board, totalMoves, username, difficulty, boardSize }),
   }).catch(console.error);
 }
 
@@ -162,14 +147,13 @@ interface Props {
 }
 
 export default function GameBoard({ config, onBack, userName }: Props) {
+  const { t } = useTranslation();
   const boardSize = BOARD_SIZE_MAP[config.boardSize];
   const botId = BOT_ID_MAP[config.difficulty];
   const layoutClass = LAYOUT_CLASS_MAP[config.layout];
 
   const svgWidth =
-    BOARD_MARGIN * 2 +
-    (boardSize - 1) * HEX_HORIZONTAL_SPACING +
-    HEX_HORIZONTAL_SPACING;
+    BOARD_MARGIN * 2 + (boardSize - 1) * HEX_HORIZONTAL_SPACING + HEX_HORIZONTAL_SPACING;
   const svgHeight =
     BOARD_MARGIN * 2 + (boardSize - 1) * HEX_VERTICAL_SPACING + HEX_RADIUS * 2;
 
@@ -190,11 +174,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     setErrorMsg(null);
   };
 
-  //helper method to call the bot API and return the chosen move, throwing an error if the call fails for any reason
-  async function fetchBotMove(
-    botId: string,
-    yen: YEN,
-  ): Promise<BotResponse> {
+  async function fetchBotMove(botId: string, yen: YEN): Promise<BotResponse> {
     const res = await fetch(
       `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
       {
@@ -210,13 +190,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     return res.json();
   }
 
-  //helper method to try to reduce complexity of the click handler, by applying the player move and returning the new board map without mutating the original
-  function applyPlayerMove(
-    boardMap: BoardMap,
-    x: number,
-    y: number,
-    z: number,
-  ): BoardMap {
+  function applyPlayerMove(boardMap: BoardMap, x: number, y: number, z: number): BoardMap {
     return { ...boardMap, [coordKey(x, y, z)]: 0 };
   }
 
@@ -253,33 +227,31 @@ export default function GameBoard({ config, onBack, userName }: Props) {
           setCurrentTurn(0);
         }
       } catch (err) {
-        setErrorMsg(`Bot error: ${err instanceof Error ? err.message : "Unknown error"}`);
+        setErrorMsg(
+          t("board.bot_error", {
+            message: err instanceof Error ? err.message : "Unknown error",
+          }),
+        );
         setCurrentTurn(0);
       } finally {
         setLoading(false);
       }
     },
-    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId],
+    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId, t],
   );
 
   // ─── Labels ───────────────────────────────────────────────────────────────
 
-  const difficultyLabel: Record<Difficulty, string> = {
-    random: "🎲 Random",
-    easy: "😊 Easy",
-    hard: "🤖 Hard",
-  };
-
   const statusLabel =
     gameStatus === "player_won"
-      ? "🏆 You win!"
+      ? t("board.status.you_win")
       : gameStatus === "bot_won"
-        ? "🤖 Bot wins"
+        ? t("board.status.bot_wins")
         : loading
-          ? "⏳ Bot thinking…"
+          ? t("board.status.thinking")
           : currentTurn === 0
-            ? "🔵 Your turn"
-            : "🔴 Bot's turn";
+            ? t("board.status.your_turn")
+            : t("board.status.bot_turn");
 
   const statusClass =
     gameStatus === "player_won"
@@ -292,6 +264,11 @@ export default function GameBoard({ config, onBack, userName }: Props) {
             ? "status-player"
             : "status-bot";
 
+  const modeLabel =
+    config.mode === "standard"
+      ? t("board.info.standard")
+      : t("board.info.master_y");
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -299,37 +276,31 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       <div className="boardCard">
         <div className="boardHeader">
           <button className="btn" type="button" onClick={onBack}>
-            ← Back
+            {t("common.back")}
           </button>
-          <h2>Yovi — Y Game</h2>
+          <h2>{t("board.title")}</h2>
           <div style={{ width: 80 }} />
         </div>
 
         <div className="boardMeta">
           <span className="infoTag">
-            {config.boardSize.charAt(0).toUpperCase() +
-              config.boardSize.slice(1)}{" "}
+            {config.boardSize.charAt(0).toUpperCase() + config.boardSize.slice(1)}{" "}
             ({boardSize}×{boardSize})
           </span>
+          <span className="infoTag">{modeLabel}</span>
           <span className="infoTag">
-            {config.mode === "standard"
-              ? "Standard"
-              : config.mode === "standard_pie"
-                ? "Pie rule"
-                : "Master Y"}
+            {t(`board.difficulty_label.${config.difficulty}`)}
           </span>
-          <span className="infoTag">{difficultyLabel[config.difficulty]}</span>
           <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
           {gameStatus !== "ongoing" && (
             <button className="btn resetBtn" onClick={resetGame}>
-              New game
+              {t("board.new_game")}
             </button>
           )}
         </div>
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
-        {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
         <div className={`svgWrapper ${layoutClass}`}>
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -351,8 +322,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
                   ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
                   col * HEX_HORIZONTAL_SPACING +
                   HEX_HORIZONTAL_SPACING / 2;
-                const cy =
-                  BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
+                const cy = BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
                 let fill: string;
                 let stroke: string;
@@ -395,9 +365,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
                       transition: "fill 0.15s, stroke 0.15s",
                     }}
                     onClick={() => handleCellClick(x, y, z)}
-                    onMouseEnter={() => {
-                      if (isClickable) setHoveredKey(key);
-                    }}
+                    onMouseEnter={() => { if (isClickable) setHoveredKey(key); }}
                     onMouseLeave={() => setHoveredKey(null)}
                   />
                 );
@@ -408,15 +376,13 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
         <div className="boardLegend">
           <span className="legendItem">
-            <span className="dot dotBlue" /> You (Blue)
+            <span className="dot dotBlue" /> {t("board.legend.you")}
           </span>
           <span className="legendItem">
-            <span className="dot dotRed" /> Bot (Red)
+            <span className="dot dotRed" /> {t("board.legend.bot")}
           </span>
         </div>
-        <p className="rulesHint">
-          Connect all three sides of the triangle with your pieces to win.
-        </p>
+        <p className="rulesHint">{t("board.rules_hint")}</p>
       </div>
     </div>
   );

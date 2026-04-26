@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./GameMenu.css";
 
 export type BoardSize = "small" | "medium" | "large";
@@ -6,7 +7,6 @@ export type GameMode = "standard";
 export type Difficulty = "random" | "easy" | "hard";
 export type LayoutStyle = "classic";
 
-// This interface defines the configuration options for starting a game of Y.
 export interface GameConfig {
   boardSize: BoardSize;
   mode: GameMode;
@@ -21,49 +21,9 @@ type Props = {
   onViewHistory: () => void;
 };
 
-const boardSizes = [
-  {
-    value: "small" as BoardSize,
-    title: "Small",
-    description: "5x5 board, suitable for quick games",
-  },
-  {
-    value: "medium" as BoardSize,
-    title: "Medium",
-    description: "7x7 board, classic Y experience",
-  },
-  {
-    value: "large" as BoardSize,
-    title: "Large",
-    description: "9x9 board, extensive Y gameplay",
-  },
-];
-
-const gameModes = [
-  {
-    value: "standard" as GameMode,
-    title: "Standard",
-    description: "Classic Y rules",
-  },
-];
-
-const difficulties = [
-  {
-    value: "random" as Difficulty,
-    title: "Random",
-    description: "Random difficulty",
-  },
-  {
-    value: "easy" as Difficulty,
-    title: "Easy",
-    description: "Bit more difficult",
-  },
-  {
-    value: "hard" as Difficulty,
-    title: "Hard",
-    description: "Clean tournament look",
-  },
-];
+const boardSizeValues: BoardSize[] = ["small", "medium", "large"];
+const gameModeValues: GameMode[] = ["standard"];
+const difficultyValues: Difficulty[] = ["random", "easy", "hard"];
 
 export default function GameMenu({
   userName,
@@ -71,138 +31,125 @@ export default function GameMenu({
   onLogOut,
   onViewHistory,
 }: Props) {
+  const { t } = useTranslation();
   const [boardIndex, setBoardIndex] = useState(0);
   const [modeIndex, setModeIndex] = useState(0);
   const [difficultyIndex, setDifficultyIndex] = useState(0);
 
   const config: GameConfig = {
-    boardSize: boardSizes[boardIndex].value,
-    mode: gameModes[modeIndex].value,
-    difficulty: difficulties[difficultyIndex].value,
+    boardSize: boardSizeValues[boardIndex],
+    mode: gameModeValues[modeIndex],
+    difficulty: difficultyValues[difficultyIndex],
     layout: "classic",
   };
 
-  const goPrev = (index: number, length: number) => {
-    return (index - 1 + length) % length;
-  };
+  const goPrev = (index: number, length: number) => (index - 1 + length) % length;
+  const goNext = (index: number, length: number) => (index + 1) % length;
 
-  const goNext = (index: number, length: number) => {
-    return (index + 1) % length;
-  };
+  // Board size labels from translation
+  const boardLabels = boardSizeValues.map((v) => ({
+    title: t(`menu.board.${v}_title`),
+    description: t(`menu.board.${v}_desc`),
+  }));
+
+  // Game mode labels (only standard for now)
+  const modeLabels = gameModeValues.map(() => ({
+    title: t("menu.mode.standard_title"),
+    description: t("menu.mode.standard_desc"),
+  }));
+
+  // Difficulty labels from translation
+  const difficultyLabels = difficultyValues.map((v) => ({
+    title: t(`menu.difficulty.${v}_title`),
+    description: t(`menu.difficulty.${v}_desc`),
+  }));
 
   return (
     <div className="menu">
       <div className="menuCard">
         <div className="menuHeader">
-          <h2 className="menuTitle">Game Lobby</h2>
-          <p className="menuSubtitle">
-            Welcome, {userName}. Choose your setup for Y.
-          </p>
-          <button
-            className="btn btnSecondary"
-            type="button"
-            onClick={onViewHistory}
-          >
-            Game history
+          <h2 className="menuTitle">{t("menu.title")}</h2>
+          <p className="menuSubtitle">{t("menu.subtitle", { name: userName })}</p>
+          <button className="btn btnSecondary" type="button" onClick={onViewHistory}>
+            {t("menu.view_history")}
           </button>
         </div>
 
+        {/* Board size */}
         <section className="menuSection">
-          <h3 className="sectionTitle">Board size</h3>
+          <h3 className="sectionTitle">{t("menu.board_size")}</h3>
           <div className="carousel">
             <button
               type="button"
               className="carouselButton"
-              onClick={() =>
-                setBoardIndex(goPrev(boardIndex, boardSizes.length))
-              }
-              aria-label="Previous board size"
+              onClick={() => setBoardIndex(goPrev(boardIndex, boardSizeValues.length))}
+              aria-label={t("menu.prev_aria", { section: t("menu.board_size_aria") })}
             >
               ‹
             </button>
-
             <div className="carouselCard">
-              <span className="optionTitle">
-                {boardSizes[boardIndex].title}
-              </span>
-              <span className="optionDescription">
-                {boardSizes[boardIndex].description}
-              </span>
+              <span className="optionTitle">{boardLabels[boardIndex].title}</span>
+              <span className="optionDescription">{boardLabels[boardIndex].description}</span>
             </div>
-
             <button
               type="button"
               className="carouselButton"
-              onClick={() =>
-                setBoardIndex(goNext(boardIndex, boardSizes.length))
-              }
-              aria-label="Next board size"
+              onClick={() => setBoardIndex(goNext(boardIndex, boardSizeValues.length))}
+              aria-label={t("menu.next_aria", { section: t("menu.board_size_aria") })}
             >
               ›
             </button>
           </div>
         </section>
 
+        {/* Game mode */}
         <section className="menuSection">
-          <h3 className="sectionTitle">Game mode</h3>
+          <h3 className="sectionTitle">{t("menu.game_mode")}</h3>
           <div className="carousel">
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goPrev(modeIndex, gameModes.length))}
-              aria-label="Previous game mode"
+              onClick={() => setModeIndex(goPrev(modeIndex, gameModeValues.length))}
+              aria-label={t("menu.prev_aria", { section: t("menu.game_mode_aria") })}
             >
               ‹
             </button>
-
             <div className="carouselCard">
-              <span className="optionTitle">{gameModes[modeIndex].title}</span>
-              <span className="optionDescription">
-                {gameModes[modeIndex].description}
-              </span>
+              <span className="optionTitle">{modeLabels[modeIndex].title}</span>
+              <span className="optionDescription">{modeLabels[modeIndex].description}</span>
             </div>
-
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goNext(modeIndex, gameModes.length))}
-              aria-label="Next game mode"
+              onClick={() => setModeIndex(goNext(modeIndex, gameModeValues.length))}
+              aria-label={t("menu.next_aria", { section: t("menu.game_mode_aria") })}
             >
               ›
             </button>
           </div>
         </section>
 
+        {/* Difficulty */}
         <section className="menuSection">
-          <h3 className="sectionTitle">Opponent style</h3>
+          <h3 className="sectionTitle">{t("menu.opponent_style")}</h3>
           <div className="carousel">
             <button
               type="button"
               className="carouselButton"
-              onClick={() =>
-                setDifficultyIndex(goPrev(difficultyIndex, difficulties.length))
-              }
-              aria-label="Previous difficulty"
+              onClick={() => setDifficultyIndex(goPrev(difficultyIndex, difficultyValues.length))}
+              aria-label={t("menu.prev_aria", { section: t("menu.difficulty_aria") })}
             >
               ‹
             </button>
-
             <div className="carouselCard">
-              <span className="optionTitle">
-                {difficulties[difficultyIndex].title}
-              </span>
-              <span className="optionDescription">
-                {difficulties[difficultyIndex].description}
-              </span>
+              <span className="optionTitle">{difficultyLabels[difficultyIndex].title}</span>
+              <span className="optionDescription">{difficultyLabels[difficultyIndex].description}</span>
             </div>
-
             <button
               type="button"
               className="carouselButton"
-              onClick={() =>
-                setDifficultyIndex(goNext(difficultyIndex, difficulties.length))
-              }
-              aria-label="Next difficulty"
+              onClick={() => setDifficultyIndex(goNext(difficultyIndex, difficultyValues.length))}
+              aria-label={t("menu.next_aria", { section: t("menu.difficulty_aria") })}
             >
               ›
             </button>
@@ -215,11 +162,10 @@ export default function GameMenu({
             type="button"
             onClick={() => onStartGame(config)}
           >
-            Start game
+            {t("menu.start_game")}
           </button>
-
           <button className="btn btnSecondary" type="button" onClick={onLogOut}>
-            Log out
+            {t("common.logout")}
           </button>
         </div>
       </div>

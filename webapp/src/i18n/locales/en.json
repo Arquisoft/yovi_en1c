@@ -1,0 +1,158 @@
+{
+  "common": {
+    "back": "← Back",
+    "logout": "Log out",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "error_network": "Network error",
+    "error_unexpected": "Unexpected server response. Please verify that the gateway and users service are running."
+  },
+  "language_switcher": {
+    "label": "Language"
+  },
+  "login": {
+    "title": "Welcome back!",
+    "subtitle": "Please enter your username and password to log in.",
+    "username_label": "What's your username?",
+    "password_label": "And password?",
+    "submit": "Let's go!",
+    "no_account": "Don't have an account?",
+    "go_signup": "Sign up here",
+    "error_empty": "Please enter both username and password.",
+    "error_generic": "Problems with the login"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "subtitle": "Please fill this form to create an account.",
+    "username_label": "Username",
+    "email_label": "Email",
+    "password_label": "Password",
+    "confirm_password_label": "Confirm Password",
+    "submit": "Sign Up",
+    "have_account": "Already have an account?",
+    "go_login": "Log in here",
+    "error_empty": "Please fill in all fields.",
+    "error_password_mismatch": "Passwords do not match.",
+    "error_generic": "Sign up error"
+  },
+  "menu": {
+    "title": "Game Lobby",
+    "subtitle": "Welcome, {{name}}. Choose your setup for Y.",
+    "view_history": "Game history",
+    "board_size": "Board size",
+    "game_mode": "Game mode",
+    "opponent_style": "Opponent style",
+    "start_game": "Start game",
+    "prev_aria": "Previous {{section}}",
+    "next_aria": "Next {{section}}",
+    "board_size_aria": "board size",
+    "game_mode_aria": "game mode",
+    "difficulty_aria": "difficulty",
+    "board": {
+      "small_title": "Small",
+      "small_desc": "5×5 board, suitable for quick games",
+      "medium_title": "Medium",
+      "medium_desc": "7×7 board, classic Y experience",
+      "large_title": "Large",
+      "large_desc": "9×9 board, extensive Y gameplay"
+    },
+    "mode": {
+      "standard_title": "Standard",
+      "standard_desc": "Classic Y rules"
+    },
+    "difficulty": {
+      "random_title": "Random",
+      "random_desc": "Random moves",
+      "easy_title": "Easy",
+      "easy_desc": "A bit more difficult",
+      "hard_title": "Hard",
+      "hard_desc": "Full heuristic opponent"
+    }
+  },
+  "history": {
+    "title": "Game History",
+    "loading": "Loading history…",
+    "empty": "No games played yet. Go play one! 🎮",
+    "stats": {
+      "total": "Total games",
+      "wins": "Wins",
+      "losses": "Losses",
+      "win_rate": "Win rate"
+    },
+    "filter": {
+      "all": "All",
+      "wins": "🏆 Wins",
+      "losses": "🤖 Losses"
+    },
+    "table": {
+      "number": "#",
+      "result": "Result",
+      "difficulty": "Difficulty",
+      "size": "Size",
+      "points": "Points",
+      "moves": "Moves",
+      "date": "Date"
+    },
+    "result": {
+      "win": "🏆 Win",
+      "loss": "🤖 Loss"
+    },
+    "difficulty_label": {
+      "random": "🎲 Random",
+      "easy": "😊 Easy",
+      "hard": "🔥 Hard"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Rank",
+      "username": "Username",
+      "total_points": "Total Points",
+      "games": "Games",
+      "you": "You"
+    },
+    "stats_view": {
+      "progression": "Point Progression (Last 10 Games)",
+      "game_session": "Game Session",
+      "win_rate_by_difficulty": "Win Rate by Difficulty",
+      "avg_moves": "Average Moves",
+      "win_avg": "🏆 Win Avg",
+      "loss_avg": "🤖 Loss Avg",
+      "moves_unit": "moves"
+    },
+    "view": {
+      "stats": "Stats",
+      "leaderboard": "Rank"
+    }
+  },
+  "board": {
+    "title": "Yovi — Y Game",
+    "info": {
+      "standard": "Standard",
+      "pie_rule": "Pie rule",
+      "master_y": "Master Y"
+    },
+    "status": {
+      "you_win": "🏆 You win!",
+      "bot_wins": "🤖 Bot wins",
+      "thinking": "⏳ Bot thinking…",
+      "your_turn": "🔵 Your turn",
+      "bot_turn": "🔴 Bot's turn"
+    },
+    "new_game": "New game",
+    "legend": {
+      "you": "You (Blue)",
+      "bot": "Bot (Red)"
+    },
+    "rules_hint": "Connect all three sides of the triangle with your pieces to win.",
+    "difficulty_label": {
+      "random": "🎲 Random",
+      "easy": "😊 Easy",
+      "hard": "🤖 Hard"
+    },
+    "bot_error": "Bot error: {{message}}"
+  }
+}

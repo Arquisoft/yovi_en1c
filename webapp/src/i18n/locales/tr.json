@@ -1,0 +1,158 @@
+{
+  "common": {
+    "back": "← Geri",
+    "logout": "Oturumu kapat",
+    "loading": "Yükleniyor…",
+    "retry": "Tekrar dene",
+    "error_network": "Ağ hatası",
+    "error_unexpected": "Beklenmeyen sunucu yanıtı. Lütfen ağ geçidinin ve kullanıcı servislerinin çalıştığından emin olun."
+  },
+  "language_switcher": {
+    "label": "Dil"
+  },
+  "login": {
+    "title": "Tekrar hoş geldin!",
+    "subtitle": "Giriş yapmak için lütfen kullanıcı adınızı ve şifrenizi girin.",
+    "username_label": "Kullanıcı adın nedir?",
+    "password_label": "Peki ya şifren?",
+    "submit": "Hadi gidelim!",
+    "no_account": "Hesabın yok mu?",
+    "go_signup": "Buradan kayıt ol",
+    "error_empty": "Lütfen hem kullanıcı adını hem de şifreni gir.",
+    "error_generic": "Giriş yapılırken bir sorun oluştu"
+  },
+  "signup": {
+    "title": "Kayıt Ol",
+    "subtitle": "Hesap oluşturmak için lütfen bu formu doldurun.",
+    "username_label": "Kullanıcı Adı",
+    "email_label": "E-posta",
+    "password_label": "Şifre",
+    "confirm_password_label": "Şifreyi Onayla",
+    "submit": "Kayıt Ol",
+    "have_account": "Zaten bir hesabın var mı?",
+    "go_login": "Buradan giriş yap",
+    "error_empty": "Lütfen tüm alanları doldurun.",
+    "error_password_mismatch": "Şifreler eşleşmiyor.",
+    "error_generic": "Kayıt hatası"
+  },
+  "menu": {
+    "title": "Oyun Lobisi",
+    "subtitle": "Hoş geldin, {{name}}. Y için kurulumunu seç.",
+    "view_history": "Oyun geçmişi",
+    "board_size": "Tahta boyutu",
+    "game_mode": "Oyun modu",
+    "opponent_style": "Rakip tarzı",
+    "start_game": "Oyunu başlat",
+    "prev_aria": "Önceki {{section}}",
+    "next_aria": "Sonraki {{section}}",
+    "board_size_aria": "tahta boyutu",
+    "game_mode_aria": "oyun modu",
+    "difficulty_aria": "zorluk derecesi",
+    "board": {
+      "small_title": "Küçük",
+      "small_desc": "5×5 tahta, hızlı oyunlar için uygun",
+      "medium_title": "Orta",
+      "medium_desc": "7×7 tahta, klasik Y deneyimi",
+      "large_title": "Büyük",
+      "large_desc": "9×9 tahta, kapsamlı Y oynanışı"
+    },
+    "mode": {
+      "standard_title": "Standart",
+      "standard_desc": "Klasik Y kuralları"
+    },
+    "difficulty": {
+      "random_title": "Rastgele",
+      "random_desc": "Rastgele hamleler",
+      "easy_title": "Kolay",
+      "easy_desc": "Biraz daha zor",
+      "hard_title": "Zor",
+      "hard_desc": "Tam sezgisel rakip"
+    }
+  },
+  "history": {
+    "title": "Oyun Geçmişi",
+    "loading": "Geçmiş yükleniyor…",
+    "empty": "Henüz oyun oynanmadı. Haydi bir tane oyna! 🎮",
+    "stats": {
+      "total": "Toplam oyun",
+      "wins": "Galibiyetler",
+      "losses": "Mağlubiyetler",
+      "win_rate": "Kazanma oranı"
+    },
+    "filter": {
+      "all": "Hepsi",
+      "wins": "🏆 Galibiyetler",
+      "losses": "🤖 Mağlubiyetler"
+    },
+    "table": {
+      "number": "#",
+      "result": "Sonuç",
+      "difficulty": "Zorluk",
+      "size": "Boyut",
+      "points": "Puan",
+      "moves": "Hamle",
+      "date": "Tarih"
+    },
+    "result": {
+      "win": "🏆 Galibiyet",
+      "loss": "🤖 Mağlubiyet"
+    },
+    "difficulty_label": {
+      "random": "🎲 Rastgele",
+      "easy": "😊 Kolay",
+      "hard": "🔥 Zor"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Sıralama",
+      "username": "Kullanıcı Adı",
+      "total_points": "Toplam Puan",
+      "games": "Oyunlar",
+      "you": "Sen"
+    },
+    "stats_view": {
+      "progression": "Puan Gelişimi (Son 10 Oyun)",
+      "game_session": "Oyun Oturumu",
+      "win_rate_by_difficulty": "Zorluğa Göre Kazanma Oranı",
+      "avg_moves": "Ortalama Hamle Sayısı",
+      "win_avg": "🏆 Galibiyet Ort.",
+      "loss_avg": "🤖 Mağlubiyet Ort.",
+      "moves_unit": "hamle"
+    },
+    "view": {
+      "stats": "İstatistikler",
+      "leaderboard": "Sıralama"
+    }
+  },
+  "board": {
+    "title": "Yovi — Y Oyunu",
+    "info": {
+      "standard": "Standart",
+      "pie_rule": "Pasta kuralı",
+      "master_y": "Usta Y"
+    },
+    "status": {
+      "you_win": "🏆 Kazandın!",
+      "bot_wins": "🤖 Bot kazandı",
+      "thinking": "⏳ Bot düşünüyor…",
+      "your_turn": "🔵 Senin sıran",
+      "bot_turn": "🔴 Botun sırası"
+    },
+    "new_game": "Yeni oyun",
+    "legend": {
+      "you": "Sen (Mavi)",
+      "bot": "Bot (Kırmızı)"
+    },
+    "rules_hint": "Kazanmak için üçgenin üç kenarını da kendi taşlarınla birleştir.",
+    "difficulty_label": {
+      "random": "🎲 Rastgele",
+      "easy": "😊 Kolay",
+      "hard": "🤖 Zor"
+    },
+    "bot_error": "Bot hatası: {{message}}"
+  }
+}
