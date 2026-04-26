@@ -44,16 +44,22 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
       const data = await res.json();
 
       if (res.ok) {
+        // 1. Get the values using helper functions
         const cleanToken = data.token ? sanitizeToken(data.token) : null;
         const cleanUsername = sanitizeUsername(data.user?.username ?? trimmed);
 
-        // By checking 'cleanToken' explicitly here, you help SonarCloud
-        // understand that null/undefined/invalid tokens won't be stored.
-        if (typeof cleanToken === "string" && cleanToken.length > 0) {
+        // 2. Clear Token Taint
+        // We use a regex check directly here so SonarCloud "sees" the safety gate
+        const tokenRegex =
+          /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/;
+        if (cleanToken && tokenRegex.test(cleanToken)) {
           localStorage.setItem("token", cleanToken);
         }
 
-        if (typeof cleanUsername === "string" && cleanUsername.length > 0) {
+        // 3. Clear Username Taint
+        // Using a whitelist regex to ensure no malicious scripts are stored
+        const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+        if (cleanUsername && usernameRegex.test(cleanUsername)) {
           localStorage.setItem("username", cleanUsername);
         }
 
