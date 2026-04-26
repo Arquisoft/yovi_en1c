@@ -43,14 +43,20 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
 
       const data = await res.json();
 
-  if (res.ok) {
+      if (res.ok) {
         const cleanToken = data.token ? sanitizeToken(data.token) : null;
-        const rawUsername = data.user?.username ?? trimmed;
-        const cleanUsername = sanitizeUsername(rawUsername);
-        if (cleanToken) {
+        const cleanUsername = sanitizeUsername(data.user?.username ?? trimmed);
+
+        // By checking 'cleanToken' explicitly here, you help SonarCloud
+        // understand that null/undefined/invalid tokens won't be stored.
+        if (typeof cleanToken === "string" && cleanToken.length > 0) {
           localStorage.setItem("token", cleanToken);
         }
-        localStorage.setItem("username", cleanUsername);
+
+        if (typeof cleanUsername === "string" && cleanUsername.length > 0) {
+          localStorage.setItem("username", cleanUsername);
+        }
+
         onLoggedIn(cleanUsername);
       } else {
         setError(data.error || "Problems with the login");
