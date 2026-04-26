@@ -21,7 +21,7 @@ When a new user wants to join the system, the data must be sanitized and securel
 | 6 | The **Users Service** stores the record in **MongoDB** and returns a success response.
 |===
 
-image::../images/signup2.png[Sign Up Diagram]
+image::../images/signup3.png[Sign Up Diagram]
 
 === User Authentication (Sign In)
 The authentication process verifies the user credentials and provides a secure session token (JWT).
@@ -39,7 +39,7 @@ The authentication process verifies the user credentials and provides a secure s
 | 6 | The **Web Application** receives the token and stores it securely for subsequent requests.
 |===
 
-image::../images/signin2.png[Sign In Diagram]
+image::../images/signin3.png[Sign In Diagram]
 
 === Game Play (Move Execution)
 This flow describes how a user performs an action within the game and how the system validates and updates the game state.
@@ -57,7 +57,7 @@ This flow describes how a user performs an action within the game and how the sy
 | 6 | The system returns the updated game state to the **Web Application** to refresh the UI.
 |===
 
-image::../images/gameplay.png[Game Flow Diagram]
+image::../images/gameplay2.png[Game Flow Diagram]
 
 === Statistics and Leaderboard Flow
 This flow explains how game results are persisted and how performance metrics (points, win rates) are retrieved for the leaderboard.
@@ -75,4 +75,4 @@ This flow explains how game results are persisted and how performance metrics (p
 | 6 | The **Web Application** renders the statistics and ranking for the user.
 |===
 
-image::../images/statistics2.png[Statistics Flow Diagram]
+image::../images/statistics3.png[Statistics Flow Diagram]
