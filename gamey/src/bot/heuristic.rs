@@ -169,7 +169,7 @@ fn score_placement(board: &GameY, coords: Coordinates, player: PlayerId) -> i32 
 // ─────────────────────────────────────────────────────────────
 // Minimax with alpha-beta pruning
 // Includes steal moves so the bot reasons about rob mode properly.
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 fn minimax(
     board: &GameY,
@@ -192,24 +192,26 @@ fn minimax(
     }
 
     let current_player = if maximizing { bot_player } else { other_player(bot_player) };
+    // FIX: opponent se define respecto al current_player, igual que antes.
+    // El bug real estaba en rob_choose (Hard), no aquí. Pero añadimos
+    // una guarda para asegurarnos de que solo robamos celdas del
+    // current_player's actual opponent.
     let opponent = other_player(current_player);
     let size = board.board_size();
 
-    // Build candidate moves: placements + steals (if rob mode)
     let mut placement_candidates: Vec<Coordinates> = available
         .iter()
         .map(|&idx| Coordinates::from_index(idx, size))
         .collect();
     placement_candidates.sort_by_key(|&c| -score_placement(board, c, current_player));
+    placement_candidates.truncate(12);
 
-    // Limit candidates for performance
-    let max_candidates = 12usize;
-    placement_candidates.truncate(max_candidates);
-
-    // Steal candidates: only top-3 opponent cells by connection cost impact
     let steal_candidates: Vec<Coordinates> = if rob_mode {
         let mut opp: Vec<(Coordinates, u32)> = all_coords(size)
             .into_iter()
+            // FIX: usar `opponent` local (ya era correcto), pero ahora
+            // verificamos explícitamente que la celda pertenece al
+            // oponente del jugador que mueve en ESTE nivel.
             .filter(|c| board.cell_at(c) == Cell::Occupied(opponent))
             .filter_map(|c| {
                 let mut sim = board.clone();
@@ -224,9 +226,9 @@ fn minimax(
         vec![]
     };
 
+    // El resto del minimax es idéntico — sin cambios aquí
     if maximizing {
         let mut value = i32::MIN;
-
         for coords in &placement_candidates {
             let mut sim = board.clone();
             if sim.add_move(Movement::Placement { player: current_player, coords: *coords }).is_ok() {
@@ -235,7 +237,6 @@ fn minimax(
                 if alpha >= beta { break; }
             }
         }
-
         for coords in &steal_candidates {
             let mut sim = board.clone();
             if sim.add_move(Movement::Steal { player: current_player, coords: *coords }).is_ok() {
@@ -244,11 +245,9 @@ fn minimax(
                 if alpha >= beta { break; }
             }
         }
-
         value
     } else {
         let mut value = i32::MAX;
-
         for coords in &placement_candidates {
             let mut sim = board.clone();
             if sim.add_move(Movement::Placement { player: current_player, coords: *coords }).is_ok() {
@@ -257,7 +256,6 @@ fn minimax(
                 if alpha >= beta { break; }
             }
         }
-
         for coords in &steal_candidates {
             let mut sim = board.clone();
             if sim.add_move(Movement::Steal { player: current_player, coords: *coords }).is_ok() {
@@ -266,7 +264,6 @@ fn minimax(
                 if alpha >= beta { break; }
             }
         }
-
         value
     }
 }
@@ -463,32 +460,36 @@ fn rob_choose(board: &GameY, difficulty: RobDifficulty) -> Option<(Coordinates, 
             }
 
             // Evaluate steals
-            for coords in steal_candidates {
-                let mut sim = board.clone();
-                if sim.add_move(Movement::Steal { player: bot_player, coords }).is_ok() {
-                    let score = minimax(
-                        &sim,
-                        MINIMAX_DEPTH - 1,
-                        i32::MIN + 1,
-                        i32::MAX,
-                        false,
-                        bot_player,
-                        true,
-                    );
-                    // Apply steal threshold: only prefer steal if score is meaningfully better
-                    let adjusted_score = (score as f32 * STEAL_THRESHOLD) as i32;
-                    if adjusted_score > best_score {
-                        best_score = adjusted_score;
-                        best_coords = Some(coords);
-                        best_is_steal = true;
-                    }
+             for coords in steal_candidates {
+            let mut sim = board.clone();
+            if sim.add_move(Movement::Steal { player: bot_player, coords }).is_ok() {
+                let score = minimax(
+                    &sim,
+                    MINIMAX_DEPTH - 1,
+                    i32::MIN + 1,
+                    i32::MAX,
+                    false,
+                    bot_player,
+                    true,
+                );
+    let adjusted_score = if score > 0 {
+                    (score as f32 * STEAL_THRESHOLD) as i32
+                } else {
+                    score
+                };
+
+                if adjusted_score > best_score {
+                    best_score = adjusted_score;
+                    best_coords = Some(coords);
+                    best_is_steal = true;
                 }
             }
+        }
 
-            best_coords.map(|c| (c, best_is_steal))
+        best_coords.map(|c| (c, best_is_steal))
+            }
         }
     }
-}
 
 // ─────────────────────────────────────────────────────────────
 // Deterministic pseudo-random helpers

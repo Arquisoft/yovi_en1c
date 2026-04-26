@@ -173,7 +173,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [lastBotMove, setLastBotMove] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
+const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
   // Rob-mode UI state
   // When true, the player has activated rob mode and must click a bot cell.
   const [robModeActive, setRobModeActive] = useState(false);
@@ -189,6 +189,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     setLastRobbedKey(null);
     setErrorMsg(null);
     setRobModeActive(false);
+    setPlayerBonusTurn(false);
   };
 
   async function fetchBotMove(botId: string, yen: YEN): Promise<BotResponse> {
@@ -201,7 +202,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       },
     );
     const data = await res.json();
-    console.log("Bot response:", JSON.stringify(data));  // ← añade esto
+    console.log("Bot response:", JSON.stringify(data));
     if (!res.ok) {
       throw new Error(data.message ?? `HTTP ${res.status}`);
     }
@@ -213,138 +214,139 @@ export default function GameBoard({ config, onBack, userName }: Props) {
    * In rob mode, the bot has BOT_ROB_PROBABILITY chance of robbing a player cell
    * instead of placing a new piece.
    */
-  async function runBotTurn(currentBoard: BoardMap): Promise<BoardMap> {
-  const data = await fetchBotMove(botId, buildYEN(currentBoard, 1, boardSize));
-  const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
+  async function runBotTurn(currentBoard: BoardMap): Promise<{ board: BoardMap; wasSteal: boolean }> {
+    const data = await fetchBotMove(botId, buildYEN(currentBoard, 1, boardSize));
+    const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
 
-  if (data.is_steal) {
-    // El bot robó una celda del jugador
-    setLastRobbedKey(botKey);
-    setLastBotMove(null);
-    return { ...currentBoard, [botKey]: 1 };
-  }
+    if (data.is_steal) {
+      setLastRobbedKey(botKey);
+      setLastBotMove(null);
+    } else {
+      setLastBotMove(botKey);
+      setLastRobbedKey(null);
+    }
 
-  setLastBotMove(botKey);
-  setLastRobbedKey(null);
-  return { ...currentBoard, [botKey]: 1 };
+    return { board: { ...currentBoard, [botKey]: 1 }, wasSteal: data.is_steal };
 }
 
   // ─── Player robs a bot cell ───────────────────────────────────────────────
 
   const handleRobCell = useCallback(
-    async (key: string) => {
-      if (!robModeActive || gameStatus !== "ongoing" || loading) return;
+  async (key: string) => {
+    if (!robModeActive || gameStatus !== "ongoing" || loading) return;
 
-      setRobModeActive(false);
-      setErrorMsg(null);
+    setRobModeActive(false);
+    setErrorMsg(null);
 
-      // Convert the bot cell to player cell
-      const afterRob: BoardMap = { ...boardMap, [key]: 0 };
-      setLastRobbedKey(key);
-      setBoardMap(afterRob);
+    const afterRob: BoardMap = { ...boardMap, [key]: 0 };
+    setLastRobbedKey(key);
+    setBoardMap(afterRob);
 
-      // Check if player wins after rob (unlikely but possible)
-      if (checkWin(afterRob, 0)) {
-        setGameStatus("player_won");
-        saveGame("player_won", afterRob, userName, config.difficulty, config.boardSize);
+    if (checkWin(afterRob, 0)) {
+      setGameStatus("player_won");
+      saveGame("player_won", afterRob, userName, config.difficulty, config.boardSize);
+      return;
+    }
+
+    setCurrentTurn(1);
+    setLoading(true);
+
+    try {
+      const { board: afterBot1 } = await runBotTurn(afterRob);  
+      setBoardMap(afterBot1);
+
+      if (checkWin(afterBot1, 1)) {
+        setGameStatus("bot_won");
+        saveGame("bot_won", afterBot1, userName, config.difficulty, config.boardSize);
         return;
       }
 
-      // Bot plays TWICE as cost for the rob
-      setCurrentTurn(1);
-      setLoading(true);
+      await new Promise((r) => setTimeout(r, 600));
 
-      try {
-        const afterBot1 = await runBotTurn(afterRob);
-        setBoardMap(afterBot1);
+      const { board: afterBot2 } = await runBotTurn(afterBot1);  
+      setBoardMap(afterBot2);
 
-        if (checkWin(afterBot1, 1)) {
-          setGameStatus("bot_won");
-          saveGame("bot_won", afterBot1, userName, config.difficulty, config.boardSize);
-          return;
-        }
-
-        // Small delay between bot moves so the player can see both
-        await new Promise((r) => setTimeout(r, 600));
-
-        const afterBot2 = await runBotTurn(afterBot1);
-        setBoardMap(afterBot2);
-
-        if (checkWin(afterBot2, 1)) {
-          setGameStatus("bot_won");
-          saveGame("bot_won", afterBot2, userName, config.difficulty, config.boardSize);
-        } else {
-          setCurrentTurn(0);
-        }
-      } catch (err) {
-        setErrorMsg(
-          t("board.bot_error", {
-            message: err instanceof Error ? err.message : "Unknown error",
-          }),
-        );
+      if (checkWin(afterBot2, 1)) {
+        setGameStatus("bot_won");
+        saveGame("bot_won", afterBot2, userName, config.difficulty, config.boardSize);
+      } else {
         setCurrentTurn(0);
-      } finally {
-        setLoading(false);
       }
-    },
-    [robModeActive, boardMap, gameStatus, loading, boardSize, userName, botId, t],
-  );
-
+    } catch (err) {
+      setErrorMsg(
+        t("board.bot_error", {
+          message: err instanceof Error ? err.message : "Unknown error",
+        }),
+      );
+      setCurrentTurn(0);
+    } finally {
+      setLoading(false);
+    }
+  },
+  [robModeActive, boardMap, gameStatus, loading, boardSize, userName, botId, t],
+);
   // ─── Player places a normal cell ─────────────────────────────────────────
 
   const handleCellClick = useCallback(
-    async (x: number, y: number, z: number) => {
-      const key = coordKey(x, y, z);
+  async (x: number, y: number, z: number) => {
+    const key = coordKey(x, y, z);
 
-      // If rob mode is active, route clicks on bot cells to handleRobCell
-      if (robModeActive) {
-        if (boardMap[key] === 1) {
-          handleRobCell(key);
-        }
-        // Clicking elsewhere while rob mode active does nothing
+    if (robModeActive) {
+      if (boardMap[key] === 1) handleRobCell(key);
+      return;
+    }
+
+    if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
+    if (boardMap[key] !== undefined) return;
+
+    setErrorMsg(null);
+    const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
+    setBoardMap(afterPlayer);
+    setLastRobbedKey(null);
+
+    if (checkWin(afterPlayer, 0)) {
+      setGameStatus("player_won");
+      saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
+      return;
+    }
+
+    if (playerBonusTurn) {
+      setPlayerBonusTurn(false);
+      return;
+    }
+
+    setCurrentTurn(1);
+    setLoading(true);
+
+    try {
+      const { board: afterBot, wasSteal } = await runBotTurn(afterPlayer);
+      setBoardMap(afterBot);
+
+      if (checkWin(afterBot, 1)) {
+        setGameStatus("bot_won");
+        saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
         return;
       }
 
-      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
-      if (boardMap[key] !== undefined) return;
-
-      setErrorMsg(null);
-      const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
-      setBoardMap(afterPlayer);
-      setLastRobbedKey(null);
-
-      if (checkWin(afterPlayer, 0)) {
-        setGameStatus("player_won");
-        saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
-        return;
+      if (wasSteal) {
+        setPlayerBonusTurn(true);
       }
 
-      setCurrentTurn(1);
-      setLoading(true);
-
-      try {
-        const afterBot = await runBotTurn(afterPlayer);
-        setBoardMap(afterBot);
-
-        if (checkWin(afterBot, 1)) {
-          setGameStatus("bot_won");
-          saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
-        } else {
-          setCurrentTurn(0);
-        }
-      } catch (err) {
-        setErrorMsg(
-          t("board.bot_error", {
-            message: err instanceof Error ? err.message : "Unknown error",
-          }),
-        );
-        setCurrentTurn(0);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId, robModeActive, t],
-  );
+      setCurrentTurn(0);
+    } catch (err) {
+      setErrorMsg(
+        t("board.bot_error", {
+          message: err instanceof Error ? err.message : "Unknown error",
+        }),
+      );
+      setCurrentTurn(0);
+    } finally {
+      setLoading(false);
+    }
+  },
+  [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId,
+   robModeActive, playerBonusTurn, t],
+);
 
   // ─── Labels ───────────────────────────────────────────────────────────────
 
@@ -391,7 +393,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
     if (occupied === 0) {
       fill = isRobbed
-        ? "rgba(56, 189, 248, 1)"        // bright blue — just robbed FROM bot
+        ? "rgba(56, 189, 248, 1)"       
         : "rgba(56, 189, 248, 0.9)";
       stroke = "#7dd3fc";
       strokeW = 2;
@@ -524,7 +526,6 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
                 const { fill, stroke, strokeW, filter } = getCellStyle(key, occupied, isHovered);
 
-                // Clickable if: normal empty cell on player turn, OR rob mode active and cell is bot's
                 const isClickable =
                   canPlayerAct &&
                   (robModeActive
