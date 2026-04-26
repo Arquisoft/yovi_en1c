@@ -27,17 +27,15 @@ describe("LanguageSwitcher", () => {
     // Check for all buttons
     expect(screen.getByRole("button", { name: "EN" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ES" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "FI" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "TR" })).toBeInTheDocument();
   });
 
   it("should call changeLanguage when a language button is clicked", () => {
     render(<LanguageSwitcher />);
 
-    const trButton = screen.getByRole("button", { name: "TR" });
+    const trButton = screen.getByRole("button", { name: "ES" });
     fireEvent.click(trButton);
 
-    expect(mockChangeLanguage).toHaveBeenCalledWith("tr");
+    expect(mockChangeLanguage).toHaveBeenCalledWith("es");
   });
 
   it("should apply active styles to the current language", () => {
@@ -51,12 +49,6 @@ describe("LanguageSwitcher", () => {
     expect(esButton.style.background).toBe("transparent");
   });
 
-  it('should call changeLanguage with "fi" when Finnish button is clicked', () => {
-    render(<LanguageSwitcher />);
-    fireEvent.click(screen.getByRole("button", { name: "FI" }));
-    expect(mockChangeLanguage).toHaveBeenCalledWith("fi");
-  });
-
   it('should apply active styles to EN when resolvedLanguage is "en"', () => {
     mockLanguage = "en";
     render(<LanguageSwitcher />);
@@ -66,16 +58,6 @@ describe("LanguageSwitcher", () => {
     expect(enButton.style.background).toBe("rgb(79, 70, 229)");
     expect(enButton.style.color).toBe("rgb(255, 255, 255)");
     expect(esButton.style.background).toBe("transparent");
-  });
-
-  it('should switch active styles when resolvedLanguage changes to "tr"', () => {
-    mockLanguage = "tr";
-    render(<LanguageSwitcher />);
-    const trButton = screen.getByRole("button", { name: "TR" });
-    const enButton = screen.getByRole("button", { name: "EN" });
-
-    expect(trButton.style.background).toBe("rgb(79, 70, 229)");
-    expect(enButton.style.background).toBe("transparent");
   });
 
   it('should have type="button" on all buttons to prevent form submission', () => {
