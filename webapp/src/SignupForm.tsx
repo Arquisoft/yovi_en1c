@@ -9,24 +9,29 @@ type Props = {
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const LANGUAGES = [
+    { code: "en", label: "EN", flag: "🇬🇧" },
+    { code: "es", label: "ES", flag: "🇪🇸" },
+    { code: "fi", label: "FI", flag: "🇫🇮" },
+    { code: "tr", label: "TR", flag: "🇹🇷" },
+  ];
 
   return (
-    <div style={{ display: "flex", gap: 8 }}>
-      {["en", "es"].map((lang) => (
-        <button
-          key={lang}
-          type="button"
-          onClick={() => i18n.changeLanguage(lang)}
-          style={{
-            fontWeight: i18n.language === lang ? "bold" : "normal",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          {lang === "en" ? "🇬🇧 EN" : "🇪🇸 ES"}
-        </button>
-      ))}
+    <div className="language-container">
+      {LANGUAGES.map((lang) => {
+        const isActive = i18n.language.startsWith(lang.code);
+        return (
+          <button
+            key={lang.code}
+            type="button"
+            onClick={() => i18n.changeLanguage(lang.code)}
+            className={`lang-button ${isActive ? "active" : ""}`}
+          >
+            <span className="lang-flag">{lang.flag}</span>
+            <span className="lang-label">{lang.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -166,7 +171,10 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
         </p>
 
         {error && (
-          <div className="error-message" style={{ marginTop: 12, color: "red" }}>
+          <div
+            className="error-message"
+            style={{ marginTop: 12, color: "red" }}
+          >
             {error}
           </div>
         )}
