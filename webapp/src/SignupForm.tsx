@@ -11,6 +11,30 @@ type Props = {
 };
 
 // React hooks for managing form state and error handling
+const validateForm = (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+): string | null => {
+    if (!username || !email || !password || !confirmPassword) {
+        return "Please fill in all fields.";
+    }
+    if (password !== confirmPassword) {
+        return "Passwords do not match.";
+    }
+    return null;
+};
+const processSignupResponse = (data: Record<string, unknown>): void => {
+    const token = data?.token;
+    const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
+    if (token && usernameFromBackend) {
+        const cleanToken = sanitizeToken(token);
+        const cleanUsername = sanitizeUsername(usernameFromBackend);
+        localStorage.setItem("token", cleanToken);
+        localStorage.setItem("username", cleanUsername);
+    }
+};
 
 const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
     const [username, setUsername] = useState("");
@@ -19,76 +43,53 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setError(null);
-        const trimmedUsername = username.trim();
-        const trimmedEmail = email.trim();
 
-        if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
-            setError("Please fill in all fields.");
-            return;
-        }
+const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
+  setError(null);
 
-        if (password !== confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
+  const trimmedUsername = username.trim();
+  const trimmedEmail = email.trim();
 
-        try {
-            const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+  const validationError = validateForm(trimmedUsername, trimmedEmail, password, confirmPassword);
+  if (validationError) {
+    setError(validationError);
+    return;
+  }
 
-            const res = await fetch(`${API_URL}/api/users/signup`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username: trimmedUsername,
-                    email: trimmedEmail,
-                    password,
-                }),
-            });
+  try {
+    const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+    const res = await fetch(`${API_URL}/api/users/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: trimmedUsername,
+        email: trimmedEmail,
+        password,
+      }),
+    });
 
-            const text = await res.text();
+    const text = await res.text();
+    const data = JSON.parse(text); // throws if not JSON
 
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch {
-                console.error("Server returned non-JSON:", text);
-                setError("Unexpected server response. Please verify that the gateway and users service are running.");
-                return;
-            }
+    if (!res.ok) {
+      setError(data.error || "Sign up error");
+      return;
+    }
 
-   if (res.ok) {
-        const token = data?.token;
-        const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
+    processSignupResponse(data);
+    onRegistered(trimmedUsername);
+  } catch (err: unknown) {
+    if (err instanceof SyntaxError) {
+      setError("Unexpected server response. Please verify that the gateway and users service are running.");
+    } else if (err instanceof Error) {
+      setError(err.message);
+    } else {
+      setError("Network error");
+    }
+  }
+};
 
-        if (token && usernameFromBackend) {
-          try {
-            const cleanToken = sanitizeToken(token);
-            const cleanUsername = sanitizeUsername(usernameFromBackend);
-
-            localStorage.setItem("token", cleanToken);
-            localStorage.setItem("username", cleanUsername);
-          } catch (sanitizeErr: unknown) {
-            const msg = sanitizeErr instanceof Error 
-              ? sanitizeErr.message 
-              : "Invalid data from server.";
-            setError(msg);
-            return; 
-          }
-        }
-        onRegistered(trimmedUsername);
-      }
- else {
-                setError(data.error || "Sign up error");
-            }
-        } catch (err: any) {
-            setError(err.message || "Network error");
-        }
-    };
 
     // JSX Form like with the original register page but with additional fields for email and password confirmation, 
     // and error handling for empty fields and password mismatch

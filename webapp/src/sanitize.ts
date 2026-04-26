@@ -1,27 +1,35 @@
 
-
 /**
  * Validates and sanitizes a username.
  * Only allows alphanumeric characters, underscores, and hyphens.
  * SonarCloud tssecurity:S8475 — taint cleared via strict whitelist.
  */
 export function sanitizeUsername(raw: unknown): string {
-  const str = String(raw ?? "");
+  if (raw === null || raw === undefined) {
+    throw new Error("Invalid username format.");
+  }
 
-  const clean = str.replace(/[^a-zA-Z0-9_-]/g, "");
-  if (!clean) throw new Error("Invalid username received from server.");
-  return clean;
+  const str = typeof raw === 'string' ? raw : String(raw || "") as string;
+  const clean = str.replaceAll(/[^a-zA-Z0-9_-]/g, "");
+
+if (!clean) {
+  throw new Error("Invalid username format.");
+}
+return clean;
 }
 
-/**
- * Validates and sanitizes a JWT token.
- * JWT format: three base64url segments separated by dots.
- * SonarCloud tssecurity:S8475 — taint cleared via strict whitelist.
- */
+
 export function sanitizeToken(raw: unknown): string {
-  const str = String(raw ?? "");
+  if (raw === null || raw === undefined || typeof raw === 'object') {
+    throw new Error("Invalid token format received.");
+  }
+  
+  const str = typeof raw === 'string' ? raw :String(raw || "") as string;
 
   const jwtRegex = /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/;
-  if (!jwtRegex.test(str)) throw new Error("Invalid token format received.");
+  if (!jwtRegex.test(str)){
+
+  throw new Error("Invalid token format received.");
+  }
   return str;
 }

@@ -43,26 +43,21 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
 
       const data = await res.json();
 
-  if (res.ok) {  try {    
-    if (data.token) {  
-        const cleanToken = sanitizeToken(data.token);
-        localStorage.setItem("token", cleanToken);    
-      }    
-      const rawUsername = data.user?.username || trimmed;    
-      const cleanUsername = sanitizeUsername(rawUsername);    
-      localStorage.setItem("username", cleanUsername);    
-      onLoggedIn(cleanUsername);  
-    } catch (sanitizeErr: unknown) {    
-      const msg =      
-      sanitizeErr instanceof Error       
-       ? sanitizeErr.message        
-       : "Invalid data from server.";    
-       setError(msg);
+  if (res.ok) {
+        const cleanToken = data.token ? sanitizeToken(data.token) : null;
+        const rawUsername = data.user?.username ?? trimmed;
+        const cleanUsername = sanitizeUsername(rawUsername);
+        if (cleanToken) {
+          localStorage.setItem("token", cleanToken);
         }
-      } else {  
-        setError(data.error || "Problems with the login");}
-    } catch (err: any) {
-      setError(err.message || "Network error");
+        localStorage.setItem("username", cleanUsername);
+        onLoggedIn(cleanUsername);
+      } else {
+        setError(data.error || "Problems with the login");
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error";
+      setError(message);
     }
   };
 
