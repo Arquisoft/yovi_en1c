@@ -141,7 +141,8 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
                 Sign Up
             </button>
 
-            <p style={{ marginTop: 16 }}>
+
+            <p className="login-link">
                 Already have an account?{" "}
                 <button
                     type="button"
@@ -158,6 +159,7 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
                     Log in here
                 </button>
             </p>
+
 
             {error && (
                 <div className="error-message" style={{ marginTop: 12, color: "red" }}>

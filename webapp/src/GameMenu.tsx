@@ -19,7 +19,7 @@ const TRIVIA_SNIPPETS = [
   "Hex grids are used in strategy games because they avoid diagonal imbalance.",
   "When you are playing the bot, you are actually battling Rust!",
   "Y belongs to the same family as Hex and Havannah, but it has its own unique tactics.",
-  "Random bot has the reckless wild card charm, if the more difficult bot gets too boring for you.",
+  "Random bot has the reckless wild card charm, in case the more difficult bot gets too boring for you.",
 ];
 
 function getRandomTrivia() {

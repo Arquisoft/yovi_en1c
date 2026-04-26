@@ -284,9 +284,9 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
   const statusLabel =
     gameStatus === "player_won"
-      ? "🏆 You win!"
+      ? "🏆 YOU WIN!"
       : gameStatus === "bot_won"
-        ? "🤖 Bot wins"
+        ? "YOU LOST 😢"
         : loading
           ? "⏳ Bot thinking…"
           : currentTurn === 0
@@ -345,18 +345,10 @@ export default function GameBoard({ config, onBack, userName }: Props) {
             <div className="avatar avatarRed">🤖</div>
             <div className="playerText">
               <span className="playerName">Bot</span>
-              <span className="playerRole">Red player</span>
             </div>
           </div>
 
           <div className={`statusTag ${statusClass}`}>{statusLabel}</div>
-
-          {gameStatus !== "ongoing" && (
-            <div className={`gameResult result-${gameStatus}`}>
-              {gameStatus === "player_won" ? "YOU WIN!" : "YOU LOST"}
-            </div>
-          )}
-
 
           <div className="boardTopEmpty" />
         </div>
@@ -364,8 +356,10 @@ export default function GameBoard({ config, onBack, userName }: Props) {
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
         <div className="boardMiddle">
-          {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
+
           <div className={`svgWrapper ${layoutClass}`}>
+
+
             <div className="boardSurface">
               <svg
                 viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -467,7 +461,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
               </div>
               <div className="playerText">
                 <span className="playerName">{userName || "You"}</span>
-                <span className="playerRole">Blue player</span>
+
               </div>
             </div>
           </div>
@@ -475,7 +469,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
         <div className="rulesHint">
           <p>
-            Connect all three sides of the triangle with your pieces to win.
+            Connect all three sides of the triangle.
           </p>
         </div>
       </div>

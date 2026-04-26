@@ -4,12 +4,12 @@
   position: relative;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.h2 {
+h2 {
   color: #e5e7eb;
   font-size: 2.4rem;
   font-weight: 700;
@@ -55,6 +55,13 @@
   transition: transform 0.3s ease, color 0.3s ease;
 }
 
+.triviaHelp.isOpen .triviaCardFront {
+  pointer-events: none;
+}
+
+.triviaHelp.isOpen .triviaCardBack {
+  pointer-events: auto;
+}
 
 .triviaButton:focus,
 .triviaButton:focus-visible,
@@ -110,7 +117,7 @@
   font-size: 0.95rem;
   font-family: "Inter", system-ui, sans-serif;
   line-height: 1.6;
-  padding: 1.3rem 1.5rem;
+  padding: 1.rem 1.2rem;
   border-radius: 16px;
   box-shadow:
     0 20px 45px rgba(0, 0, 0, 0.55),
@@ -121,8 +128,7 @@
   justify-content: center;
   align-items: flex-start;
   white-space: normal;
-  hyphens: auto;
-
+  pointer-events: auto;
 }
 
 .triviaClose {
@@ -134,6 +140,7 @@
   font-size: 1.4rem;
   color: #e5e7eb;
   cursor: pointer;
+  pointer-events: auto;
   padding: 0;
   line-height: 1;
   font-weight: 700;
@@ -160,17 +167,19 @@
   width: 100%;
   max-width: 760px;
   background: rgba(26, 26, 31, 0.95);
-  /* Slight transparency */
   backdrop-filter: blur(8px);
   /* Nice glass effect */
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 22px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  padding: none;
+  padding: 0;
   box-sizing: border-box;
+  max-height: 95vh;
+  overflow-y: auto;
 }
 
 .menuHeader {
+  padding: 15px 20px 0;
   position: relative;
   text-align: center;
   margin-bottom: 1rem;
@@ -242,11 +251,11 @@
 .carouselCard {
   flex: 1;
   max-width: 430px;
-  min-height: 118px;
+  min-height: fit-content;
   background: var(--color-surface, #74748a);
   border: 1.5px solid #b6e3ea;
   border-radius: 18px;
-  padding: 1.2rem 1.5rem;
+  padding: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -282,6 +291,7 @@
   justify-content: center;
   gap: 1rem;
   margin-top: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -374,7 +384,7 @@
   display: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .menu {
     padding: 1rem;
   }
@@ -382,6 +392,7 @@
   .menuCard {
     padding: 1.4rem;
     border-radius: 18px;
+    max-width: 95vh
   }
 
   .menuTitle {
@@ -410,7 +421,7 @@
   }
 
   .optionDescription {
-    display: none;
+    display: block;
   }
 }
 
@@ -426,7 +437,7 @@
 .carouselCard {
   flex: 1;
   max-width: 430px;
-  min-height: 118px;
+  min-height: fit-content;
   background: #1f1f24;
   border: 1.5px solid #3c4454;
   border-radius: 18px;
@@ -454,8 +465,15 @@
 }
 
 @media (max-width: 450px) {
+
+  h2 {
+    color: #e5e7eb;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
   .carouselCard {
-    min-height: 44px;
+    min-height: fit-content;
     padding: 0.45rem 0.75rem;
   }
 
