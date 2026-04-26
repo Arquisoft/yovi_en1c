@@ -102,6 +102,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 2, 3),
+            is_steal: false,
         };
         assert_eq!(response.api_version, "v1");
         assert_eq!(response.bot_id, "random");
@@ -114,6 +115,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 2, 3),
+            is_steal: false,
         };
         let json = serde_json::to_string(&response).unwrap();
         assert!(json.contains("\"api_version\":\"v1\""));
@@ -134,6 +136,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(0, 0, 0),
+            is_steal: false,
         };
         let cloned = response.clone();
         assert_eq!(response, cloned);
@@ -145,16 +148,19 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         let r2 = MoveResponse {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         let r3 = MoveResponse {
             api_version: "v2".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         assert_eq!(r1, r2);
         assert_ne!(r1, r3);
