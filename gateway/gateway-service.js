@@ -50,36 +50,23 @@ app.use((req, res, next) => {
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const verifyToken = (req, res, next) => {
-  const { path } = req;
-
-  // 1. Define patterns for public endpoints using Regular Expressions
-  // [^/]+ is a wildcard that matches any character except a forward slash
-  // This allows for dynamic values like {api_version} and {bot_id}
-  const isChooseBot = /^\/api\/gamey\/[^/]+\/ybot\/choose\/[^/]+$/.test(path);
-  const isPlay = /^\/api\/gamey\/[^/]+\/play$/.test(path);
-
-  // 2. Bypass authentication if the current path matches the public routes
-  if (isChooseBot || isPlay) {
-    return next();
-  }
-
-  // 3. Extract the token from the Authorization header (e.g., "Bearer <token>")
+  // Extract the token from the Authorization header (e.g., "Bearer <token>")
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
-  // 4. Return error if no token is found
+  // Return error if no token is found
   if (!token) {
     return res.status(401).json({ error: "No token provided. Access denied!" });
   }
 
-  // 5. Verify the JWT token using the secret key
+  // Verify the JWT token using the secret key
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       // Return error if the token is tampered with or expired
       return res.status(403).json({ error: "Invalid or expired token!" });
     }
 
-    // 6. Attach decoded user data to the request and proceed
+    // Attach decoded user data to the request and proceed
     req.user = decoded;
     next();
   });
@@ -109,7 +96,17 @@ app.use(
 // Proxy: Gamey service
 app.use(
   "/api/gamey",
-  verifyToken,
+  (req, res, next) => {
+    const isAPublicPath = ["/play", "/choose"].some((segment) =>
+      req.path.includes(segment),
+    );
+
+    // Check if path contains the segments that allow public access
+    if (isAPublicPath) {
+      return next();
+    }
+    verifyToken(req, res, next);
+  },
   createProxyMiddleware({
     ...commonOptions,
     target: SERVICES.GAMEY,
