@@ -12,18 +12,18 @@
   },
   "login": {
     "title": "¡Bienvenido de nuevo!",
-    "subtitle": "Introduce tu nombre de usuario y contraseña para entrar.",
-    "username_label": "¿Cuál es tu usuario?",
-    "password_label": "¿Y tu contraseña?",
-    "submit": "¡Vamos!",
+    "subtitle": "Introduce tu usuario y contraseña para entrar.",
+    "username_label": "Usuario",
+    "password_label": "Contraseña",
+    "submit": "¡Entrar!",
     "no_account": "¿No tienes cuenta?",
     "go_signup": "Regístrate aquí",
     "error_empty": "Por favor, introduce usuario y contraseña.",
-    "error_generic": "Error al iniciar sesión"
+    "error_generic": "Error al iniciar sesión. Inténtalo de nuevo."
   },
   "signup": {
-    "title": "Crear cuenta",
-    "subtitle": "Rellena este formulario para registrarte.",
+    "title": "Registrarse",
+    "subtitle": "Rellena el formulario para crear una cuenta.",
     "username_label": "Usuario",
     "email_label": "Correo electrónico",
     "password_label": "Contraseña",
@@ -78,7 +78,7 @@
       "wins": "Victorias",
       "losses": "Derrotas",
       "win_rate": "% Victorias",
-      "table.points" : "Pts",
+      "table.points": "Pts",
       "board_size": "Tamaño",
       "difficulty": "Dificultad",
       "leaderboard": "Tabla de clasificación",
@@ -112,22 +112,33 @@
     "title": "Yovi — Juego Y",
     "info": {
       "standard": "Estándar",
+      "rob": "Modo Robo",
       "pie_rule": "Regla del pastel",
-      "master_y": "Y Maestro"
+      "master_y": "Master Y",
+      "rob_active": "Elige una celda del bot para robar"
+    },
+    "rob": {
+      "action": "Robar",
+      "cancel": "Cancelar",
+      "cost_hint": "Roba una celda del bot — cuesta 2 turnos del bot",
+      "select_hint": "Haz clic en una celda roja para robarla"
     },
     "status": {
-      "you_win": "🏆 ¡Ganaste!",
+      "you_win": "🏆 ¡Has ganado!",
       "bot_wins": "🤖 Gana el bot",
       "thinking": "⏳ El bot está pensando…",
       "your_turn": "🔵 Tu turno",
-      "bot_turn": "🔴 Turno del bot"
+      "bot_turn": "🔴 Turno del bot",
+      "rob_active": "🗡 Selecciona una celda para robar"
     },
     "new_game": "Nueva partida",
     "legend": {
       "you": "Tú (Azul)",
-      "bot": "Bot (Rojo)"
+      "bot": "Bot (Rojo)",
+      "rob": "Celda robada"
     },
-    "rules_hint": "Conecta los tres lados del triángulo con tus fichas para ganar.",
+    "rules_hint": "Conecta los tres lados del triángulo con tus piezas para ganar.",
+    "rules_hint_rob": "Puedes robar una celda del bot en cualquier momento, pero jugará dos turnos seguidos.",
     "difficulty_label": {
       "random": "🎲 Aleatorio",
       "easy": "😊 Fácil",

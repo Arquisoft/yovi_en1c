@@ -26,6 +26,8 @@ pub struct MoveResponse {
     pub bot_id: String,
     /// The coordinates where the bot chooses to place its piece.
     pub coords: Coordinates,
+    /// Allow us to know if the placement is a steal or not
+    pub is_steal: bool, 
 }
 
 /// Handler for the bot move selection endpoint.
@@ -73,21 +75,19 @@ pub async fn choose(
             )));
         }
     };
-    let coords = match bot.choose_move(&game_y) {
-        Some(coords) => coords,
-        None => {
-            // Handle the case where the bot has no valid moves
-            return Err(Json(ErrorResponse::error(
-                "No valid moves available for the bot",
-                Some(params.api_version),
-                Some(params.bot_id),
-            )));
-        }
-    };
+    let (coords, is_steal) = match bot.choose_action(&game_y) {
+    Some(action) => action,
+    None => return Err(Json(ErrorResponse::error(
+        "No valid moves available for the bot",
+        Some(params.api_version),
+        Some(params.bot_id),
+    ))),
+};
     let response = MoveResponse {
         api_version: params.api_version,
         bot_id: params.bot_id,
         coords,
+         is_steal,
     };
     Ok(Json(response))
 }
@@ -102,6 +102,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 2, 3),
+            is_steal: false,
         };
         assert_eq!(response.api_version, "v1");
         assert_eq!(response.bot_id, "random");
@@ -114,6 +115,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 2, 3),
+            is_steal: false,
         };
         let json = serde_json::to_string(&response).unwrap();
         assert!(json.contains("\"api_version\":\"v1\""));
@@ -122,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_move_response_deserialize() {
-        let json = r#"{"api_version":"v1","bot_id":"test","coords":{"x":0,"y":1,"z":2}}"#;
+        let json = r#"{"api_version":"v1","bot_id":"test","coords":{"x":0,"y":1,"z":2},"is_steal":false}"#;
         let response: MoveResponse = serde_json::from_str(json).unwrap();
         assert_eq!(response.api_version, "v1");
         assert_eq!(response.bot_id, "test");
@@ -134,6 +136,7 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(0, 0, 0),
+            is_steal: false,
         };
         let cloned = response.clone();
         assert_eq!(response, cloned);
@@ -145,16 +148,19 @@ mod tests {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         let r2 = MoveResponse {
             api_version: "v1".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         let r3 = MoveResponse {
             api_version: "v2".to_string(),
             bot_id: "random".to_string(),
             coords: Coordinates::new(1, 1, 1),
+            is_steal: false,
         };
         assert_eq!(r1, r2);
         assert_ne!(r1, r3);

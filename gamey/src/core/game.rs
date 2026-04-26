@@ -5,44 +5,25 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::path::Path;
 
-/// A Result type alias for game operations that may fail with a `GameYError`.
 pub type Result<T> = std::result::Result<T, crate::GameYError>;
 
-/// The main game state for a Y game.
-///
-/// Y is a connection game played on a triangular board where players
-/// take turns placing pieces. The goal is to connect all three sides
-/// of the triangle with a single chain of connected pieces.
 #[derive(Debug, Clone)]
 pub struct GameY {
-    // Size of the board (length of one side of the triangular board).
     board_size: u32,
-
-    // Mapping from coordinates to identifiers of players who placed stones there.
     board_map: HashMap<Coordinates, (SetIdx, PlayerId)>,
-
     status: GameStatus,
-
-    // History of moves made in the game.
     history: Vec<Movement>,
-
-    // Union-Find data structure to track connected components for each player
     sets: Vec<PlayerSet>,
-
     available_cells: Vec<u32>,
 }
 
-/// Represents the state of a single cell on the board.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cell {
-    /// The cell has no piece.
     Empty,
-    /// The cell is occupied by a piece belonging to the specified player.
     Occupied(PlayerId),
 }
 
 impl GameY {
-    /// Creates a new game with the specified board size and number of players.
     pub fn new(board_size: u32) -> Self {
         let total_cells = (board_size * (board_size + 1)) / 2;
         Self {
@@ -57,12 +38,10 @@ impl GameY {
         }
     }
 
-    /// Returns the current game status.
     pub fn status(&self) -> &GameStatus {
         &self.status
     }
 
-    /// Returns true if the game has ended (has a winner).
     pub fn check_game_over(&self) -> bool {
         match self.status {
             GameStatus::Ongoing { .. } => false,
@@ -70,24 +49,20 @@ impl GameY {
         }
     }
 
-    /// Returns the list of available cell indices where pieces can be placed.
     pub fn available_cells(&self) -> &Vec<u32> {
         &self.available_cells
     }
 
-    /// Returns the total number of cells on the board.
     pub fn total_cells(&self) -> u32 {
         (self.board_size * (self.board_size + 1)) / 2
     }
 
-    /// Checks if the movement is made by the correct player.
-    ///
-    /// Returns an error if it's not the specified player's turn.
     pub fn check_player_turn(&self, movement: &Movement) -> Result<()> {
         if let GameStatus::Ongoing { next_player } = self.status {
             let player = match movement {
                 Movement::Placement { player, .. } => *player,
                 Movement::Action { player, .. } => *player,
+                Movement::Steal { player, .. } => *player,
             };
             if player != next_player {
                 return Err(GameYError::InvalidPlayerTurn {
@@ -99,7 +74,6 @@ impl GameY {
         Ok(())
     }
 
-    /// Returns the player who should make the next move, or None if the game is over.
     pub fn next_player(&self) -> Option<PlayerId> {
         if let GameStatus::Ongoing { next_player } = self.status {
             Some(next_player)
@@ -108,7 +82,6 @@ impl GameY {
         }
     }
 
-    /// Loads a game state from a YEN format file.
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let filename = path.as_ref().display().to_string();
         let file_content = std::fs::read_to_string(path).map_err(|e| GameYError::IoError {
@@ -120,7 +93,6 @@ impl GameY {
         GameY::try_from(yen)
     }
 
-    /// Saves the game state to a file in YEN format.
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let yen: YEN = self.into();
         let json_content =
@@ -133,7 +105,6 @@ impl GameY {
         Ok(())
     }
 
-    /// Adds a move to the game.
     pub fn add_move(&mut self, movement: Movement) -> Result<()> {
         match &movement {
             Movement::Placement { player, coords } => {
@@ -142,44 +113,75 @@ impl GameY {
             Movement::Action { player, action } => {
                 self.handle_action(*player, action);
             }
+            Movement::Steal { player, coords } => {
+                self.handle_steal(*player, *coords)?;
+            }
         }
         self.history.push(movement);
         Ok(())
     }
 
-    /// Orchestrates the placement logic
+    fn handle_steal(&mut self, player: PlayerId, coords: Coordinates) -> Result<()> {
+        if let GameStatus::Ongoing { next_player } = self.status {
+            if player != next_player {
+                return Err(GameYError::InvalidPlayerTurn {
+                    expected: next_player,
+                    found: player,
+                });
+            }
+        }
+
+        match self.board_map.get(&coords) {
+            None => return Err(GameYError::InvalidMove {
+                message: format!("Cannot steal from empty cell at {}", coords),
+            }),
+            Some((_, owner)) if *owner == player => {
+                return Err(GameYError::Occupied { coordinates: coords, player })
+            }
+            _ => {}
+        }
+
+        let set_idx = if let Some((idx, owner)) = self.board_map.get_mut(&coords) {
+            *owner = player;
+            *idx
+        } else {
+            unreachable!()
+        };
+
+        self.sets[set_idx] = PlayerSet {
+            parent: set_idx,
+            touches_side_a: coords.touches_side_a(),
+            touches_side_b: coords.touches_side_b(),
+            touches_side_c: coords.touches_side_c(),
+        };
+
+        let won = self.connect_neighbors_and_check_win(coords, player, set_idx);
+        self.update_status_after_placement(player, won);
+
+        Ok(())
+    }
+
     fn handle_placement(&mut self, player: PlayerId, coords: Coordinates) -> Result<()> {
         self.validate_placement(player, coords)?;
-
-        // Update board state (available cells, sets, board_map)
         let set_idx = self.register_piece(player, coords);
-
-        // Connect neighbors and determine if this move won the game
         let won = self.connect_neighbors_and_check_win(coords, player, set_idx);
-
         self.update_status_after_placement(player, won);
         Ok(())
     }
 
-    /// Iterates over neighbors to union sets and checks for a win condition
     fn connect_neighbors_and_check_win(
         &mut self,
         coords: Coordinates,
         player: PlayerId,
         current_set_idx: usize,
     ) -> bool {
-        // Base win condition: The piece itself touches all required sides
         let mut won = self.sets[current_set_idx].is_winning_configuration();
-
-        //
         let neighbors = self.get_neighbors(&coords);
 
         for neighbor in neighbors {
             if let Some((neighbor_idx, neighbor_player)) = self.board_map.get(&neighbor)
                 && *neighbor_player == player
             {
-                // Union returns true if the merge resulted in a winning connection
-                //
                 let connection_won = self.union(current_set_idx, *neighbor_idx);
                 won = won || connection_won;
             }
@@ -187,7 +189,6 @@ impl GameY {
         won
     }
 
-    /// Updates the game status (Finished vs Ongoing)
     fn update_status_after_placement(&mut self, player: PlayerId, won: bool) {
         if self.check_game_over() {
             tracing::info!("Game was already over. Move ignored for status update.");
@@ -195,14 +196,12 @@ impl GameY {
             tracing::debug!("Player {} wins the game!", player);
             self.status = GameStatus::Finished { winner: player };
         } else {
-            // tracing::debug!("No win yet..."); // Optional debug
             self.status = GameStatus::Ongoing {
                 next_player: other_player(player),
             };
         }
     }
 
-    /// Handles non-placement actions (Resign, Swap, etc.)
     fn handle_action(&mut self, player: PlayerId, action: &GameAction) {
         match action {
             GameAction::Resign => {
@@ -218,12 +217,10 @@ impl GameY {
         }
     }
 
-    /// Handles validation logic (Game Over checks and Occupancy)
     fn validate_placement(&self, player: PlayerId, coords: Coordinates) -> Result<()> {
         if self.check_game_over() {
             tracing::info!("Game is already over. Move at {} could be ignored", coords);
         }
-
         if self.board_map.contains_key(&coords) {
             return Err(GameYError::Occupied {
                 coordinates: coords,
@@ -233,8 +230,6 @@ impl GameY {
         Ok(())
     }
 
-    /// Updates internal data structures (Available cells, Sets, Map)
-    /// Returns the index of the newly created set.
     fn register_piece(&mut self, player: PlayerId, coords: Coordinates) -> usize {
         let cell_idx = coords.to_index(self.board_size);
         self.available_cells.retain(|&x| x != cell_idx);
@@ -252,12 +247,10 @@ impl GameY {
         set_idx
     }
 
-    /// Returns the size of the board (length of one side of the triangle).
     pub fn board_size(&self) -> u32 {
         self.board_size
     }
 
-    /// Returns the neighboring coordinates for a given cell.
     fn get_neighbors(&self, coords: &Coordinates) -> Vec<Coordinates> {
         let mut neighbors = Vec::new();
         let x = coords.x();
@@ -279,8 +272,6 @@ impl GameY {
         neighbors
     }
 
-    /// Renders the current state of the board as a text string.
-    /// If `show_coordinates` is true, the coordinates of each cell will be displayed.
     pub fn render(&self, options: &RenderOptions) -> String {
         let mut result = String::new();
         let coords_size = self.board_size.to_string().len();
@@ -306,72 +297,6 @@ impl GameY {
         }
         result
     }
-    /*pub fn render(&self, options: &RenderOptions) -> String {
-        let mut result = String::new();
-        let coords_size = self.board_size.to_string().len() as u32;
-
-        let _ = writeln!(result, "--- Game of Y (Size {}) ---", self.board_size);
-
-        for row in 0..self.board_size {
-            let x = self.board_size - 1 - row;
-
-            let indent_multiplier = match (options.show_3d_coords, options.show_idx) {
-                (true, true) => 8,
-                (true, false) => 4,
-                (false, true) => 4,
-                (false, false) => 2,
-            };
-
-            indent(&mut result, x * indent_multiplier);
-
-            for y in 0..=row {
-                let z = row - y;
-
-                let coords = Coordinates::new(x, y, z);
-                let player = self.board_map.get(&coords).map(|(_, p)| *p);
-
-                let mut symbol = match player {
-                    Some(p) => format!("{}", p),
-                    None => ".".to_string(),
-                };
-
-                if options.show_3d_coords {
-                    symbol.push_str(
-                        format!(
-                            "({:0width$},{:0width$},{:0width$})",
-                            x,
-                            y,
-                            z,
-                            width = coords_size as usize
-                        )
-                        .as_str(),
-                    );
-                }
-                if options.show_idx {
-                    let idx = coords.to_index(self.board_size);
-                    symbol.push_str(format!("({}) ", idx).as_str());
-                }
-                if options.show_colors {
-                    match player {
-                        Some(p) if p.id() == 0 => {
-                            symbol = format!("\x1b[34m{}\x1b[0m", symbol); // Blue for player 0
-                        }
-                        Some(p) if p.id() == 1 => {
-                            symbol = format!("\x1b[31m{}\x1b[0m", symbol); // Red for player 1
-                        }
-                        _ => {}
-                    }
-                }
-
-                let _ = write!(result, "{}   ", symbol);
-            }
-            result.push('\n');
-            if options.show_idx || options.show_3d_coords {
-                result.push('\n');
-            }
-        }
-        result
-    }*/
 
     fn get_indent_multiplier(&self, options: &RenderOptions) -> u32 {
         match (options.show_3d_coords, options.show_idx) {
@@ -385,13 +310,11 @@ impl GameY {
     fn format_cell(&self, coords: Coordinates, options: &RenderOptions, width: usize) -> String {
         let player = self.board_map.get(&coords).map(|(_, p)| *p);
 
-        // 1. Base symbol
         let mut symbol = match player {
             Some(p) => format!("{}", p),
             None => ".".to_string(),
         };
 
-        // 2. Append metadata (3D Coords / Index)
         if options.show_3d_coords {
             symbol.push_str(&format!(
                 "({:0w$},{:0w$},{:0w$})",
@@ -405,8 +328,6 @@ impl GameY {
             let idx = coords.to_index(self.board_size);
             symbol.push_str(&format!("({}) ", idx));
         }
-
-        // 3. Apply colors
         if options.show_colors {
             symbol = apply_player_color(symbol, player);
         }
@@ -414,7 +335,6 @@ impl GameY {
         symbol
     }
 
-    /// Disjoint Set Union 'Find' with path compression
     fn find(&mut self, i: SetIdx) -> SetIdx {
         if self.sets[i].parent == i {
             i
@@ -424,14 +344,12 @@ impl GameY {
         }
     }
 
-    /// Disjoint Set Union 'Union' operation
     fn union(&mut self, i: SetIdx, j: SetIdx) -> bool {
         let root_i = self.find(i);
         let root_j = self.find(j);
 
         if root_i != root_j {
             self.sets[root_i].parent = root_j;
-            // Merge side properties
             self.sets[root_j].touches_side_a |= self.sets[root_i].touches_side_a;
             self.sets[root_j].touches_side_b |= self.sets[root_i].touches_side_b;
             self.sets[root_j].touches_side_c |= self.sets[root_i].touches_side_c;
@@ -442,10 +360,6 @@ impl GameY {
         false
     }
 
-    /// Returns the state of the cell at the given coordinates.
-    ///
-    /// This is used by external code (e.g. bots) that needs to read the board
-    /// without having direct access to the internal `board_map`.
     pub fn cell_at(&self, coords: &Coordinates) -> Cell {
         match self.board_map.get(coords) {
             Some((_, player)) => Cell::Occupied(*player),
@@ -456,6 +370,28 @@ impl GameY {
 
 fn indent(str: &mut String, level: u32) {
     str.push_str(&" ".repeat(level as usize));
+}
+
+fn other_player(player: PlayerId) -> PlayerId {
+    if player.id() == 0 {
+        PlayerId::new(1)
+    } else {
+        PlayerId::new(0)
+    }
+}
+
+fn apply_player_color(symbol: String, player: Option<PlayerId>) -> String {
+    match player {
+        Some(p) if p.id() == 0 => format!("\x1b[34m{}\x1b[0m", symbol),
+        Some(p) if p.id() == 1 => format!("\x1b[31m{}\x1b[0m", symbol),
+        _ => symbol,
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum GameStatus {
+    Ongoing { next_player: PlayerId },
+    Finished { winner: PlayerId },
 }
 
 impl TryFrom<YEN> for GameY {
@@ -538,32 +474,6 @@ impl From<&GameY> for YEN {
     }
 }
 
-fn other_player(player: PlayerId) -> PlayerId {
-    // Assuming two players with IDs 0 and 1
-    if player.id() == 0 {
-        PlayerId::new(1)
-    } else {
-        PlayerId::new(0)
-    }
-}
-
-fn apply_player_color(symbol: String, player: Option<PlayerId>) -> String {
-    match player {
-        Some(p) if p.id() == 0 => format!("\x1b[34m{}\x1b[0m", symbol), // Blue
-        Some(p) if p.id() == 1 => format!("\x1b[31m{}\x1b[0m", symbol), // Red
-        _ => symbol,
-    }
-}
-
-/// Represents the current status of a game.
-#[derive(Debug, Clone)]
-pub enum GameStatus {
-    /// The game is still in progress with the specified player to move next.
-    Ongoing { next_player: PlayerId },
-    /// The game has ended with a winner.
-    Finished { winner: PlayerId },
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -588,7 +498,6 @@ mod tests {
         }
     }
 
-    // Helper function to compare neighbor sets
     fn assert_neighbors_match(actual: Vec<Coordinates>, expected: Vec<Coordinates>) {
         let actual_set: HashSet<_> = actual.into_iter().collect();
         let expected_set: HashSet<_> = expected.into_iter().collect();
@@ -599,9 +508,7 @@ mod tests {
     fn test_interior_cell_has_six_neighbors() {
         let board = GameY::new(5);
         let cell = Coordinates::new(2, 1, 1);
-
         let neighbors = board.get_neighbors(&cell);
-
         let expected = vec![
             Coordinates::new(1, 2, 1),
             Coordinates::new(1, 1, 2),
@@ -610,7 +517,6 @@ mod tests {
             Coordinates::new(3, 1, 0),
             Coordinates::new(2, 2, 0),
         ];
-
         assert_eq!(neighbors.len(), 6);
         assert_neighbors_match(neighbors, expected);
     }
@@ -619,11 +525,8 @@ mod tests {
     fn test_corner_cell_has_two_neighbors() {
         let board = GameY::new(5);
         let top_corner = Coordinates::new(4, 0, 0);
-
         let neighbors = board.get_neighbors(&top_corner);
-
         let expected = vec![Coordinates::new(3, 1, 0), Coordinates::new(3, 0, 1)];
-
         assert_eq!(neighbors.len(), 2);
         assert_neighbors_match(neighbors, expected);
     }
@@ -632,16 +535,13 @@ mod tests {
     fn test_edge_cell_has_four_neighbors() {
         let board = GameY::new(5);
         let edge_cell = Coordinates::new(0, 2, 2);
-
         let neighbors = board.get_neighbors(&edge_cell);
-
         let expected = vec![
             Coordinates::new(1, 1, 2),
             Coordinates::new(0, 1, 3),
             Coordinates::new(1, 2, 1),
             Coordinates::new(0, 3, 1),
         ];
-
         assert_eq!(neighbors.len(), 4);
         assert_neighbors_match(neighbors, expected);
     }
@@ -649,7 +549,6 @@ mod tests {
     #[test]
     fn test_winning_condition() {
         let mut game = GameY::new(3);
-
         let moves = vec![
             Movement::Placement {
                 player: PlayerId::new(0),
@@ -672,11 +571,9 @@ mod tests {
                 coords: Coordinates::new(0, 0, 2),
             },
         ];
-
         for mv in moves {
             game.add_move(mv).unwrap();
         }
-
         match game.status {
             GameStatus::Finished { winner } => {
                 assert_eq!(winner, PlayerId::new(0));
@@ -688,7 +585,6 @@ mod tests {
     #[test]
     fn test_yen_conversion() {
         let mut game = GameY::new(3);
-
         let moves = vec![
             Movement::Placement {
                 player: PlayerId::new(0),
@@ -703,20 +599,16 @@ mod tests {
                 coords: Coordinates::new(0, 1, 1),
             },
         ];
-
         for mv in moves {
             game.add_move(mv).unwrap();
         }
-
         let yen: YEN = (&game).into();
         let loaded_game = GameY::try_from(yen.clone()).unwrap();
-
         assert_eq!(game.board_size, loaded_game.board_size);
         let yen_loaded: YEN = (&loaded_game).into();
         assert_eq!(yen.layout(), yen_loaded.layout());
     }
 
-    // Test loading a YEN representation of a finished game
     #[test]
     fn test_load_yen_end2() {
         let yen_str = r#"{
@@ -735,7 +627,6 @@ mod tests {
         }
     }
 
-    // Test loading a YEN representation of a finished game
     #[test]
     fn test_load_yen_end3() {
         let yen_str = r#"{
@@ -754,7 +645,6 @@ mod tests {
         }
     }
 
-    // Test loading a YEN representation of a finished game
     #[test]
     fn test_load_yen_single_full() {
         let yen_str = r#"{
@@ -773,7 +663,6 @@ mod tests {
         }
     }
 
-    // Test loading a YEN representation of a finished game
     #[test]
     fn test_load_yen_single_empty() {
         let yen_str = r#"{
@@ -790,5 +679,52 @@ mod tests {
             }
             _ => panic!("Game should be ongoing"),
         }
+    }
+
+    #[test]
+    fn test_steal_valid() {
+        let mut game = GameY::new(5);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 1, 2),
+        }).unwrap();
+        game.add_move(Movement::Steal {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(1, 1, 2),
+        }).unwrap();
+        assert_eq!(game.cell_at(&Coordinates::new(1, 1, 2)), Cell::Occupied(PlayerId::new(1)));
+    }
+
+    #[test]
+    fn test_steal_own_cell_fails() {
+        let mut game = GameY::new(5);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 1, 2),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(2, 1, 1),
+        }).unwrap();
+        // Player 0 intenta robarse su propia celda
+        let result = game.add_move(Movement::Steal {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 1, 2),
+        });
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_steal_empty_cell_fails() {
+        let mut game = GameY::new(5);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 1, 2),
+        }).unwrap();
+        let result = game.add_move(Movement::Steal {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(2, 2, 0),
+        });
+        assert!(result.is_err());
     }
 }

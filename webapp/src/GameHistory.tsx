@@ -26,6 +26,7 @@ interface GameRecord {
   board: Record<string, 0 | 1>;
   difficulty?: Difficulty;
   boardSize?: BoardSize;
+  mode?: "standard" | "rob";
   points?: number;
 }
 
@@ -47,7 +48,8 @@ type SortField =
   | "result"
   | "difficulty"
   | "boardSize"
-  | "points";
+  | "points"
+  | "mode";
 type SortDir = "asc" | "desc";
 
 interface Props {
@@ -152,6 +154,8 @@ export default function GameHistory({ onBack, userName }: Props) {
       cmp = (a.difficulty ?? "").localeCompare(b.difficulty ?? "");
     } else if (sortField === "boardSize") {
       cmp = (a.boardSize ?? "").localeCompare(b.boardSize ?? "");
+    } else if (sortField === "mode") {
+      cmp = (a.mode ?? "").localeCompare(b.mode ?? "");
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
@@ -208,9 +212,7 @@ export default function GameHistory({ onBack, userName }: Props) {
                 <div className="statDivider" />
                 <div className="statItem">
                   <span className="statValue statLoss">{losses}</span>
-                  <span className="statLabel">
-                    {t("history.stats.losses")}
-                  </span>
+                  <span className="statLabel">{t("history.stats.losses")}</span>
                 </div>
                 <div className="statDivider" />
                 <div className="statItem">
@@ -249,40 +251,48 @@ export default function GameHistory({ onBack, userName }: Props) {
                   <table className="historyTable">
                     <thead>
                       <tr>
-                        <th>{t("history.table.number")}</th>
+                        <th className="colIndex">
+                          {t("history.table.number")}
+                        </th>
                         <th
-                          className="sortable"
+                          className="sortable colResult"
                           onClick={() => handleSort("result")}
                         >
                           {t("history.table.result")} {sortIcon("result")}
                         </th>
                         <th
-                          className="sortable"
+                          className="sortable colMode"
+                          onClick={() => handleSort("mode")}
+                        >
+                          {t("history.table.mode")} {sortIcon("mode")}
+                        </th>
+                        <th
+                          className="sortable colDifficulty"
                           onClick={() => handleSort("difficulty")}
                         >
                           {t("history.table.difficulty")}{" "}
                           {sortIcon("difficulty")}
                         </th>
                         <th
-                          className="sortable"
+                          className="sortable colSize"
                           onClick={() => handleSort("boardSize")}
                         >
                           {t("history.table.size")} {sortIcon("boardSize")}
                         </th>
                         <th
-                          className="sortable"
+                          className="sortable colPoints"
                           onClick={() => handleSort("points")}
                         >
                           {t("history.table.points")} {sortIcon("points")}
                         </th>
                         <th
-                          className="sortable"
+                          className="sortable colMoves"
                           onClick={() => handleSort("totalMoves")}
                         >
                           {t("history.table.moves")} {sortIcon("totalMoves")}
                         </th>
                         <th
-                          className="sortable"
+                          className="sortable colDate"
                           onClick={() => handleSort("playedAt")}
                         >
                           {t("history.table.date")} {sortIcon("playedAt")}
@@ -311,6 +321,13 @@ export default function GameHistory({ onBack, userName }: Props) {
                                 : t("history.result.loss")}
                             </span>
                           </td>
+                          <td className="tdMode">
+                            <span
+                              className={`modeBadge ${game.mode === "rob" ? "modeRob" : "modeStandard"}`}
+                            >
+                              {game.mode === "rob" ? "🗡 Rob" : "⬡ Standard"}
+                            </span>
+                          </td>
                           <td className="tdDifficulty">
                             {game.difficulty
                               ? difficultyLabel[game.difficulty]
@@ -323,7 +340,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                           </td>
                           <td className="tdPoints">{game.points ?? 0}</td>
                           <td className="tdMoves">{game.totalMoves ?? "—"}</td>
-                          <td className="tdDate">{formatDate(game.playedAt)}</td>
+                          <td className="tdDate">
+                            {formatDate(game.playedAt)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -357,7 +376,8 @@ export default function GameHistory({ onBack, userName }: Props) {
                     <td className="tdIndex">{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>
                       {entry.username}{" "}
-                      {entry.username === userName && `(${t("history.leaderboard.you")})`}
+                      {entry.username === userName &&
+                        `(${t("history.leaderboard.you")})`}
                     </td>
                     <td className="tdPoints" style={{ color: "#fbbf24" }}>
                       ★ {entry.totalPoints.toLocaleString()}
@@ -394,7 +414,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                             borderRadius: "8px",
                           }}
                           itemStyle={{ color: "#818cf8" }}
-                          labelFormatter={() => t("history.stats_view.game_session")}
+                          labelFormatter={() =>
+                            t("history.stats_view.game_session")
+                          }
                         />
                         <Line
                           type="monotone"
@@ -453,7 +475,8 @@ export default function GameHistory({ onBack, userName }: Props) {
                               : t("history.stats_view.loss_avg")}
                           </span>
                           <span className="value">
-                            {Math.round(m.avgMoves)} {t("history.stats_view.moves_unit")}
+                            {Math.round(m.avgMoves)}{" "}
+                            {t("history.stats_view.moves_unit")}
                           </span>
                         </div>
                       ))}

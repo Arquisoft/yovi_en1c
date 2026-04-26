@@ -10,7 +10,7 @@
 
 .historyCard {
   width: 100%;
-  max-width: 720px;
+  max-width: 860px;
   background: var(--color-surface, #1a1a1f);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 16px;
@@ -18,6 +18,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  overflow: hidden;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -113,7 +114,8 @@
 
 /* ── Table ───────────────────────────────────────────────────────────────── */
 .tableWrapper {
-  overflow-x: auto;
+  overflow-x: hidden;
+  width: 100%;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
@@ -122,6 +124,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
+  table-layout: fixed;
 }
 
 .historyTable thead tr {
@@ -129,7 +132,7 @@
 }
 
 .historyTable th {
-  padding: 0.65rem 1rem;
+  padding: 0.65rem 0.75rem;
   text-align: left;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
@@ -138,6 +141,8 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .historyTable th.sortable {
@@ -149,10 +154,15 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-.tdBoardSize {
-  text-align: center;
-  font-weight: 500;
-}
+/* ── Column widths ───────────────────────────────────────────────────────── */
+.colIndex      { width: 36px; }
+.colResult     { width: 90px; }
+.colMode       { width: 100px; }
+.colDifficulty { width: 90px; }
+.colSize       { width: 72px; }
+.colPoints     { width: 68px; }
+.colMoves      { width: 64px; }
+.colDate       { width: auto; }
 
 .sortIcon {
   margin-left: 0.3rem;
@@ -181,8 +191,11 @@
 }
 
 .historyTable td {
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 0.75rem;
   color: var(--color-text, #f1f1f3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rowWin {
@@ -196,7 +209,11 @@
 .tdIndex {
   color: rgba(255, 255, 255, 0.3);
   font-size: 0.78rem;
-  width: 2rem;
+}
+
+.tdBoardSize {
+  text-align: center;
+  font-weight: 500;
 }
 
 .tdMoves {
@@ -206,7 +223,6 @@
 .tdDate {
   color: rgba(255, 255, 255, 0.55);
   font-size: 0.82rem;
-  white-space: nowrap;
 }
 
 /* ── Badges ──────────────────────────────────────────────────────────────── */
@@ -230,6 +246,27 @@
   background: rgba(248, 113, 113, 0.12);
   color: #f87171;
   border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+/* ── Mode badge ──────────────────────────────────────────────────────────── */
+.modeBadge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.modeRob {
+  background: rgba(251, 113, 133, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(251, 113, 133, 0.25);
+}
+
+.modeStandard {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.22);
 }
 
 /* ── Empty / loading / error states ─────────────────────────────────────── */
@@ -271,6 +308,7 @@
   font-size: 0.9rem;
 }
 
+/* ── Stats dashboard ─────────────────────────────────────────────────────── */
 .statsDashboard {
   display: flex;
   flex-direction: column;
@@ -317,31 +355,54 @@
 .avgMoveItem .label {
   color: rgba(255, 255, 255, 0.5);
 }
+
 .avgMoveItem .value {
   font-weight: 600;
   color: #f1f1f3;
 }
 
-@media (max-width: 600px) {
-  .chartGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── Points Styling ──────────────────────────────────────────────────────── */
+/* ── Points ──────────────────────────────────────────────────────────────── */
 .tdPoints {
   font-weight: 700;
   color: #a5b4fc;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Leaderboard Specific ────────────────────────────────────────────────── */
+/* ── Leaderboard ─────────────────────────────────────────────────────────── */
 .rowHighlight {
   background: rgba(99, 102, 241, 0.1) !important;
   border-left: 2px solid #6366f1 !important;
 }
 
-/* ── Responsiveness ──────────────────────────────────────────────────────── */
+/* ── View toggle ─────────────────────────────────────────────────────────── */
+.viewToggle {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.toggleBtn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toggleBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.toggleBtn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #c4b5fd;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .historyHeader {
     flex-direction: column;
@@ -350,5 +411,15 @@
 
   .historyTable {
     font-size: 0.75rem;
+  }
+
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .colMode,
+  .colDifficulty,
+  .colSize {
+    display: none;
   }
 }

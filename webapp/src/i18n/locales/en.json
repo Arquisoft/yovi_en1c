@@ -48,25 +48,28 @@
     "board_size_aria": "board size",
     "game_mode_aria": "game mode",
     "difficulty_aria": "difficulty",
+    "rob_title": "Rob Mode",
     "board": {
       "small_title": "Small",
-      "small_desc": "5×5 board, suitable for quick games",
+      "small_desc": "5×5 board, great for quick games",
       "medium_title": "Medium",
       "medium_desc": "7×7 board, classic Y experience",
       "large_title": "Large",
-      "large_desc": "9×9 board, extensive Y gameplay"
+      "large_desc": "9×9 board, strategic Y gameplay"
     },
     "mode": {
       "standard_title": "Standard",
-      "standard_desc": "Classic Y rules"
+      "standard_desc": "Classic Y rules",
+      "rob_title": "Rob",
+      "rob_desc": "Steal opponent pieces"
     },
     "difficulty": {
       "random_title": "Random",
-      "random_desc": "Random moves",
+      "random_desc": "Makes random moves",
       "easy_title": "Easy",
-      "easy_desc": "A bit more difficult",
+      "easy_desc": "Plays with basic strategy",
       "hard_title": "Hard",
-      "hard_desc": "Full heuristic opponent"
+      "hard_desc": "Uses full heuristic strategy"
     }
   },
   "history": {
@@ -87,6 +90,7 @@
     "table": {
       "number": "#",
       "result": "Result",
+      "mode": "Mode",
       "difficulty": "Difficulty",
       "size": "Size",
       "points": "Points",
@@ -132,22 +136,33 @@
     "title": "Yovi — Y Game",
     "info": {
       "standard": "Standard",
+      "rob": "Rob Mode",
       "pie_rule": "Pie rule",
-      "master_y": "Master Y"
+      "master_y": "Master Y",
+      "rob_active": "Choose a bot cell to rob"
+    },
+    "rob": {
+      "action": "Rob",
+      "cancel": "Cancel",
+      "cost_hint": "Steal a bot cell — costs 2 bot turns",
+      "select_hint": "Click a red cell to steal it"
     },
     "status": {
       "you_win": "🏆 You win!",
       "bot_wins": "🤖 Bot wins",
-      "thinking": "⏳ Bot thinking…",
+      "thinking": "⏳ Bot is thinking…",
       "your_turn": "🔵 Your turn",
-      "bot_turn": "🔴 Bot's turn"
+      "bot_turn": "🔴 Bot's turn",
+      "rob_active": "🗡 Select a cell to rob"
     },
     "new_game": "New game",
     "legend": {
       "you": "You (Blue)",
-      "bot": "Bot (Red)"
+      "bot": "Bot (Red)",
+      "rob": "Robbed cell"
     },
     "rules_hint": "Connect all three sides of the triangle with your pieces to win.",
+    "rules_hint_rob": "Rob a bot cell at any time — but it plays twice in return.",
     "difficulty_label": {
       "random": "🎲 Random",
       "easy": "😊 Easy",
