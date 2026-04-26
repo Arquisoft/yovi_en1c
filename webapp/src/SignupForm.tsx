@@ -8,31 +8,6 @@ type Props = {
   onGoToLogin: () => void;
 };
 
-// React hooks for managing form state and error handling
-const validateForm = (
-  username: string,
-  email: string,
-  password: string,
-  confirmPassword: string,
-): string | null => {
-  if (!username || !email || !password || !confirmPassword) {
-    return "Please fill in all fields.";
-  }
-  if (password !== confirmPassword) {
-    return "Passwords do not match.";
-  }
-  return null;
-};
-const processSignupResponse = (data: Record<string, unknown>): void => {
-  const token = data?.token;
-  const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
-  if (token && usernameFromBackend) {
-    const cleanToken = sanitizeToken(token);
-    const cleanUsername = sanitizeUsername(usernameFromBackend);
-    localStorage.setItem("token", cleanToken);
-    localStorage.setItem("username", cleanUsername);
-  }
-};
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const LANGUAGES = [
@@ -62,68 +37,83 @@ export function LanguageSwitcher() {
   );
 }
 
+const processSignupResponse = (data: Record<string, unknown>): void => {
+  const token = data?.token;
+  const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
+  if (token && usernameFromBackend) {
+    const cleanToken = sanitizeToken(token);
+    const cleanUsername = sanitizeUsername(usernameFromBackend);
+    localStorage.setItem("token", cleanToken);
+    localStorage.setItem("username", cleanUsername);
+  }
+};
+
 const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // Inicializamos la traducción
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // Validación movida dentro para usar t()
+  const validateForm = (): string | null => {
+    if (!username.trim() || !email.trim() || !password || !confirmPassword) {
+      return t("signup.error_empty_fields");
+    }
+    if (password !== confirmPassword) {
+      return t("signup.error_password_mismatch");
+    }
+    return null;
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
 
-    const trimmedUsername = username.trim();
-    const trimmedEmail = email.trim();
-
-    if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
-      setError(t("signup.error_empty"));
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError(t("signup.error_password_mismatch"));
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     try {
       const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
-
       const res = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: trimmedUsername,
-          email: trimmedEmail,
+          username: username.trim(),
+          email: email.trim(),
           password,
         }),
       });
 
       const text = await res.text();
+      const data = JSON.parse(text);
 
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Server returned non-JSON:", text);
-        setError(t("common.error_unexpected"));
+      if (!res.ok) {
+        setError(data.error || t("signup.error_generic"));
         return;
       }
 
-      if (res.ok) {
-        onRegistered(trimmedUsername);
+      processSignupResponse(data);
+      onRegistered(username.trim());
+    } catch (err: unknown) {
+      if (err instanceof SyntaxError) {
+        setError(t("signup.error_server_response"));
       } else {
-        setError(data.error || t("signup.error_generic"));
+        setError(
+          err instanceof Error ? err.message : t("common.network_error"),
+        );
       }
-    } catch (err: any) {
-      setError(err.message || t("common.error_network"));
     }
   };
 
   return (
-    <>
+    <div className="signup-form-container">
       <LanguageSwitcher />
+
       <form onSubmit={handleSubmit} className="signup-form">
         <h2>{t("signup.title")}</h2>
         <p>{t("signup.subtitle")}</p>
@@ -183,6 +173,7 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
           <button
             type="button"
             onClick={onGoToLogin}
+            className="link-button"
             style={{
               background: "none",
               border: "none",
@@ -205,7 +196,7 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
           </div>
         )}
       </form>
-    </>
+    </div>
   );
 };
 
