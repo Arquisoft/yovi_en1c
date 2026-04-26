@@ -39,34 +39,39 @@ paths:
                   status: { type: string, example: "Gateway up and running" }
 
   # --- USER SERVICE (via /api/users) ---
-  /api/users/createuser:
+  /api/users/signup:
     post:
       tags: [Users]
-      summary: Create User
+      summary: User Registration (with JWT)
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [username]
+              required: [username, password, email]
               properties:
                 username: { type: string, example: "player1" }
-                email:
-                  {
-                    type: string,
-                    format: email,
-                    example: "player1@example.com",
-                  }
+                password: { type: string, example: "securePass123" }
+                email: { type: string, example: "player1@example.com" }
       responses:
-        "200":
-          description: User created.
+        "201":
+          description: User registered and token generated.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserResponse"
+                type: object
+                properties:
+                  message: { type: string }
+                  token: { type: string }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      username: { type: string }
         "400":
-          description: Database or validation error.
+          description: Registration error.
+
 
   /api/users/games/list:
     get:

@@ -96,9 +96,9 @@ export default function GameHistory({ onBack, userName }: Props) {
           }),
           fetch(
             `${API_GATEWAY_URL}/api/users/games/stats?username=${userName}`, {
-              headers: { "Authorization": `Bearer ${token}` }
-            }),
-    
+            headers: { "Authorization": `Bearer ${token}` }
+          }),
+
         ]);
 
         if (!gamesRes.ok || !leaderRes.ok || !statsRes.ok) {

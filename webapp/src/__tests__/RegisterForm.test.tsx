@@ -7,6 +7,7 @@ import "@testing-library/jest-dom";
 describe("LoginForm", () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -60,10 +61,10 @@ describe("LoginForm", () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        token: "mock-token",
+        token: "valid.token.here",
         user: { username: "Pablo" },
       }),
-    } as Response);
+    });
 
     render(
       <LoginForm
@@ -78,9 +79,9 @@ describe("LoginForm", () => {
 
     await waitFor(() => {
       expect(onLoggedIn).toHaveBeenCalledWith("Pablo");
+      expect(localStorage.getItem("token")).toBe("valid.token.here");
+      expect(localStorage.getItem("username")).toBe("Pablo");
     });
-
-    expect(localStorage.getItem("token")).toBe("mock-token");
   });
 
 
@@ -92,7 +93,7 @@ describe("LoginForm", () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        token: "mock-token",
+        token: "valid.token.here",
       }),
     } as Response);
 

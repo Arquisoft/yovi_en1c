@@ -50,17 +50,23 @@ app.use((req, res, next) => {
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const verifyToken = (req, res, next) => {
+  // Extract the token from the Authorization header (e.g., "Bearer <token>")
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
+  // Return error if no token is found
   if (!token) {
     return res.status(401).json({ error: "No token provided. Access denied!" });
   }
 
+  // Verify the JWT token using the secret key
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
+      // Return error if the token is tampered with or expired
       return res.status(403).json({ error: "Invalid or expired token!" });
     }
+
+    // Attach decoded user data to the request and proceed
     req.user = decoded;
     next();
   });
@@ -74,12 +80,12 @@ app.use(
   (req, res, next) => {
     const publicPaths = ["/signup", "/login"];
 
-    if(publicPaths.includes(req.path)){
+    if (publicPaths.includes(req.path)) {
       return next();
     }
-    verifyToken(req,res,next);
+    verifyToken(req, res, next);
   },
-  
+
   createProxyMiddleware({
     ...commonOptions,
     target: SERVICES.USERS,
@@ -90,7 +96,17 @@ app.use(
 // Proxy: Gamey service
 app.use(
   "/api/gamey",
-  verifyToken,
+  (req, res, next) => {
+    const isAPublicPath = ["/play", "/choose"].some((segment) =>
+      req.path.includes(segment),
+    );
+
+    // Check if path contains the segments that allow public access
+    if (isAPublicPath) {
+      return next();
+    }
+    verifyToken(req, res, next);
+  },
   createProxyMiddleware({
     ...commonOptions,
     target: SERVICES.GAMEY,

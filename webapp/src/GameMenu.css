@@ -195,6 +195,7 @@ h2 {
   color: #4b5563;
   font-size: 30px;
   line-height: 1.5;
+  display: block;
 }
 
 .menuSection {
@@ -400,24 +401,19 @@ h2 {
   }
 
   .menuSubtitle {
-    font-size: 0.95rem;
+    display: none;
   }
 
   .triviaHelp {
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    display: none;
   }
 
   .triviaPopup {
-    left: 50%;
-    transform: translateX(-50%);
+    display: none;
   }
 
   .triviaCard {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    display: none;
   }
 
   .optionDescription {
@@ -470,6 +466,14 @@ h2 {
     color: #e5e7eb;
     font-size: 1.2rem;
     font-weight: 700;
+  }
+
+  .triviaHelp {
+    display: none;
+  }
+
+  .menuSubtitle {
+    display: none;
   }
 
   .carouselCard {
