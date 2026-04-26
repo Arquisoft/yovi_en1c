@@ -7,11 +7,11 @@ import GameHistory from "./GameHistory";
 import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
 
-type Screen = 'login' | 'signup' | 'menu' | 'board' | 'history';
+type Screen = "login" | "signup" | "menu" | "board" | "history";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('login');
-  const [userName, setUserName] = useState('');
+  const [screen, setScreen] = useState<Screen>("login");
+  const [userName, setUserName] = useState("");
   const [config, setConfig] = useState<GameConfig | null>(null);
 
   if (screen === "menu") {
@@ -20,7 +20,7 @@ function App() {
         userName={userName}
         onStartGame={(cfg: GameConfig) => {
           setConfig(cfg);
-          setScreen('board');
+          setScreen("board");
         }}
         onLogOut={() => {
           setUserName("");
@@ -49,11 +49,15 @@ function App() {
   return (
     <div className="App">
       <div>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src="/logo-game-y.svg" className="logo gameY" alt="Game Y" />
+        <a
+          href="https://github.com/Arquisoft/yovi_en1c"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img src="/yovi_en1c-logo.svg" className="logo gameY" alt="Game Y" />
         </a>
       </div>
-      <h2>Welcome to play the game of Y</h2>
+      <h2>Welcome to the Y game!</h2>
 
       {screen === "login" && (
         <LoginForm
@@ -69,7 +73,7 @@ function App() {
         <SignUpForm
           onRegistered={(name: string) => {
             setUserName(name);
-            setScreen('menu');
+            setScreen("menu");
           }}
           onGoToLogin={() => setScreen("login")}
         />
