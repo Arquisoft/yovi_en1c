@@ -43,7 +43,8 @@ export default function GameMenu({
     layout: "classic",
   };
 
-  const goPrev = (index: number, length: number) => (index - 1 + length) % length;
+  const goPrev = (index: number, length: number) =>
+    (index - 1 + length) % length;
   const goNext = (index: number, length: number) => (index + 1) % length;
 
   const boardLabels = boardSizeValues.map((v) => ({
@@ -66,8 +67,14 @@ export default function GameMenu({
       <div className="menuCard">
         <div className="menuHeader">
           <h2 className="menuTitle">{t("menu.title")}</h2>
-          <p className="menuSubtitle">{t("menu.subtitle", { name: userName })}</p>
-          <button className="btn btnSecondary" type="button" onClick={onViewHistory}>
+          <p className="menuSubtitle">
+            {t("menu.subtitle", { name: userName })}
+          </p>
+          <button
+            className="btn btnSecondary"
+            type="button"
+            onClick={onViewHistory}
+          >
             {t("menu.view_history")}
           </button>
         </div>
@@ -79,20 +86,32 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setBoardIndex(goPrev(boardIndex, boardSizeValues.length))}
-              aria-label={t("menu.prev_aria", { section: t("menu.board_size_aria") })}
+              onClick={() =>
+                setBoardIndex(goPrev(boardIndex, boardSizeValues.length))
+              }
+              aria-label={t("menu.prev_aria", {
+                section: t("menu.board_size_aria"),
+              })}
             >
               ‹
             </button>
             <div className="carouselCard">
-              <span className="optionTitle">{boardLabels[boardIndex].title}</span>
-              <span className="optionDescription">{boardLabels[boardIndex].description}</span>
+              <span className="optionTitle">
+                {boardLabels[boardIndex].title}
+              </span>
+              <span className="optionDescription">
+                {boardLabels[boardIndex].description}
+              </span>
             </div>
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setBoardIndex(goNext(boardIndex, boardSizeValues.length))}
-              aria-label={t("menu.next_aria", { section: t("menu.board_size_aria") })}
+              onClick={() =>
+                setBoardIndex(goNext(boardIndex, boardSizeValues.length))
+              }
+              aria-label={t("menu.next_aria", {
+                section: t("menu.board_size_aria"),
+              })}
             >
               ›
             </button>
@@ -106,20 +125,30 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goPrev(modeIndex, gameModeValues.length))}
-              aria-label={t("menu.prev_aria", { section: t("menu.game_mode_aria") })}
+              onClick={() =>
+                setModeIndex(goPrev(modeIndex, gameModeValues.length))
+              }
+              aria-label={t("menu.prev_aria", {
+                section: t("menu.game_mode_aria"),
+              })}
             >
               ‹
             </button>
             <div className="carouselCard">
               <span className="optionTitle">{modeLabels[modeIndex].title}</span>
-              <span className="optionDescription">{modeLabels[modeIndex].description}</span>
+              <span className="optionDescription">
+                {modeLabels[modeIndex].description}
+              </span>
             </div>
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setModeIndex(goNext(modeIndex, gameModeValues.length))}
-              aria-label={t("menu.next_aria", { section: t("menu.game_mode_aria") })}
+              onClick={() =>
+                setModeIndex(goNext(modeIndex, gameModeValues.length))
+              }
+              aria-label={t("menu.next_aria", {
+                section: t("menu.game_mode_aria"),
+              })}
             >
               ›
             </button>
@@ -133,20 +162,36 @@ export default function GameMenu({
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setDifficultyIndex(goPrev(difficultyIndex, difficultyValues.length))}
-              aria-label={t("menu.prev_aria", { section: t("menu.difficulty_aria") })}
+              onClick={() =>
+                setDifficultyIndex(
+                  goPrev(difficultyIndex, difficultyValues.length),
+                )
+              }
+              aria-label={t("menu.prev_aria", {
+                section: t("menu.difficulty_aria"),
+              })}
             >
               ‹
             </button>
             <div className="carouselCard">
-              <span className="optionTitle">{difficultyLabels[difficultyIndex].title}</span>
-              <span className="optionDescription">{difficultyLabels[difficultyIndex].description}</span>
+              <span className="optionTitle">
+                {difficultyLabels[difficultyIndex].title}
+              </span>
+              <span className="optionDescription">
+                {difficultyLabels[difficultyIndex].description}
+              </span>
             </div>
             <button
               type="button"
               className="carouselButton"
-              onClick={() => setDifficultyIndex(goNext(difficultyIndex, difficultyValues.length))}
-              aria-label={t("menu.next_aria", { section: t("menu.difficulty_aria") })}
+              onClick={() =>
+                setDifficultyIndex(
+                  goNext(difficultyIndex, difficultyValues.length),
+                )
+              }
+              aria-label={t("menu.next_aria", {
+                section: t("menu.difficulty_aria"),
+              })}
             >
               ›
             </button>

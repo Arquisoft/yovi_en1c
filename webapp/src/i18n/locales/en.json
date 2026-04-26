@@ -5,7 +5,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "error_network": "Network error",
-    "error_unexpected": "Unexpected server response. Please verify that the gateway and user services are running."
+    "error_unexpected": "Unexpected server response. Please verify that the gateway and users service are running."
   },
   "language_switcher": {
     "label": "Language"
@@ -13,31 +13,31 @@
   "login": {
     "title": "Welcome back!",
     "subtitle": "Please enter your username and password to log in.",
-    "username_label": "Username",
-    "password_label": "Password",
+    "username_label": "What's your username?",
+    "password_label": "And password?",
     "submit": "Let's go!",
     "no_account": "Don't have an account?",
     "go_signup": "Sign up here",
     "error_empty": "Please enter both username and password.",
-    "error_generic": "Login failed. Please try again."
+    "error_generic": "Problems with the login"
   },
   "signup": {
     "title": "Sign Up",
-    "subtitle": "Fill in the form to create an account.",
+    "subtitle": "Please fill this form to create an account.",
     "username_label": "Username",
     "email_label": "Email",
     "password_label": "Password",
-    "confirm_password_label": "Confirm password",
-    "submit": "Sign up",
+    "confirm_password_label": "Confirm Password",
+    "submit": "Sign Up",
     "have_account": "Already have an account?",
     "go_login": "Log in here",
     "error_empty": "Please fill in all fields.",
     "error_password_mismatch": "Passwords do not match.",
-    "error_generic": "Sign up failed."
+    "error_generic": "Sign up error"
   },
   "menu": {
     "title": "Game Lobby",
-    "subtitle": "Welcome, {{name}}. Choose your Y setup.",
+    "subtitle": "Welcome, {{name}}. Choose your setup for Y.",
     "view_history": "Game history",
     "board_size": "Board size",
     "game_mode": "Game mode",
@@ -119,12 +119,12 @@
       "you": "You"
     },
     "stats_view": {
-      "progression": "Point progression (last 10 games)",
-      "game_session": "Game session",
-      "win_rate_by_difficulty": "Win rate by difficulty",
-      "avg_moves": "Average moves",
-      "win_avg": "🏆 Win avg",
-      "loss_avg": "🤖 Loss avg",
+      "progression": "Point Progression (Last 10 Games)",
+      "game_session": "Game Session",
+      "win_rate_by_difficulty": "Win Rate by Difficulty",
+      "avg_moves": "Average Moves",
+      "win_avg": "🏆 Win Avg",
+      "loss_avg": "🤖 Loss Avg",
       "moves_unit": "moves"
     },
     "view": {

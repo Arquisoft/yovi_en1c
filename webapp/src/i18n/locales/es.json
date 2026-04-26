@@ -5,7 +5,7 @@
     "loading": "Cargando…",
     "retry": "Reintentar",
     "error_network": "Error de red",
-    "error_unexpected": "Respuesta inesperada del servidor. Verifica que el gateway y los servicios estén en marcha."
+    "error_unexpected": "Respuesta inesperada del servidor. Verifica que el gateway y el servicio de usuarios estén funcionando."
   },
   "language_switcher": {
     "label": "Idioma"
@@ -33,54 +33,57 @@
     "go_login": "Inicia sesión aquí",
     "error_empty": "Por favor, rellena todos los campos.",
     "error_password_mismatch": "Las contraseñas no coinciden.",
-    "error_generic": "Error al registrarse."
+    "error_generic": "Error al registrarse"
   },
   "menu": {
     "title": "Sala de juego",
-    "subtitle": "Bienvenido, {{name}}. Elige tu configuración.",
+    "subtitle": "Bienvenido, {{name}}. Elige tu configuración para Y.",
     "view_history": "Historial de partidas",
     "board_size": "Tamaño del tablero",
     "game_mode": "Modo de juego",
     "opponent_style": "Estilo del oponente",
-    "start_game": "Empezar partida",
-    "prev_aria": "Anterior {{section}}",
-    "next_aria": "Siguiente {{section}}",
-    "board_size_aria": "tamaño del tablero",
+    "start_game": "Iniciar partida",
+    "prev_aria": "{{section}} anterior",
+    "next_aria": "{{section}} siguiente",
+    "board_size_aria": "tamaño de tablero",
     "game_mode_aria": "modo de juego",
     "difficulty_aria": "dificultad",
-    "rob_title": "Modo Robo",
     "board": {
       "small_title": "Pequeño",
       "small_desc": "Tablero 5×5, ideal para partidas rápidas",
       "medium_title": "Mediano",
       "medium_desc": "Tablero 7×7, experiencia clásica de Y",
       "large_title": "Grande",
-      "large_desc": "Tablero 9×9, Y estratégico"
+      "large_desc": "Tablero 9×9, partidas largas e intensas"
     },
     "mode": {
       "standard_title": "Estándar",
-      "standard_desc": "Reglas clásicas de Y",
-      "rob_title": "Robo",
-      "rob_desc": "Roba piezas del oponente"
+      "standard_desc": "Reglas clásicas de Y"
     },
     "difficulty": {
       "random_title": "Aleatorio",
-      "random_desc": "Hace movimientos al azar",
+      "random_desc": "Movimientos aleatorios",
       "easy_title": "Fácil",
-      "easy_desc": "Juega con estrategia básica",
+      "easy_desc": "Un poco más difícil",
       "hard_title": "Difícil",
-      "hard_desc": "Usa estrategia heurística completa"
+      "hard_desc": "Oponente con heurística completa"
     }
   },
   "history": {
     "title": "Historial de partidas",
     "loading": "Cargando historial…",
-    "empty": "Todavía no has jugado ninguna partida. ¡A jugar! 🎮",
+    "empty": "Todavía no has jugado ninguna partida. ¡Ve a jugar! 🎮",
     "stats": {
-      "total": "Total partidas",
+      "total": "Partidas totales",
       "wins": "Victorias",
       "losses": "Derrotas",
-      "win_rate": "% victorias"
+      "win_rate": "% Victorias",
+      "table.points": "Pts",
+      "board_size": "Tamaño",
+      "difficulty": "Dificultad",
+      "leaderboard": "Tabla de clasificación",
+      "stats_view": "Ver estadísticas",
+      "view": "Ver partidas"
     },
     "filter": {
       "all": "Todas",
@@ -90,10 +93,8 @@
     "table": {
       "number": "#",
       "result": "Resultado",
-      "mode": "Modo",
       "difficulty": "Dificultad",
       "size": "Tamaño",
-      "points": "Puntos",
       "moves": "Movimientos",
       "date": "Fecha"
     },
@@ -105,31 +106,6 @@
       "random": "🎲 Aleatorio",
       "easy": "😊 Fácil",
       "hard": "🔥 Difícil"
-    },
-    "board_size": {
-      "small": "5×5",
-      "medium": "7×7",
-      "large": "9×9"
-    },
-    "leaderboard": {
-      "rank": "Posición",
-      "username": "Usuario",
-      "total_points": "Puntos totales",
-      "games": "Partidas",
-      "you": "Tú"
-    },
-    "stats_view": {
-      "progression": "Progresión de puntos (últimas 10 partidas)",
-      "game_session": "Sesión de juego",
-      "win_rate_by_difficulty": "Victorias por dificultad",
-      "avg_moves": "Movimientos medios",
-      "win_avg": "🏆 Media victorias",
-      "loss_avg": "🤖 Media derrotas",
-      "moves_unit": "movimientos"
-    },
-    "view": {
-      "stats": "Estadísticas",
-      "leaderboard": "Ranking"
     }
   },
   "board": {

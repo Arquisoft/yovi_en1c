@@ -212,9 +212,7 @@ export default function GameHistory({ onBack, userName }: Props) {
                 <div className="statDivider" />
                 <div className="statItem">
                   <span className="statValue statLoss">{losses}</span>
-                  <span className="statLabel">
-                    {t("history.stats.losses")}
-                  </span>
+                  <span className="statLabel">{t("history.stats.losses")}</span>
                 </div>
                 <div className="statDivider" />
                 <div className="statItem">
@@ -253,7 +251,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                   <table className="historyTable">
                     <thead>
                       <tr>
-                        <th className="colIndex">{t("history.table.number")}</th>
+                        <th className="colIndex">
+                          {t("history.table.number")}
+                        </th>
                         <th
                           className="sortable colResult"
                           onClick={() => handleSort("result")}
@@ -322,7 +322,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                             </span>
                           </td>
                           <td className="tdMode">
-                            <span className={`modeBadge ${game.mode === "rob" ? "modeRob" : "modeStandard"}`}>
+                            <span
+                              className={`modeBadge ${game.mode === "rob" ? "modeRob" : "modeStandard"}`}
+                            >
                               {game.mode === "rob" ? "🗡 Rob" : "⬡ Standard"}
                             </span>
                           </td>
@@ -338,7 +340,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                           </td>
                           <td className="tdPoints">{game.points ?? 0}</td>
                           <td className="tdMoves">{game.totalMoves ?? "—"}</td>
-                          <td className="tdDate">{formatDate(game.playedAt)}</td>
+                          <td className="tdDate">
+                            {formatDate(game.playedAt)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -372,7 +376,8 @@ export default function GameHistory({ onBack, userName }: Props) {
                     <td className="tdIndex">{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>
                       {entry.username}{" "}
-                      {entry.username === userName && `(${t("history.leaderboard.you")})`}
+                      {entry.username === userName &&
+                        `(${t("history.leaderboard.you")})`}
                     </td>
                     <td className="tdPoints" style={{ color: "#fbbf24" }}>
                       ★ {entry.totalPoints.toLocaleString()}
@@ -409,7 +414,9 @@ export default function GameHistory({ onBack, userName }: Props) {
                             borderRadius: "8px",
                           }}
                           itemStyle={{ color: "#818cf8" }}
-                          labelFormatter={() => t("history.stats_view.game_session")}
+                          labelFormatter={() =>
+                            t("history.stats_view.game_session")
+                          }
                         />
                         <Line
                           type="monotone"
@@ -468,7 +475,8 @@ export default function GameHistory({ onBack, userName }: Props) {
                               : t("history.stats_view.loss_avg")}
                           </span>
                           <span className="value">
-                            {Math.round(m.avgMoves)} {t("history.stats_view.moves_unit")}
+                            {Math.round(m.avgMoves)}{" "}
+                            {t("history.stats_view.moves_unit")}
                           </span>
                         </div>
                       ))}

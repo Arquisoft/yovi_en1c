@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 const LANGUAGES = [
   { code: "en", label: "EN" },
   { code: "es", label: "ES" },
+  { code: "fi", label: "FI" },
+  { code: "tr", label: "TR" },
 ];
 
 export default function LanguageSwitcher() {
@@ -19,7 +21,8 @@ export default function LanguageSwitcher() {
           type="button"
           onClick={() => i18n.changeLanguage(lang.code)}
           style={{
-            background: i18n.resolvedLanguage === lang.code ? "#4f46e5" : "transparent",
+            background:
+              i18n.resolvedLanguage === lang.code ? "#4f46e5" : "transparent",
             color: i18n.resolvedLanguage === lang.code ? "#fff" : "#4f46e5",
             border: "1px solid #4f46e5",
             borderRadius: 4,
