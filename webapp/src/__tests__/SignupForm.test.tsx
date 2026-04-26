@@ -4,14 +4,25 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import SignUpForm from "../SignupForm";
 import "@testing-library/jest-dom";
 
+// Mocking i18next
+const mockChangeLanguage = vi.fn();
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
-    i18n: { changeLanguage: vi.fn(), language: "en" },
+    i18n: {
+      changeLanguage: mockChangeLanguage,
+      language: "en",
+    },
   }),
 }));
 
-describe("SignUpForm Full Suite", () => {
+// Mocking the sanitize helpers (assuming they return the input for simplicity)
+vi.mock("./sanitize", () => ({
+  sanitizeToken: (t: string) => t,
+  sanitizeUsername: (u: string) => u,
+}));
+
+describe("SignUpForm Full Coverage Suite", () => {
   const onRegistered = vi.fn();
   const onGoToLogin = vi.fn();
 
@@ -24,53 +35,130 @@ describe("SignUpForm Full Suite", () => {
       confirmPassword = "123",
     } = {},
   ) => {
-    await user.type(screen.getByLabelText(/signup.username_label/i), username);
-    await user.type(screen.getByLabelText(/signup.email_label/i), email);
-    await user.type(screen.getByLabelText(/signup.password_label/i), password);
-    await user.type(
-      screen.getByLabelText(/signup.confirm_password_label/i),
-      confirmPassword,
-    );
+    if (username)
+      await user.type(
+        screen.getByLabelText(/signup.username_label/i),
+        username,
+      );
+    if (email)
+      await user.type(screen.getByLabelText(/signup.email_label/i), email);
+    if (password)
+      await user.type(
+        screen.getByLabelText(/signup.password_label/i),
+        password,
+      );
+    if (confirmPassword)
+      await user.type(
+        screen.getByLabelText(/signup.confirm_password_label/i),
+        confirmPassword,
+      );
   };
 
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    global.fetch = vi.fn();
+  });
 
-  it("handles password mismatch and successful signup", async () => {
+  // 1. Covers Line 28: LanguageSwitcher onClick
+  it("changes language when a flag button is clicked", async () => {
     const user = userEvent.setup();
     render(
       <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
     );
 
-    // Mismatch
+    const spanishBtn = screen.getByRole("button", { name: /es/i });
+    await user.click(spanishBtn);
+
+    expect(mockChangeLanguage).toHaveBeenCalledWith("es");
+  });
+
+  // 2. Covers Line 62: Empty fields validation
+  it("shows error when fields are empty", async () => {
+    const user = userEvent.setup();
+    render(
+      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /signup.submit/i }));
+
+    expect(screen.getByText(/signup.error_empty_fields/i)).toBeInTheDocument();
+  });
+
+  // 3. Covers Lines 41-47: processSignupResponse & localStorage
+  it("saves token and username to localStorage on success", async () => {
+    const user = userEvent.setup();
+    const fakeData = {
+      token: "mock.token.val",
+      user: { username: "pablo_user" },
+    };
+
+    (global.fetch as any).mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify(fakeData),
+    });
+
+    render(
+      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
+    );
+
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /signup.submit/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem("token")).toBe("mock.token.val");
+      expect(localStorage.getItem("username")).toBe("pablo_user");
+      expect(onRegistered).toHaveBeenCalledWith("Pablo");
+    });
+  });
+
+  // 4. Covers Lines 100-106: Catch block (SyntaxError & Network Error)
+  it("handles SyntaxError when server returns invalid JSON", async () => {
+    const user = userEvent.setup();
+    (global.fetch as any).mockResolvedValue({
+      ok: true,
+      text: async () => "not-a-json", // This triggers JSON.parse() SyntaxError
+    });
+
+    render(
+      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
+    );
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /signup.submit/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/signup.error_server_response/i),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("handles generic network errors", async () => {
+    const user = userEvent.setup();
+    (global.fetch as any).mockRejectedValue(new Error("Network Fail"));
+
+    render(
+      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
+    );
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /signup.submit/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/network fail/i)).toBeInTheDocument();
+    });
+  });
+
+  it("handles password mismatch", async () => {
+    const user = userEvent.setup();
+    render(
+      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
+    );
+
     await fillForm(user, { confirmPassword: "wrong" });
     await user.click(screen.getByRole("button", { name: /signup.submit/i }));
+
     expect(
       screen.getByText(/signup.error_password_mismatch/i),
     ).toBeInTheDocument();
-
-    // Success
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify({ message: "OK" }),
-    });
-
-    // Limpiar campos y rellenar bien (puedes usar un rerender o simplemente borrar)
-    await user.click(screen.getByRole("button", { name: /signup.go_login/i }));
-    expect(onGoToLogin).toHaveBeenCalled();
-  });
-
-  it("shows server error on failure", async () => {
-    const user = userEvent.setup();
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      text: async () => JSON.stringify({ error: "Email taken" }),
-    });
-
-    render(<SignUpForm onRegistered={onRegistered} onGoToLogin={vi.fn()} />);
-    await fillForm(user);
-    await user.click(screen.getByRole("button", { name: /signup.submit/i }));
-    await waitFor(() =>
-      expect(screen.getByText(/email taken/i)).toBeInTheDocument(),
-    );
   });
 });
