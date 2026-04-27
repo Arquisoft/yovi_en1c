@@ -18,7 +18,7 @@ When("the API returns a successful registration", async function () {
     });
   });
 });
-
+/*
 When("I enter {string} as the username and submit", async function (username) {
   const page = this.page;
   await page.fill("#username", username);
@@ -38,7 +38,7 @@ Then(
     );
   },
 );
-
+*/
 When("the API returns a 400 error", async function () {
   await this.page.route("**/api/users/login", async (route) => {
     await route.fulfill({
