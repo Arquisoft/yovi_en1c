@@ -436,7 +436,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1><span class="image"><img src="./images/yovi_en1c-logo.png" alt="arc42"></span></h1>
+<h1><span class="image"><img src="./images/yovi_en1c-logo.svg" alt="arc42"></span></h1>
 <div class="details">
 <span id="revnumber">version 8.2 EN,</span>
 <span id="revdate">January 2023</span>
@@ -480,9 +480,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-runtime-view">6. Runtime View</a>
 <ul class="sectlevel2">
-<li><a href="#_sign_up_flow">6.1. Sign Up Flow</a></li>
-<li><a href="#_sign_in_flow">6.2. Sign In Flow</a></li>
-<li><a href="#_game_flow">6.3. Game Flow</a></li>
+<li><a href="#_user_registration_sign_up">6.1. User Registration (Sign Up)</a></li>
+<li><a href="#_user_authentication_sign_in">6.2. User Authentication (Sign In)</a></li>
+<li><a href="#_game_play_move_execution">6.3. Game Play (Move Execution)</a></li>
+<li><a href="#_statistics_and_leaderboard_flow">6.4. Statistics and Leaderboard Flow</a></li>
 </ul>
 </li>
 <li><a href="#section-deployment-view">7. Deployment View</a>
@@ -1133,6 +1134,13 @@ together with a mapping table showing the relationships between channels and inp
 <td class="tableblock halign-left valign-top"><p class="tableblock">Web user interface</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">API Gateway Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.js, Express</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Entry point to the rest of the services.</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Users Service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HTTP/REST</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">3000</p></td>
@@ -1316,7 +1324,7 @@ together with a mapping table showing the relationships between channels and inp
 </div>
 <div class="paragraph">
 <p><strong>Motivation:</strong>
-Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB).</p>
+Decomposing the system into separate components (Frontend, Backend, and Database) allows us to handle user interface, game logic, and data persistence independently, using the best technology for each (React, Rust/Node.js, and MongoDB). All controlled by the gateway.</p>
 </div>
 <div class="paragraph">
 <p><strong>Contained Building Blocks:</strong></p>
@@ -1343,6 +1351,10 @@ Decomposing the system into separate components (Frontend, Backend, and Database
 <td class="tableblock halign-left valign-top"><p class="tableblock">Provides the user interface for playing Game Y and user registration.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">API Gateway</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Acts as entry point for all requests, the frontent is another client of the gateway.</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Backend Services</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Coordinates game logic, authentication, and service communication.</p></td>
 </tr>
@@ -1361,15 +1373,30 @@ Provides the user interface for playing Game Y, handling user registration, and 
 <div class="paragraph">
 <p><strong>Interface(s):</strong>
 * <strong>Web UI:</strong> React-based frontend accessible via browser.
-* <strong>API Consumer:</strong> Communicates with Backend Services via REST/JSON.</p>
+* <strong>API Consumer:</strong> Communicates with the gateway via REST/JSON.</p>
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
-<code>./apps/webapp</code></p>
+<code>./webapp</code></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_backend_services">5.1.2. Backend Services</h4>
+<h4 id="_api_gateway">5.1.2. API Gateway</h4>
+<div class="paragraph">
+<p><strong>Purpose/Responsibility:</strong>
+Provides the backend interface for Game Y, handling all rerouting requests and validating them.</p>
+</div>
+<div class="paragraph">
+<p><strong>Interface(s):</strong>
+* <strong>API Consumer:</strong> Communicates with Services via REST/JSON.</p>
+</div>
+<div class="paragraph">
+<p><strong>Directory/File Location:</strong>
+<code>./gateway</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_backend_services">5.1.3. Backend Services</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
 Acts as the central orchestrator. It manages authentication, coordinates game logic between the engine and the user, and handles data persistence.</p>
@@ -1377,22 +1404,22 @@ Acts as the central orchestrator. It manages authentication, coordinates game lo
 <div class="paragraph">
 <p><strong>Interface(s):</strong>
 * <strong>REST API:</strong> Provides endpoints for login and game actions.
-* <strong>Engine Connector:</strong> Internal communication with the Rust Game Engine.</p>
+* <strong>Engine Connector:</strong> Internal communication with the Rust Game Engine and users service.</p>
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
-<code>./apps/backend</code></p>
+<code>./gamey</code> , <code>./users</code></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mongodb">5.1.3. MongoDB</h4>
+<h4 id="_mongodb">5.1.4. MongoDB</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
 Stores persistent data including user credentials and match history.</p>
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
-<code>./data/db</code>
+<code>./users</code>
 <strong>Important Interfaces:</strong>
 * <strong>REST API:</strong> Communication between frontend and backend via JSON.
 * <strong>Database Connection:</strong> Backend access to MongoDB on port 27017.</p>
@@ -1426,8 +1453,8 @@ Stores persistent data including user credentials and match history.</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Auth Service</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">(Node.js) Manages user identity, registration, and security.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(Node.js) Manages user identity, registration, security and data persistence.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Game Engine</p></td>
@@ -1437,26 +1464,26 @@ Stores persistent data including user credentials and match history.</p>
 </table>
 <hr>
 <div class="sect3">
-<h4 id="_auth_service">5.2.1. Auth Service</h4>
+<h4 id="_users_service">5.2.1. Users Service</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
 Handles user registration, authentication, and session management. It issues JWT (JSON Web Tokens) for secure access to other services.</p>
 </div>
 <div class="paragraph">
 <p><strong>Interface(s):</strong>
-* <strong>HTTP POST /register:</strong> Creates new user accounts.
+* <strong>HTTP POST /createuser:</strong> Creates new user accounts.
 * <strong>HTTP POST /login:</strong> Validates credentials and returns a token.</p>
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
-<code>./apps/backend/services/auth</code></p>
+<code>./users</code></p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_game_engine_rust">5.2.2. Game Engine (Rust)</h4>
 <div class="paragraph">
 <p><strong>Purpose/Responsibility:</strong>
-The core of the system. It handles the Game Y logic, validates hexagonal grid moves, and calculates win/loss conditions. Built in Rust for high performance.</p>
+The core of the system. It handles the Game Y logic, validates hexagonal grid moves, and calculates win/loss conditions. Built in Rust.</p>
 </div>
 <div class="paragraph">
 <p><strong>Interface(s):</strong>
@@ -1464,7 +1491,7 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 </div>
 <div class="paragraph">
 <p><strong>Directory/File Location:</strong>
-<code>./apps/backend/services/game-engine</code></p>
+<code>./gamey</code></p>
 </div>
 </div>
 </div>
@@ -1494,10 +1521,13 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 <li>
 <p><strong><code>email</code></strong>: Used for account recovery and notifications.</p>
 </li>
+<li>
+<p><strong><code>createdAt</code></strong>: Timestamp of account creation used for verification and logging.</p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
-<p><strong>Directory/File Location:</strong> <code>./data/db/users</code></p>
+<p><strong>Directory/File Location:</strong> <code>./users/users-service.js</code> &amp; <code>./users/db.js</code></p>
 </div>
 </div>
 <div class="sect3">
@@ -1508,18 +1538,33 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 <div class="ulist">
 <ul>
 <li>
-<p><strong><code>players</code></strong>: References to the Users collection for both participants.</p>
+<p><strong><code>username</code></strong>: Unique identifier for the user.</p>
 </li>
 <li>
-<p><strong><code>moves</code></strong>: Array of moves stored in <strong>YEN notation</strong> to recreate the game state.</p>
+<p><strong><code>result</code></strong>: (Enum) The outcome of the match; strictly restricted to player_won or bot_won.</p>
 </li>
 <li>
-<p><strong><code>status</code></strong>: Indicates the current state of the game (Ongoing, Finished, or Draw).</p>
+<p><strong><code>board</code></strong>: (Object) A snapshot of the final state of the game board.</p>
+</li>
+<li>
+<p><strong><code>points</code></strong>: Calculated score based on difficulty, board size, and moves efficiency.</p>
+</li>
+<li>
+<p><strong><code>totalMoves</code></strong>: The count of moves made during the game.</p>
+</li>
+<li>
+<p><strong><code>difficulty</code></strong>: The level chosen.</p>
+</li>
+<li>
+<p><strong><code>boardSize</code></strong>: Dimensions of the board.</p>
+</li>
+<li>
+<p><strong><code>playedAt</code></strong>: Timestamp of the match, used for progression tracking.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p><strong>Directory/File Location:</strong> ./data/db/matches</p>
+<p><strong>Directory/File Location:</strong> <code>./users/users-service.js</code> &amp; <code>./users/db.js</code></p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1529,89 +1574,214 @@ The core of the system. It handles the Game Y logic, validates hexagonal grid mo
 <div class="sect1">
 <h2 id="section-runtime-view">6. Runtime View</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
+<div class="paragraph">
+<p>The runtime view describes the dynamic behavior of the Game Y system. It focuses on how different building blocks (Frontend, Gateway, Services and Database) communicate with each other during specific execution scenarios.</p>
+</div>
+<div class="sect2">
+<h3 id="_user_registration_sign_up">6.1. User Registration (Sign Up)</h3>
+<div class="paragraph">
+<p>When a new user wants to join the system, the data must be sanitized and securely stored.</p>
+</div>
+<div class="paragraph">
+<p><strong>Scenario Steps:</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 80%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Step</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>User</strong> fills the registration form in the <strong>Web Application</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> validates and prepares the input data to ensure it meets the required format before transmission.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> sends a POST request to the <strong>API Gateway</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>API Gateway</strong> forwards the request to the <strong>Users Service</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> checks if the username is unique and hashes the password.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> stores the record in <strong>MongoDB</strong> and returns a success response.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="imageblock">
 <div class="content">
-<div class="paragraph">
-<div class="title">Contents</div>
-<p>The runtime view describes concrete behavior and interactions of the system’s building blocks in form of scenarios from the following areas:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>important use cases or features: how do building blocks execute them?</p>
-</li>
-<li>
-<p>interactions at critical external interfaces: how do building blocks cooperate with users and neighboring systems?</p>
-</li>
-<li>
-<p>operation and administration: launch, start-up, stop</p>
-</li>
-<li>
-<p>error and exception scenarios</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Remark: The main criterion for the choice of possible scenarios (sequences, workflows) is their <strong>architectural relevance</strong>. It is <strong>not</strong> important to describe a large number of scenarios. You should rather document a representative selection.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>You should understand how (instances of) building blocks of your system perform their job and communicate at runtime.
-You will mainly capture scenarios in your documentation to communicate your architecture to stakeholders that are less willing or able to read and understand the static models (building block view, deployment view).</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>There are many notations for describing scenarios, e.g.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>numbered list of steps (in natural language)</p>
-</li>
-<li>
-<p>activity diagrams or flow charts</p>
-</li>
-<li>
-<p>sequence diagrams</p>
-</li>
-<li>
-<p>BPMN or EPCs (event process chains)</p>
-</li>
-<li>
-<p>state machines</p>
-</li>
-<li>
-<p>&#8230;&#8203;</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-6/">Runtime View</a> in the arc42 documentation.</p>
+<img src="./images/signup3.png" alt="Sign Up Diagram">
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sign_up_flow">6.1. Sign Up Flow</h3>
+<h3 id="_user_authentication_sign_in">6.2. User Authentication (Sign In)</h3>
+<div class="paragraph">
+<p>The authentication process verifies the user credentials and provides a secure session token (JWT).</p>
+</div>
+<div class="paragraph">
+<p><strong>Scenario Steps:</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 80%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Step</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>User</strong> enters their username and password in the <strong>Web Application</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> validates the input format and sends a POST request to the <strong>API Gateway</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>API Gateway</strong> forwards the login request to the <strong>Users Service</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> retrieves the stored user data and password hash from <strong>MongoDB</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> compares the hashes and, if successful, generates a <strong>JWT Token</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> receives the token and stores it securely for subsequent requests.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="imageblock">
 <div class="content">
-<img src="./images/sign_up.png" alt="Sign Up Diagram">
+<img src="./images/signin3.png" alt="Sign In Diagram">
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sign_in_flow">6.2. Sign In Flow</h3>
+<h3 id="_game_play_move_execution">6.3. Game Play (Move Execution)</h3>
+<div class="paragraph">
+<p>This flow describes how a user performs an action within the game and how the system validates and updates the game state.</p>
+</div>
+<div class="paragraph">
+<p><strong>Scenario Steps:</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 80%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Step</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>User</strong> performs a move (e.g., placing a piece) on the <strong>Web Application</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> sends the move details along with the <strong>JWT Token</strong> to the <strong>API Gateway</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>API Gateway</strong> validates the token and forwards the move to the <strong>Game Service</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Game Engine</strong> (Core Logic) validates the move based on the hexagonal grid rules.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Game Service</strong> updates the game state in <strong>MongoDB</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system returns the updated game state to the <strong>Web Application</strong> to refresh the UI.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="imageblock">
 <div class="content">
-<img src="./images/sign_in.png" alt="Sign In Diagram">
+<img src="./images/gameplay2.png" alt="Game Flow Diagram">
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_game_flow">6.3. Game Flow</h3>
+<h3 id="_statistics_and_leaderboard_flow">6.4. Statistics and Leaderboard Flow</h3>
+<div class="paragraph">
+<p>This flow explains how game results are persisted and how performance metrics (points, win rates) are retrieved for the leaderboard.</p>
+</div>
+<div class="paragraph">
+<p><strong>Scenario Steps:</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 80%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Step</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> sends the game outcome (moves, difficulty, result) to the <code>/savegame</code> endpoint.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> calculates points based on difficulty and efficiency using the <code>calculatePoints</code> logic.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The game record is persisted in the <strong>MongoDB</strong> <code>games</code> collection.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">When a user views the leaderboard, the <strong>Web Application</strong> requests the top scores from the <code>/games/leaderboard</code> endpoint.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Users Service</strong> executes a MongoDB aggregation to sum points per user and returns the top 10 players.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <strong>Web Application</strong> renders the statistics and ranking for the user.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="imageblock">
 <div class="content">
-<img src="./images/game.png" alt="Game Diagram">
+<img src="./images/statistics3.png" alt="Statistics Flow Diagram">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -2465,7 +2635,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-03-15 08:52:53 +0100
+Last updated 2026-04-27 12:01:20 +0200
 </div>
 </div>
 </body>
