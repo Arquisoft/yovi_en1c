@@ -8,15 +8,22 @@ info:
     - User/History logic handled by Users Service (Node.js).
     - Bot/Game logic handled by Gamey Service (Rust).
 
+    **Authentication:** Most endpoints require a JWT Bearer token. 
+    The `/signup`, `/login`, `/play`, and `/choose` endpoints are strictly public (no token needed).
+
 servers:
   - url: http://localhost:8000
     description: Gateway Server
+
+# Define the global security requirement
+security:
+  - bearerAuth: []
 
 tags:
   - name: Infrastructure
     description: Health monitoring for all services.
   - name: Users
-    description: User registration and management.
+    description: User registration and authentication.
   - name: Game History
     description: Persistence of match results.
   - name: Game Logic & Bots
@@ -26,6 +33,7 @@ paths:
   # --- INFRASTRUCTURE ---
   /health:
     get:
+      security: [] # No token needed
       tags: [Infrastructure]
       summary: Gateway Health Check
       responses:
@@ -36,13 +44,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  status: { type: string, example: "Gateway up and running" }
+                  gateway: { type: string, example: "OK" }
+                  users: { type: string, example: "OK" }
+                  gamey: { type: string, example: "OK" }
 
   # --- USER SERVICE (via /api/users) ---
   /api/users/signup:
     post:
+      security: [] # No token needed
       tags: [Users]
-      summary: User Registration (with JWT)
+      summary: User Registration
       requestBody:
         required: true
         content:
@@ -60,23 +71,40 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  token: { type: string }
-                  user:
-                    type: object
-                    properties:
-                      id: { type: string }
-                      username: { type: string }
+                $ref: "#/components/schemas/AuthResponse"
         "400":
-          description: Registration error.
+          description: Registration error (e.g., Username exists).
 
+  /api/users/login:
+    post:
+      security: [] # No token needed
+      tags: [Users]
+      summary: User Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: "player1" }
+                password: { type: string, example: "securePass123" }
+      responses:
+        "200":
+          description: Login successful, returns JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials.
 
   /api/users/games/list:
     get:
       tags: [Game History]
       summary: List User Games
+      description: Returns the last 20 games for the specified user. **Requires a valid JWT token.**
       parameters:
         - name: username
           in: query
@@ -93,12 +121,16 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GameRecord"
+        "401":
+          description: Missing or invalid token.
 
   # --- GAMEY SERVICE (via /api/gamey) ---
   /api/gamey/{api_version}/ybot/choose/{bot_id}:
     post:
+      security: [] # No token needed
       tags: [Game Logic & Bots]
       summary: Get Bot Move
+      description: Submits the current YEN board state and gets the specific bot's calculated move. No token required.
       parameters:
         - name: api_version
           in: path
@@ -107,7 +139,11 @@ paths:
         - name: bot_id
           in: path
           required: true
-          schema: { type: string, enum: [random_bot, easy_bot, heuristic_bot] }
+          schema:
+            {
+              type: string,
+              enum: [random_bot, easy_bot, heuristic_bot, rob_bot],
+            }
       requestBody:
         description: Current game state in YEN format.
         required: true
@@ -124,51 +160,60 @@ paths:
                 $ref: "#/components/schemas/MoveResponse"
         "400":
           description: Error (Invalid version or bot).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /api/gamey/{api_version}/play:
-    post:
+    get:
+      security: [] # No token needed
       tags: [Game Logic & Bots]
       summary: Process Turn
-      description: Validates human move and optionally triggers bot response.
+      description: Takes a stringified YEN state via query and an optional bot ID, returning the bot's calculated action or move. No token required.
       parameters:
         - name: api_version
           in: path
           required: true
           schema: { type: string, example: "v1" }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PlayRequest"
+        - name: position
+          in: query
+          required: true
+          description: The game state in stringified YEN JSON format.
+          schema: { type: string }
+        - name: bot_id
+          in: query
+          required: false
+          description: The bot ID to play against. Defaults to heuristic_bot if not provided.
+          schema: { type: string, example: "easy_bot" }
       responses:
         "200":
-          description: Updated game state.
+          description: The bot's decision (either movement coordinates or an action like "resign").
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PlayResponse"
+                $ref: "#/components/schemas/BotResponse"
+        "400":
+          description: Invalid YEN format or game already over.
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
-    UserResponse:
+    AuthResponse:
       type: object
       properties:
         message: { type: string }
-        databaseInfo:
+        token: { type: string }
+        user:
           type: object
           properties:
             id: { type: string }
-            registeredAt: { type: string }
-            status: { type: string }
+            username: { type: string }
 
     GameRecord:
       type: object
-      required: [username, result, board, difficulty, boardSize]
+      required: [username, result, board, difficulty, boardSize, mode]
       properties:
         username: { type: string }
         result: { type: string, enum: [player_won, bot_won] }
@@ -176,11 +221,13 @@ components:
         totalMoves: { type: integer }
         difficulty: { type: string }
         boardSize: { type: string }
+        mode: { type: string, enum: [standard, rob] }
         playedAt: { type: string, format: date-time }
+        points: { type: integer }
 
     YEN:
       type: object
-      description: The internal state representation of the Y Game board.
+      description: The internal JSON state representation of the Y Game board.
 
     Coordinates:
       type: object
@@ -195,22 +242,22 @@ components:
         api_version: { type: string }
         bot_id: { type: string }
         coords: { $ref: "#/components/schemas/Coordinates" }
+        is_steal:
+          {
+            type: boolean,
+            description: "Indicates if the placement is a steal (Rob mode)",
+          }
 
-    PlayRequest:
+    BotResponse:
       type: object
-      required: [yen, position]
-      properties:
-        yen: { $ref: "#/components/schemas/YEN" }
-        position: { type: integer, description: "Index of the move" }
-        bot_id: { type: string, description: "Optional bot to play next turn" }
-
-    PlayResponse:
-      type: object
-      properties:
-        api_version: { type: string }
-        yen: { $ref: "#/components/schemas/YEN" }
-        status: { type: string, enum: [ongoing, finished] }
-        winner: { type: integer, nullable: true }
+      description: Untagged Enum returning either coordinates or a string action.
+      oneOf:
+        - type: object
+          properties:
+            coords: { $ref: "#/components/schemas/Coordinates" }
+        - type: object
+          properties:
+            action: { type: string, example: "resign" }
 
     ErrorResponse:
       type: object
