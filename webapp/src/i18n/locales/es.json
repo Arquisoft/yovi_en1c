@@ -48,6 +48,7 @@
     "board_size_aria": "tamaño de tablero",
     "game_mode_aria": "modo de juego",
     "difficulty_aria": "dificultad",
+    "rob_title": "Modo Robo",
     "board": {
       "small_title": "Pequeño",
       "small_desc": "Tablero 5×5, ideal para partidas rápidas",
@@ -58,7 +59,9 @@
     },
     "mode": {
       "standard_title": "Estándar",
-      "standard_desc": "Reglas clásicas de Y"
+      "standard_desc": "Reglas clásicas de Y",
+      "rob_title": "Robo",
+      "rob_desc": "Roba piezas del oponente"
     },
     "difficulty": {
       "random_title": "Aleatorio",
@@ -77,13 +80,7 @@
       "total": "Partidas totales",
       "wins": "Victorias",
       "losses": "Derrotas",
-      "win_rate": "% Victorias",
-      "table.points": "Pts",
-      "board_size": "Tamaño",
-      "difficulty": "Dificultad",
-      "leaderboard": "Tabla de clasificación",
-      "stats_view": "Ver estadísticas",
-      "view": "Ver partidas"
+      "win_rate": "% Victorias"
     },
     "filter": {
       "all": "Todas",
@@ -93,8 +90,10 @@
     "table": {
       "number": "#",
       "result": "Resultado",
+      "mode": "Modo",
       "difficulty": "Dificultad",
       "size": "Tamaño",
+      "points": "Pts",
       "moves": "Movimientos",
       "date": "Fecha"
     },
@@ -106,6 +105,31 @@
       "random": "🎲 Aleatorio",
       "easy": "😊 Fácil",
       "hard": "🔥 Difícil"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Rango",
+      "username": "Usuario",
+      "total_points": "Puntos Totales",
+      "games": "Partidas",
+      "you": "Tú"
+    },
+    "stats_view": {
+      "progression": "Progresión de puntos (Últimas 10 partidas)",
+      "game_session": "Sesión de juego",
+      "win_rate_by_difficulty": "Tasa de victorias por dificultad",
+      "avg_moves": "Promedio de movimientos",
+      "win_avg": "🏆 Promedio Victorias",
+      "loss_avg": "🤖 Promedio Derrotas",
+      "moves_unit": "movimientos"
+    },
+    "view": {
+      "stats": "Estadísticas",
+      "leaderboard": "Clasificación"
     }
   },
   "board": {

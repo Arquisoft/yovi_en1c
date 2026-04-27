@@ -11,10 +11,11 @@ type Props = {
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const LANGUAGES = [
-    { code: "en", label: "EN", flag: "🇬🇧" },
-    { code: "es", label: "ES", flag: "🇪🇸" },
-    { code: "fi", label: "FI", flag: "🇫🇮" },
-    { code: "tr", label: "TR", flag: "🇹🇷" },
+    { code: "en", label: "ENG" },
+    { code: "es", label: "ESP" },
+    { code: "fi", label: "FIN" },
+    { code: "tr", label: "TUR" },
+    { code: "as", label: "AST" },
   ];
 
   return (
@@ -28,7 +29,6 @@ export function LanguageSwitcher() {
             onClick={() => i18n.changeLanguage(lang.code)}
             className={`lang-button ${isActive ? "active" : ""}`}
           >
-            <span className="lang-flag">{lang.flag}</span>
             <span className="lang-label">{lang.label}</span>
           </button>
         );
