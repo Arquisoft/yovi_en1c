@@ -8,35 +8,6 @@ type Props = {
   onGoToLogin: () => void;
 };
 
-export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-  const LANGUAGES = [
-    { code: "en", label: "ENG" },
-    { code: "es", label: "ESP" },
-    { code: "fi", label: "FIN" },
-    { code: "tr", label: "TUR" },
-    { code: "as", label: "AST" },
-  ];
-
-  return (
-    <div className="language-container">
-      {LANGUAGES.map((lang) => {
-        const isActive = i18n.language.startsWith(lang.code);
-        return (
-          <button
-            key={lang.code}
-            type="button"
-            onClick={() => i18n.changeLanguage(lang.code)}
-            className={`lang-button ${isActive ? "active" : ""}`}
-          >
-            <span className="lang-label">{lang.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 const processSignupResponse = (data: Record<string, unknown>): void => {
   const token = data?.token;
   const usernameFromBackend = (data?.user as Record<string, unknown>)?.username;
@@ -112,8 +83,6 @@ const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
 
   return (
     <div className="signup-form-container">
-      <LanguageSwitcher />
-
       <form onSubmit={handleSubmit} className="signup-form">
         <h2>{t("signup.title")}</h2>
         <p>{t("signup.subtitle")}</p>
