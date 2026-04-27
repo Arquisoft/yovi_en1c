@@ -109,15 +109,21 @@ endif::arc42help[]
 | React, TypeScript, Vite
 | Web user interface
 
+| API Gateway Service
+| HTTP
+| 8000
+| Node.js, Express
+| Entry point to the rest of the services.
+
 | Users Service
 | HTTP/REST
-| 3000
+| 3000 
 | Node.js, Express
 | User management and registration
 
 | GameY Engine
 | HTTP/REST, WebSocket
-| 4000
+| 4000 
 | Rust, Axum
 | Game logic and bot registry
 
