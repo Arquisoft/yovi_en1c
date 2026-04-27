@@ -48,7 +48,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App hexBackground">
       <div>
         <a
           href="https://github.com/Arquisoft/yovi_en1c"
