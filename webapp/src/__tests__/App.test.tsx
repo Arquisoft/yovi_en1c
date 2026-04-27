@@ -29,7 +29,16 @@ vi.mock("../GameMenu", () => ({
     <div>
       <h1>Menu Screen</h1>
       <p>User: {userName}</p>
-      <button onClick={() => onStartGame({ boardSize: "small", mode: "standard", difficulty: "random", layout: "classic" })}>
+      <button
+        onClick={() =>
+          onStartGame({
+            boardSize: "small",
+            mode: "standard",
+            difficulty: "random",
+            layout: "classic",
+          })
+        }
+      >
         Start Game
       </button>
       <button onClick={onLogOut}>Log Out</button>
@@ -62,7 +71,7 @@ describe("App Navigation Flow", () => {
   it("shows login screen on initial render", () => {
     render(<App />);
 
-    expect(screen.getByText(/Welcome to play the game of Y/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to the Y game!/i)).toBeInTheDocument();
     expect(screen.getByText("Login Screen")).toBeInTheDocument();
   });
 

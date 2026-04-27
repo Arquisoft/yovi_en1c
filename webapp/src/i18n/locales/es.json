@@ -1,0 +1,149 @@
+{
+  "common": {
+    "back": "← Volver",
+    "logout": "Cerrar sesión",
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "error_network": "Error de red",
+    "error_unexpected": "Respuesta inesperada del servidor. Verifica que el gateway y el servicio de usuarios estén funcionando."
+  },
+  "language_switcher": {
+    "label": "Idioma"
+  },
+  "login": {
+    "title": "¡Bienvenido de nuevo!",
+    "subtitle": "Introduce tu usuario y contraseña para entrar.",
+    "username_label": "Usuario",
+    "password_label": "Contraseña",
+    "submit": "¡Entrar!",
+    "no_account": "¿No tienes cuenta?",
+    "go_signup": "Regístrate aquí",
+    "error_empty": "Por favor, introduce usuario y contraseña.",
+    "error_generic": "Error al iniciar sesión. Inténtalo de nuevo."
+  },
+  "signup": {
+    "title": "Registrarse",
+    "subtitle": "Rellena el formulario para crear una cuenta.",
+    "username_label": "Usuario",
+    "email_label": "Correo electrónico",
+    "password_label": "Contraseña",
+    "confirm_password_label": "Confirmar contraseña",
+    "submit": "Registrarse",
+    "have_account": "¿Ya tienes cuenta?",
+    "go_login": "Inicia sesión aquí",
+    "error_empty": "Por favor, rellena todos los campos.",
+    "error_password_mismatch": "Las contraseñas no coinciden.",
+    "error_generic": "Error al registrarse"
+  },
+  "menu": {
+    "title": "Sala de juego",
+    "subtitle": "Bienvenido, {{name}}. Elige tu configuración para Y.",
+    "view_history": "Historial de partidas",
+    "board_size": "Tamaño del tablero",
+    "game_mode": "Modo de juego",
+    "opponent_style": "Estilo del oponente",
+    "start_game": "Iniciar partida",
+    "prev_aria": "{{section}} anterior",
+    "next_aria": "{{section}} siguiente",
+    "board_size_aria": "tamaño de tablero",
+    "game_mode_aria": "modo de juego",
+    "difficulty_aria": "dificultad",
+    "board": {
+      "small_title": "Pequeño",
+      "small_desc": "Tablero 5×5, ideal para partidas rápidas",
+      "medium_title": "Mediano",
+      "medium_desc": "Tablero 7×7, experiencia clásica de Y",
+      "large_title": "Grande",
+      "large_desc": "Tablero 9×9, partidas largas e intensas"
+    },
+    "mode": {
+      "standard_title": "Estándar",
+      "standard_desc": "Reglas clásicas de Y"
+    },
+    "difficulty": {
+      "random_title": "Aleatorio",
+      "random_desc": "Movimientos aleatorios",
+      "easy_title": "Fácil",
+      "easy_desc": "Un poco más difícil",
+      "hard_title": "Difícil",
+      "hard_desc": "Oponente con heurística completa"
+    }
+  },
+  "history": {
+    "title": "Historial de partidas",
+    "loading": "Cargando historial…",
+    "empty": "Todavía no has jugado ninguna partida. ¡Ve a jugar! 🎮",
+    "stats": {
+      "total": "Partidas totales",
+      "wins": "Victorias",
+      "losses": "Derrotas",
+      "win_rate": "% Victorias",
+      "table.points": "Pts",
+      "board_size": "Tamaño",
+      "difficulty": "Dificultad",
+      "leaderboard": "Tabla de clasificación",
+      "stats_view": "Ver estadísticas",
+      "view": "Ver partidas"
+    },
+    "filter": {
+      "all": "Todas",
+      "wins": "🏆 Victorias",
+      "losses": "🤖 Derrotas"
+    },
+    "table": {
+      "number": "#",
+      "result": "Resultado",
+      "difficulty": "Dificultad",
+      "size": "Tamaño",
+      "moves": "Movimientos",
+      "date": "Fecha"
+    },
+    "result": {
+      "win": "🏆 Victoria",
+      "loss": "🤖 Derrota"
+    },
+    "difficulty_label": {
+      "random": "🎲 Aleatorio",
+      "easy": "😊 Fácil",
+      "hard": "🔥 Difícil"
+    }
+  },
+  "board": {
+    "title": "Yovi — Juego Y",
+    "info": {
+      "standard": "Estándar",
+      "rob": "Modo Robo",
+      "pie_rule": "Regla del pastel",
+      "master_y": "Master Y",
+      "rob_active": "Elige una celda del bot para robar"
+    },
+    "rob": {
+      "action": "Robar",
+      "cancel": "Cancelar",
+      "cost_hint": "Roba una celda del bot — cuesta 2 turnos del bot",
+      "select_hint": "Haz clic en una celda roja para robarla"
+    },
+    "status": {
+      "you_win": "🏆 ¡Has ganado!",
+      "bot_wins": "🤖 Gana el bot",
+      "thinking": "⏳ El bot está pensando…",
+      "your_turn": "🔵 Tu turno",
+      "bot_turn": "🔴 Turno del bot",
+      "rob_active": "🗡 Selecciona una celda para robar"
+    },
+    "new_game": "Nueva partida",
+    "legend": {
+      "you": "Tú (Azul)",
+      "bot": "Bot (Rojo)",
+      "rob": "Celda robada"
+    },
+    "rules_hint": "Conecta los tres lados del triángulo con tus piezas para ganar.",
+    "rules_hint_rob": "Puedes robar una celda del bot en cualquier momento, pero jugará dos turnos seguidos.",
+    "difficulty_label": {
+      "random": "🎲 Aleatorio",
+      "easy": "😊 Fácil",
+      "hard": "🤖 Difícil"
+    },
+    "bot_error": "Error del bot: {{message}}"
+  }
+}

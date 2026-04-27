@@ -122,6 +122,13 @@ pub enum GameYError {
         /// Description of what went wrong.
         message: String,
     },
+
+    /// Attempted an invalid move.
+    #[error("Invalid move: {message}")]
+    InvalidMove {
+        /// Why the move is invalid.
+        message: String,
+    },
 }
 
 #[cfg(test)]

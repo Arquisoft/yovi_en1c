@@ -1,30 +1,53 @@
 #root {
-    width: 100%;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.App div:has(.logo) {
+  margin-bottom: 5px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.App h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.logo.gameY {
+  width: 20em;
+  height: auto;
+  display: block;
+  margin: 10px auto;
+  transition: filter 0.5s ease-out;
+}
+
+.logo.gameY:hover {
+  animation: moveShadowMix 3s infinite linear;
+}
+
+@keyframes moveShadowMix {
+  0% {
+    filter: drop-shadow(-1.5em 0 1.5em #ff0000aa)
+      drop-shadow(1.5em 0 1.5em #0000ffaa);
   }
-  to {
-    transform: rotate(360deg);
+  25% {
+    filter: drop-shadow(0 -1.5em 1.5em #ff0000aa)
+      drop-shadow(0 1.5em 1.5em #0000ffaa);
+  }
+  50% {
+    filter: drop-shadow(1.5em 0 1.5em #ff0000aa)
+      drop-shadow(-1.5em 0 1.5em #0000ffaa);
+  }
+  75% {
+    filter: drop-shadow(0 1.5em 1.5em #ff0000aa)
+      drop-shadow(0 -1.5em 1.5em #0000ffaa);
+  }
+  100% {
+    filter: drop-shadow(-1.5em 0 1.5em #ff0000aa)
+      drop-shadow(1.5em 0 1.5em #0000ffaa);
   }
 }
 

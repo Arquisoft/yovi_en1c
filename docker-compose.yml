@@ -21,6 +21,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGO_URI=mongodb://mongo:27017/yovi
+      - JWT_SECRET=gamey_secret_26
     depends_on:
       - mongo
 
@@ -56,6 +57,8 @@ services:
       - "8000:8000"
     networks:
       - monitor-net
+    environment:
+      - JWT_SECRET=gamey_secret_26
     depends_on:
       - users
       - gamey

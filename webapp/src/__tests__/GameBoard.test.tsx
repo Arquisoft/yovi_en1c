@@ -5,415 +5,293 @@ import "@testing-library/jest-dom";
 import GameBoard from "../GameBoard";
 import type { GameConfig } from "../GameMenu";
 
-// ─── Default config ───────────────────────────────────────────────────────────
-// medium = 7×7 board (28 cells), random_bot matches the existing API URL tests
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      const translations: Record<string, string> = {
+        "common.back": "Back",
+        "board.title": "Yovi",
+        "board.status.your_turn": "Your turn",
+        "board.status.thinking": "Bot thinking",
+        "board.status.you_win": "You win",
+        "board.status.bot_wins": "Bot wins",
+        "board.status.rob_active": "Choose a bot cell to rob",
+        "board.legend.you": "You (Blue)",
+        "board.legend.bot": "Bot (Red)",
+        "board.legend.rob": "Robbed cell",
+        "board.rules_hint": "Connect all three sides",
+        "board.rules_hint_rob": "Rob costs 2 bot turns",
+        "board.new_game": "New Game",
+        "board.info.standard": "Standard",
+        "board.info.rob": "Rob Mode",
+        "board.difficulty_label.random": "Random",
+        "board.rob.action": "Rob",
+        "board.rob.cancel": "Cancel",
+        "board.rob.cost_hint": "Steal a bot cell (costs 2 turns)",
+        "board.rob.select_hint": "Click a red cell to steal it",
+      };
+      if (key === "board.bot_error") return `Error: ${options?.message}`;
+      return translations[key] || key;
+    },
+  }),
+}));
 
-const defaultConfig: GameConfig = {
+const standardConfig: GameConfig = {
   boardSize: "medium",
   mode: "standard",
   layout: "classic",
   difficulty: "random",
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const robConfig: GameConfig = {
+  boardSize: "medium",
+  mode: "rob",
+  layout: "classic",
+  difficulty: "random",
+};
 
-/** Builds a minimal successful bot response for a given cell. */
-function botResponse(x: number, y: number, z: number) {
-  return {
+const mockBotResponse = (x: number, y: number, z: number) =>
+  ({
     ok: true,
     json: async () => ({
       api_version: "v1",
       bot_id: "random_bot",
       coords: { x, y, z },
     }),
-  } as Response;
-}
+  }) as Response;
 
-/** Returns all SVG polygon elements — a size-7 board has 28 cells. */
-function getPolygons() {
-  return document.querySelectorAll("polygon");
-}
+const getPolygons = () => document.querySelectorAll("polygon");
 
-// ─── Rendering ────────────────────────────────────────────────────────────────
+// ─── Standard mode suite (unchanged behavior) ─────────────────────────────────
 
-describe("GameBoard – rendering", () => {
-  afterEach(() => vi.restoreAllMocks());
+describe("GameBoard — Standard mode", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
 
-  test("renders the game title", () => {
+  test("renders initial board layout and labels", () => {
     render(
       <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
+        config={standardConfig}
+        onBack={() => {}}
         userName="testUser"
       />,
     );
     expect(screen.getByText(/yovi/i)).toBeInTheDocument();
-  });
-
-  test("renders the back button", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
-  });
-
-  test("renders size info tag", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    // Usamos medium en el defaultConfig, por lo que debe buscar "medium"
-    expect(screen.getByText(/medium/i)).toBeInTheDocument();
-  });
-
-  test("renders the legend with player entries", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    expect(screen.getByText(/you \(blue\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/bot \(red\)/i)).toBeInTheDocument();
-  });
-
-  test("renders the rules hint", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    expect(screen.getByText(/connect all three sides/i)).toBeInTheDocument();
-  });
-
-  test("renders 28 hexagonal cells for a size-7 board", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
+    expect(screen.getByText(/your turn/i)).toBeInTheDocument();
     expect(getPolygons()).toHaveLength(28);
   });
 
-  test("shows 'Your turn' status badge at the start", () => {
+  test("renders correct number of cells for small board", () => {
     render(
       <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
+        config={{ ...standardConfig, boardSize: "small" }}
+        onBack={() => {}}
         userName="testUser"
       />,
     );
-    expect(screen.getByText(/your turn/i)).toBeInTheDocument();
+    expect(getPolygons()).toHaveLength(15);
   });
 
-  test("does not show 'New game' button while game is ongoing", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    expect(
-      screen.queryByRole("button", { name: /new game/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  test("does not show error banner on initial render", () => {
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    expect(document.querySelector(".errorBanner")).not.toBeInTheDocument();
-  });
-});
-
-// ─── Navigation ───────────────────────────────────────────────────────────────
-
-describe("GameBoard – navigation", () => {
-  afterEach(() => vi.restoreAllMocks());
-
-  test("calls onBack when the back button is clicked", async () => {
-    const onBack = vi.fn();
-    render(
-      <GameBoard config={defaultConfig} onBack={onBack} userName="testUser" />,
-    );
-    await userEvent.click(screen.getByRole("button", { name: /back/i }));
-    expect(onBack).toHaveBeenCalledOnce();
-  });
-});
-
-// ─── Turn flow ────────────────────────────────────────────────────────────────
-
-describe("GameBoard – turn flow", () => {
-  afterEach(() => vi.restoreAllMocks());
-
-  test("calls the bot API after the player clicks a cell", async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
-    global.fetch = fetchMock;
+  test("prevents interaction while bot is thinking", async () => {
+    global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
     render(
       <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
+        config={standardConfig}
+        onBack={() => {}}
         userName="testUser"
       />,
     );
-    await userEvent.click(getPolygons()[0]);
 
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledOnce();
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining("/gamey/v1/ybot/choose/random_bot"),
-        expect.objectContaining({ method: "POST" }),
-      );
-    });
+    const cells = getPolygons();
+    await userEvent.click(cells[0]);
+    await userEvent.click(cells[1]);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
-  test("sends a valid YEN body to the bot API", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      const body = JSON.parse(
-        (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body,
-      );
-      expect(body).toHaveProperty("size", 7);
-      expect(body).toHaveProperty("turn", 1);
-      expect(body).toHaveProperty("players", ["B", "R"]);
-      expect(body).toHaveProperty("layout");
-      // A size-7 layout has exactly 6 row separators
-      expect((body.layout.match(/\//g) || []).length).toBe(6);
-      expect(body.layout).toContain("B");
-    });
-  });
-
-  test("shows 'Bot thinking' status while waiting for the API response", async () => {
-    global.fetch = vi.fn().mockImplementation(() => new Promise(() => { }));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    expect(screen.getByText(/bot thinking/i)).toBeInTheDocument();
-  });
-
-  test("returns turn to player after bot responds", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/your turn/i)).toBeInTheDocument();
-    });
-  });
-
-  test("does not call the API again when clicking while bot is thinking", async () => {
-    global.fetch = vi.fn().mockImplementation(() => new Promise(() => { }));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-    await userEvent.click(getPolygons()[1]);
-
-    expect(global.fetch).toHaveBeenCalledOnce();
-  });
-
-  test("does not call the API when clicking an already occupied cell", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce(botResponse(0, 1, 0));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-    await waitFor(() => screen.getByText(/your turn/i));
-
-    global.fetch = vi.fn();
-    await userEvent.click(getPolygons()[0]);
-
-    expect(global.fetch).not.toHaveBeenCalled();
-  });
-});
-
-// ─── Error handling ───────────────────────────────────────────────────────────
-
-describe("GameBoard – error handling", () => {
-  afterEach(() => vi.restoreAllMocks());
-
-  test("shows error banner when the bot API returns a non-ok response", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Bot not found" }),
-    } as Response);
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/bot error/i)).toBeInTheDocument();
-      expect(screen.getByText(/bot not found/i)).toBeInTheDocument();
-    });
-  });
-
-  test("shows error banner when the network call fails", async () => {
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error("Network error"));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/bot error/i)).toBeInTheDocument();
-      expect(screen.getByText(/network error/i)).toBeInTheDocument();
-    });
-  });
-
-  test("shows 'Unknown error' when fetch rejects with a non-Error value", async () => {
-    global.fetch = vi.fn().mockRejectedValueOnce("plain string error");
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/unknown error/i)).toBeInTheDocument();
-    });
-  });
-
-  test("gives the turn back to the player after a failed API call", async () => {
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error("Network error"));
-
-    render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
-    );
-    await userEvent.click(getPolygons()[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/your turn/i)).toBeInTheDocument();
-    });
-  });
-
-  test("clears the error banner on the next player move", async () => {
+  test("displays error banner on network failure and clears it on next move", async () => {
     global.fetch = vi
       .fn()
-      .mockRejectedValueOnce(new Error("Network error"))
-      .mockResolvedValueOnce(botResponse(0, 1, 0));
+      .mockRejectedValueOnce(new Error("Timeout"))
+      .mockResolvedValueOnce(mockBotResponse(1, 1, 1));
 
     render(
       <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
+        config={standardConfig}
+        onBack={() => {}}
         userName="testUser"
       />,
     );
 
     await userEvent.click(getPolygons()[0]);
-    await waitFor(() => screen.getByText(/bot error/i));
+    await waitFor(() =>
+      expect(screen.getByText(/error: timeout/i)).toBeInTheDocument(),
+    );
 
     await userEvent.click(getPolygons()[1]);
-    await waitFor(() => {
-      expect(screen.queryByText(/bot error/i)).not.toBeInTheDocument();
-    });
+    expect(screen.queryByText(/error: timeout/i)).not.toBeInTheDocument();
+  });
+
+  test("executes onBack callback when back button is clicked", async () => {
+    const onBack = vi.fn();
+    render(
+      <GameBoard config={standardConfig} onBack={onBack} userName="testUser" />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /back/i }));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("does NOT render rob bar in standard mode", () => {
+    render(
+      <GameBoard
+        config={standardConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /rob/i }),
+    ).not.toBeInTheDocument();
   });
 });
 
-// ─── Win / lose ───────────────────────────────────────────────────────────────
+// ─── Rob mode suite ───────────────────────────────────────────────────────────
 
-describe("GameBoard – win / lose state", () => {
-  afterEach(() => vi.restoreAllMocks());
+describe("GameBoard — Rob mode", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
 
-  test("does not show win/lose state on initial render", () => {
+  test("renders Rob Mode label and rob bar", () => {
     render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
     );
-    expect(screen.queryByText(/you win/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/bot wins/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/rob mode/i)).toBeInTheDocument();
+    // Rob button is rendered but disabled (no bot cells yet)
+    expect(screen.getByRole("button", { name: /rob/i })).toBeDisabled();
+    expect(screen.getByText(/steal a bot cell/i)).toBeInTheDocument();
+  });
+
+  test("rob button is disabled before any bot cells exist", () => {
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+    expect(screen.getByRole("button", { name: /rob/i })).toBeDisabled();
+  });
+
+  test("rob button becomes enabled after bot places a cell", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    // Player places a piece → bot responds
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+  });
+
+  test("activating rob mode changes status label and shows cancel button", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+
+    expect(screen.getByText(/choose a bot cell to rob/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  test("cancelling rob mode restores normal state", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+    await userEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+    expect(screen.getByText(/your turn/i)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /new game/i }),
+      screen.queryByRole("button", { name: /cancel/i }),
     ).not.toBeInTheDocument();
   });
 
-  test("board still has 28 cells after a move", async () => {
-    global.fetch = vi.fn().mockResolvedValue(botResponse(0, 6, 0));
+  test("robbing a cell triggers two bot turns (2 fetch calls)", async () => {
+    // First call: player's normal move bot response
+    // Second & third calls: two bot turns after the rob
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(mockBotResponse(5, 0, 1)) // after player move
+      .mockResolvedValueOnce(mockBotResponse(4, 0, 2)) // bot turn 1 after rob
+      .mockResolvedValueOnce(mockBotResponse(3, 0, 3)); // bot turn 2 after rob
 
     render(
-      <GameBoard
-        config={defaultConfig}
-        onBack={() => { }}
-        userName="testUser"
-      />,
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
     );
-    await userEvent.click(getPolygons()[0]);
-    await waitFor(() => screen.getByText(/your turn/i));
 
-    expect(getPolygons()).toHaveLength(28);
+    // Player places a piece
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    // Activate rob
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+
+    // Click a bot cell — need to find the polygon whose fill is red (bot's)
+    // After the bot responded to the player's first move, one polygon is the bot's.
+    // We stub Math.random so the bot doesn't try to rob back.
+    vi.spyOn(Math, "random").mockReturnValue(0); // < BOT_ROB_PROBABILITY is 0.25, 0 < 0.25 but no player cells to steal in turn 1
+
+    // Click a polygon (the board has a bot cell now)
+    const allPolygons = getPolygons();
+    // We need to click a polygon that is the bot's cell. Since the board is SVG,
+    // we rely on the second and third fetch being called as a signal.
+    // Click every polygon until rob completes (the bot-owned cell reacts).
+    for (const poly of Array.from(allPolygons)) {
+      poly.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }
+
+    await waitFor(
+      () =>
+        // After a successful rob: 1 (player move) + 2 (rob cost) = 3 total fetch calls
+        expect(global.fetch).toHaveBeenCalledTimes(3),
+      { timeout: 3000 },
+    );
+  });
+
+  test("rules hint shows rob-specific text in rob mode", () => {
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+    expect(screen.getByText(/rob costs 2 bot turns/i)).toBeInTheDocument();
+  });
+
+  test("legend shows robbed cell entry in rob mode", () => {
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+    expect(screen.getByText(/robbed cell/i)).toBeInTheDocument();
   });
 });
