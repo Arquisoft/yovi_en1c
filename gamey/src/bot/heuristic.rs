@@ -377,8 +377,13 @@ fn rob_choose(board: &GameY, difficulty: RobDifficulty) -> Option<(Coordinates, 
                 return Some((*cell, true));
             }
 
-            let cell = opp_cells.choose(&mut rand::rng())?;
-            Some((*cell, false))
+            let size = board.board_size();
+            let available = board.available_cells();
+            if available.is_empty() {
+                return None;
+            }
+            let idx = available.choose(&mut rand::rng())?;
+            Some((Coordinates::from_index(*idx, size), false))
         }
 
         RobDifficulty::Easy => {
