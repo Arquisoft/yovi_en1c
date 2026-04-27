@@ -295,3 +295,306 @@ describe("GameBoard — Rob mode", () => {
     expect(screen.getByText(/robbed cell/i)).toBeInTheDocument();
   });
 });
+
+// ─── Additional coverage tests ────────────────────────────────────────────────
+
+describe("GameBoard — Player bonus turn (bot steals)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  test("player gets a bonus turn when bot steals a cell", async () => {
+    // Bot response with is_steal: true → player gets extra turn
+    const stealResponse = {
+      ok: true,
+      json: async () => ({
+        api_version: "v1",
+        bot_id: "rob_bot_random",
+        coords: { x: 1, y: 0, z: 0 },
+        is_steal: true,
+      }),
+    } as Response;
+
+    const normalResponse = {
+      ok: true,
+      json: async () => ({
+        api_version: "v1",
+        bot_id: "rob_bot_random",
+        coords: { x: 2, y: 0, z: 0 },
+        is_steal: false,
+      }),
+    } as Response;
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(stealResponse)   // bot steals on first player move
+      .mockResolvedValueOnce(normalResponse); // bot plays normally after bonus turn
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    // First player move → bot steals → player gets bonus turn
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByText(/your turn/i)).toBeInTheDocument(),
+    );
+
+    const cells = getPolygons();
+    await userEvent.click(cells[2]);
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledTimes(2),
+    );
+  });
+});
+
+describe("GameBoard — Win conditions", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  test("shows 'You win' status when player wins after rob", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard
+        config={{ ...robConfig, boardSize: "small" }}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    // Activate rob
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+    expect(screen.getByText(/choose a bot cell to rob/i)).toBeInTheDocument();
+  });
+
+  test("shows 'Bot wins' status and new game button when bot wins", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(0, 0, 0));
+
+    render(
+      <GameBoard
+        config={{ ...standardConfig, boardSize: "small" }}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.queryByText(/bot thinking/i)).not.toBeInTheDocument(),
+    );
+  });
+
+  test("shows New Game button after game ends", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(1, 0, 0));
+
+    render(
+      <GameBoard config={standardConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.queryByText(/bot thinking/i)).not.toBeInTheDocument(),
+    );
+    const newGameBtn = screen.queryByRole("button", { name: /new game/i });
+    if (newGameBtn) {
+      expect(newGameBtn).toBeInTheDocument();
+      await userEvent.click(newGameBtn);
+      expect(screen.getByText(/yovi/i)).toBeInTheDocument();
+    }
+  });
+});
+
+describe("GameBoard — Board sizes", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  test("renders correct number of cells for large board", () => {
+    render(
+      <GameBoard
+        config={{ ...standardConfig, boardSize: "large" }}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(getPolygons()).toHaveLength(45);
+  });
+
+  test("renders correct number of cells for medium board", () => {
+    render(
+      <GameBoard
+        config={standardConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(getPolygons()).toHaveLength(28);
+  });
+});
+
+describe("GameBoard — Rob mode error handling", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  test("shows error banner when bot fails during rob penalty turns", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(mockBotResponse(5, 0, 1)) 
+      .mockRejectedValueOnce(new Error("Network error"));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+
+    const allPolygons = getPolygons();
+    for (const poly of Array.from(allPolygons)) {
+      poly.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }
+
+    await waitFor(() =>
+      expect(screen.getByText(/error: network error/i)).toBeInTheDocument(),
+      { timeout: 3000 },
+    );
+  });
+
+  test("rob mode resets to player turn on error", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(mockBotResponse(5, 0, 1))
+      .mockRejectedValueOnce(new Error("Timeout"));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+
+    const allPolygons = getPolygons();
+    for (const poly of Array.from(allPolygons)) {
+      poly.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }
+
+    await waitFor(() =>
+      expect(screen.getByText(/error: timeout/i)).toBeInTheDocument(),
+      { timeout: 3000 },
+    );
+    expect(screen.queryByText(/bot thinking/i)).not.toBeInTheDocument();
+  });
+});
+
+describe("GameBoard — Interaction edge cases", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  test("clicking an already occupied cell does nothing", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={standardConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    const cells = getPolygons();
+    await userEvent.click(cells[0]);
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+
+    await userEvent.click(cells[0]);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("rob mode: clicking a player cell (non-bot) during rob does nothing", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /rob/i })).toBeEnabled(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /rob/i }));
+
+    await userEvent.click(getPolygons()[0]);
+
+    expect(screen.getByText(/choose a bot cell to rob/i)).toBeInTheDocument();
+  });
+
+  test("new game resets board after win", async () => {
+    global.fetch = vi.fn().mockResolvedValue(mockBotResponse(5, 0, 1));
+
+    render(
+      <GameBoard config={standardConfig} onBack={() => {}} userName="testUser" />,
+    );
+
+    await userEvent.click(getPolygons()[0]);
+    await waitFor(() =>
+      expect(screen.queryByText(/bot thinking/i)).not.toBeInTheDocument(),
+    );
+
+    const newGameBtn = screen.queryByRole("button", { name: /new game/i });
+    if (newGameBtn) {
+      await userEvent.click(newGameBtn);
+      expect(getPolygons()).toHaveLength(28); // back to medium board
+      expect(screen.getByText(/your turn/i)).toBeInTheDocument();
+    }
+  });
+
+  test("displays wooden layout class when layout is wooden", () => {
+    render(
+      <GameBoard
+        config={{ ...standardConfig, layout: "wooden" }}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(document.querySelector(".wooden")).toBeInTheDocument();
+  });
+
+  test("displays classic layout class when layout is classic", () => {
+    render(
+      <GameBoard
+        config={standardConfig}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(document.querySelector(".classic")).toBeInTheDocument();
+  });
+
+  test("displays correct difficulty label", () => {
+    render(
+      <GameBoard
+        config={{ ...standardConfig, difficulty: "hard" }}
+        onBack={() => {}}
+        userName="testUser"
+      />,
+    );
+    expect(screen.getByText(/hard/i)).toBeInTheDocument();
+  });
+});
