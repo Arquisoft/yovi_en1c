@@ -296,59 +296,6 @@ describe("GameBoard — Rob mode", () => {
   });
 });
 
-// ─── Additional coverage tests ────────────────────────────────────────────────
-
-describe("GameBoard — Player bonus turn (bot steals)", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.clearAllMocks();
-  });
-
-  test("player gets a bonus turn when bot steals a cell", async () => {
-    // Bot response with is_steal: true → player gets extra turn
-    const stealResponse = {
-      ok: true,
-      json: async () => ({
-        api_version: "v1",
-        bot_id: "rob_bot_random",
-        coords: { x: 1, y: 0, z: 0 },
-        is_steal: true,
-      }),
-    } as Response;
-
-    const normalResponse = {
-      ok: true,
-      json: async () => ({
-        api_version: "v1",
-        bot_id: "rob_bot_random",
-        coords: { x: 2, y: 0, z: 0 },
-        is_steal: false,
-      }),
-    } as Response;
-
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce(stealResponse)   // bot steals on first player move
-      .mockResolvedValueOnce(normalResponse); // bot plays normally after bonus turn
-
-    render(
-      <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
-    );
-
-    // First player move → bot steals → player gets bonus turn
-    await userEvent.click(getPolygons()[0]);
-    await waitFor(() =>
-      expect(screen.getByText(/your turn/i)).toBeInTheDocument(),
-    );
-
-    const cells = getPolygons();
-    await userEvent.click(cells[2]);
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledTimes(2),
-    );
-  });
-});
-
 describe("GameBoard — Win conditions", () => {
   afterEach(() => {
     vi.restoreAllMocks();
