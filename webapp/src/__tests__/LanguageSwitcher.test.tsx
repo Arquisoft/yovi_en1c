@@ -21,14 +21,14 @@ describe("LanguageSwitcher ", () => {
 
     expect(screen.getByText("language_switcher.label:")).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "EN" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ES" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ENG" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ESP" })).toBeInTheDocument();
   });
 
   it("should call changeLanguage when a language button is clicked", () => {
     render(<LanguageSwitcher />);
 
-    const esButton = screen.getByRole("button", { name: "ES" });
+    const esButton = screen.getByRole("button", { name: "ESP" });
 
     fireEvent.click(esButton);
 
@@ -38,8 +38,8 @@ describe("LanguageSwitcher ", () => {
   it("should apply different styles to the active language", () => {
     render(<LanguageSwitcher />);
 
-    const enButton = screen.getByRole("button", { name: "EN" });
-    const esButton = screen.getByRole("button", { name: "ES" });
+    const enButton = screen.getByRole("button", { name: "ENG" });
+    const esButton = screen.getByRole("button", { name: "ESP" });
 
     expect(enButton.style.background).toBe("rgb(79, 70, 229)");
     expect(esButton.style.background).toBe("transparent");
