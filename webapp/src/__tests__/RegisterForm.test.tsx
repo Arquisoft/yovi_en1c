@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginForm from "../RegisterForm";
-import {beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import "@testing-library/jest-dom";
 
 vi.mock("react-i18next", () => ({
@@ -30,7 +30,10 @@ describe("LoginForm Full Suite", () => {
     // Success Mock
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ token: "mock-token", user: { username: "Pablo" } }),
+      json: async () => ({
+        token: "mock.token.val",
+        user: { username: "Pablo" },
+      }),
     } as Response);
 
     await user.type(screen.getByLabelText(/login.username_label/i), "Pablo");
@@ -38,13 +41,15 @@ describe("LoginForm Full Suite", () => {
     await user.click(screen.getByRole("button", { name: /login.submit/i }));
 
     await waitFor(() => expect(onLoggedIn).toHaveBeenCalledWith("Pablo"));
-    expect(localStorage.getItem("token")).toBe("mock-token");
+    expect(localStorage.getItem("token")).toBe("mock.token.val");
   });
 
   test("navigates to signup", async () => {
     const onGoToSignUp = vi.fn();
     render(<LoginForm onLoggedIn={vi.fn()} onGoToSignUp={onGoToSignUp} />);
-    await userEvent.click(screen.getByRole("button", { name: /login.go_signup/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /login.go_signup/i }),
+    );
     expect(onGoToSignUp).toHaveBeenCalled();
   });
 });

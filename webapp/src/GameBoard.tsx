@@ -120,9 +120,17 @@ async function saveGame(
   mode: "standard" | "rob",
 ) {
   const totalMoves = Object.keys(board).length;
+
+  const token = localStorage.getItem("token");
+  console.log("Token value:", token);
+
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
     body: JSON.stringify({
       result,
       board,
@@ -210,12 +218,18 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     setPlayerBonusTurn(false);
   };
 
+  //helper method to call the bot API and return the chosen move, throwing an error if the call fails for any reason
   async function fetchBotMove(botId: string, yen: YEN): Promise<BotResponse> {
+    const token = localStorage.getItem("token");
+
     const res = await fetch(
       `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(yen),
       },
     );

@@ -98,12 +98,20 @@ export default function GameHistory({ onBack, userName }: Props) {
       setLoading(true);
       setError(null);
       try {
+        const token = localStorage.getItem("token");
+
         const [gamesRes, leaderRes, statsRes] = await Promise.all([
-          fetch(`${API_GATEWAY_URL}/api/users/games/list?username=${userName}`),
-          fetch(`${API_GATEWAY_URL}/api/users/games/leaderboard`),
+          fetch(`${API_GATEWAY_URL}/api/users/games/list?username=${userName}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          }),
+          fetch(`${API_GATEWAY_URL}/api/users/games/leaderboard`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          }),
           fetch(
-            `${API_GATEWAY_URL}/api/users/games/stats?username=${userName}`,
-          ),
+            `${API_GATEWAY_URL}/api/users/games/stats?username=${userName}`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            }),
+    
         ]);
 
         if (!gamesRes.ok || !leaderRes.ok || !statsRes.ok) {

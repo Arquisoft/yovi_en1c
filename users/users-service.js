@@ -62,7 +62,7 @@ const calculatePoints = (difficulty, boardSize, totalMoves, result) => {
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -91,8 +91,16 @@ app.post("/signup", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
+
+    const token = jwt.sign(
+      { userId: savedUser._id, username: savedUser.name },
+       JWT_SECRET,
+       { expiresIn: "2h" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
+      token: token,
       user: { id: savedUser._id, username: savedUser.name },
     });
   } catch (err) {
