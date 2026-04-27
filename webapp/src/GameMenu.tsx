@@ -24,7 +24,9 @@ const TRIVIA_SNIPPETS = [
 ];
 
 function getRandomTrivia() {
-  return TRIVIA_SNIPPETS[Math.floor(Math.random() * TRIVIA_SNIPPETS.length)];
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return TRIVIA_SNIPPETS[array[0] % TRIVIA_SNIPPETS.length];
 }
 
 export function TriviaHelp() {

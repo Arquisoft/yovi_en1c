@@ -55,7 +55,8 @@
       "medium_title": "Medium",
       "medium_desc": "7×7 board, classic Y experience",
       "large_title": "Large",
-      "large_desc": "9×9 board, strategic Y gameplay"
+      "large_desc": "9×9 board, strategic Y gameplay",
+      "menu.board_layout_aria": "Board layout"
     },
     "mode": {
       "standard_title": "Standard",

@@ -109,7 +109,7 @@ describe("GameBoard — Standard mode", () => {
     await userEvent.click(cells[0]);
     await userEvent.click(cells[1]);
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   test("displays error banner on network failure and clears it on next move", async () => {

@@ -1,10 +1,11 @@
 use crate::{Cell, Coordinates, GameStatus, GameY, Movement, PlayerId, YBot};
 use std::collections::{HashMap, HashSet, VecDeque};
+use rand::Rng;
+use rand::prelude::IndexedRandom;
 
 const WIN_SCORE: i32 = 1_000_000;
 const MINIMAX_DEPTH: u32 = 3;
 // Minimum relative improvement required to prefer a steal over a placement.
-// 0.82 means the steal must reduce connection cost to ≤82% of the placement cost.
 const STEAL_THRESHOLD: f32 = 0.82;
 
 // ─────────────────────────────────────────────────────────────
@@ -192,10 +193,6 @@ fn minimax(
     }
 
     let current_player = if maximizing { bot_player } else { other_player(bot_player) };
-    // FIX: opponent se define respecto al current_player, igual que antes.
-    // El bug real estaba en rob_choose (Hard), no aquí. Pero añadimos
-    // una guarda para asegurarnos de que solo robamos celdas del
-    // current_player's actual opponent.
     let opponent = other_player(current_player);
     let size = board.board_size();
 
@@ -209,9 +206,6 @@ fn minimax(
     let steal_candidates: Vec<Coordinates> = if rob_mode {
         let mut opp: Vec<(Coordinates, u32)> = all_coords(size)
             .into_iter()
-            // FIX: usar `opponent` local (ya era correcto), pero ahora
-            // verificamos explícitamente que la celda pertenece al
-            // oponente del jugador que mueve en ESTE nivel.
             .filter(|c| board.cell_at(c) == Cell::Occupied(opponent))
             .filter_map(|c| {
                 let mut sim = board.clone();
@@ -226,7 +220,6 @@ fn minimax(
         vec![]
     };
 
-    // El resto del minimax es idéntico — sin cambios aquí
     if maximizing {
         let mut value = i32::MIN;
         for coords in &placement_candidates {
@@ -364,12 +357,8 @@ fn steal_is_worth_it(s_cost: u32, p_cost: u32) -> bool {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RobDifficulty {
-    /// 50/50 random choice between steal and placement.
     Random,
-    /// Greedy: compare best steal vs best placement by virtual_connection_cost.
-    /// No lookahead — fast but exploitable.
     Easy,
-    /// Hard: uses full minimax including steal moves in the search tree.
     Hard,
 }
 
@@ -381,35 +370,28 @@ fn rob_choose(board: &GameY, difficulty: RobDifficulty) -> Option<(Coordinates, 
     match difficulty {
         RobDifficulty::Random => {
             let opp_cells = opponent_cells(board, opponent);
-            let try_steal = !opp_cells.is_empty()
-                && pseudo_random_bool(board.board_size(), opp_cells.len() as u32);
+            let try_steal = !opp_cells.is_empty() && rand::rng().random_bool(0.5);
 
             if try_steal {
-                let idx = pseudo_random_index(opp_cells.len(), board.board_size());
-                return Some((opp_cells[idx], true));
+                let cell = opp_cells.choose(&mut rand::rng())?;
+                return Some((*cell, true));
             }
 
-            let available = board.available_cells();
-            if available.is_empty() { return None; }
-            let idx = pseudo_random_index(available.len(), board.board_size());
-            Some((Coordinates::from_index(available[idx], board.board_size()), false))
+            let cell = opp_cells.choose(&mut rand::rng())?;
+            Some((*cell, false))
         }
 
         RobDifficulty::Easy => {
-            let steal_opt = best_steal(board, bot_player);
             let place_opt = best_placement_by_cost(board, bot_player);
-            match (steal_opt, place_opt) {
-                (Some((sc, s_cost)), Some((pc, p_cost))) => {
-                    if steal_is_worth_it(s_cost, p_cost) {
-                        Some((sc, true))
-                    } else {
-                        Some((pc, false))
-                    }
+            let steal_opt = best_steal(board, bot_player);
+
+            if let (Some((sc, s_cost)), Some((_, p_cost))) = (steal_opt, place_opt) {
+                if steal_is_worth_it(s_cost, p_cost) {
+                    return Some((sc, true));
                 }
-                (Some((sc, _)), None) => Some((sc, true)),
-                (None, Some((pc, _))) => Some((pc, false)),
-                (None, None) => None,
             }
+
+            best_move_with_depth(board, 1).map(|c| (c, false))
         }
 
         RobDifficulty::Hard => {
@@ -491,25 +473,6 @@ fn rob_choose(board: &GameY, difficulty: RobDifficulty) -> Option<(Coordinates, 
         }
     }
 
-// ─────────────────────────────────────────────────────────────
-// Deterministic pseudo-random helpers
-// ─────────────────────────────────────────────────────────────
-
-fn pseudo_random_bool(board_size: u32, salt: u32) -> bool {
-    let t = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .subsec_nanos();
-    (t.wrapping_add(board_size).wrapping_mul(salt)) % 2 == 0
-}
-
-fn pseudo_random_index(len: usize, salt: u32) -> usize {
-    let t = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .subsec_nanos();
-    (t.wrapping_add(salt) as usize) % len
-}
 
 // ─────────────────────────────────────────────────────────────
 // Public bot structs
@@ -533,10 +496,6 @@ impl YBot for HeuristicBot {
     }
 }
 
-/// Rob-mode bot with three difficulty levels registered as separate bot ids:
-/// - `rob_bot_random`
-/// - `rob_bot_easy`
-/// - `rob_bot_hard`
 pub struct RobBot {
     difficulty: RobDifficulty,
 }
