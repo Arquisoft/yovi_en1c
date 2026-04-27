@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import "./GameBoard.css";
 import type { GameConfig, Difficulty } from "./GameMenu";
 
@@ -11,21 +12,23 @@ const HEX_HORIZONTAL_SPACING = HEX_RADIUS * Math.sqrt(3);
 const HEX_VERTICAL_SPACING = HEX_RADIUS * 1.5;
 const BOARD_MARGIN = HEX_RADIUS * 3;
 
-// Map the menu option to the actual board size number
 const BOARD_SIZE_MAP: Record<GameConfig["boardSize"], number> = {
   small: 5,
   medium: 7,
   large: 9,
 };
 
-// Map the difficulty option to the bot identifier registered in the Rust registry
 const BOT_ID_MAP: Record<Difficulty, string> = {
   random: "random_bot",
   easy: "easy_bot",
   hard: "heuristic_bot",
 };
+const ROB_BOT_ID_MAP: Record<Difficulty, string> = {
+  random: "rob_bot_random",
+  easy: "rob_bot_easy",
+  hard: "rob_bot_hard",
+};
 
-// Map layout style to CSS class applied to the SVG wrapper
 const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
   classic: "layout-classic",
 };
@@ -47,6 +50,7 @@ interface BotResponse {
   api_version: string;
   bot_id: string;
   coords: { x: number; y: number; z: number };
+  is_steal: boolean;
 }
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -113,11 +117,20 @@ async function saveGame(
   username: string,
   difficulty: Difficulty,
   boardSize: GameConfig["boardSize"],
+  mode: "standard" | "rob",
 ) {
   const totalMoves = Object.keys(board).length;
+
+  const token = localStorage.getItem("token");
+  console.log("Token value:", token);
+
   await fetch(`${API_GATEWAY_URL}/api/users/savegame`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
     body: JSON.stringify({
       result,
       board,
@@ -125,6 +138,7 @@ async function saveGame(
       username,
       difficulty,
       boardSize,
+      mode,
     }),
   }).catch(console.error);
 }
@@ -162,8 +176,13 @@ interface Props {
 }
 
 export default function GameBoard({ config, onBack, userName }: Props) {
+  const { t } = useTranslation();
+  const isRobMode = config.mode === "rob";
   const boardSize = BOARD_SIZE_MAP[config.boardSize];
-  const botId = BOT_ID_MAP[config.difficulty];
+  const botId =
+    config.mode === "rob"
+      ? ROB_BOT_ID_MAP[config.difficulty]
+      : BOT_ID_MAP[config.difficulty];
   const layoutClass = LAYOUT_CLASS_MAP[config.layout];
 
   const svgWidth =
@@ -180,6 +199,12 @@ export default function GameBoard({ config, onBack, userName }: Props) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [lastBotMove, setLastBotMove] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [playerBonusTurn, setPlayerBonusTurn] = useState(false);
+  // Rob-mode UI state
+  // When true, the player has activated rob mode and must click a bot cell.
+  const [robModeActive, setRobModeActive] = useState(false);
+  // Tracks the last cell stolen (player or bot) for visual highlight.
+  const [lastRobbedKey, setLastRobbedKey] = useState<string | null>(null);
 
   const resetGame = () => {
     setBoardMap({});
@@ -187,51 +212,83 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     setGameStatus("ongoing");
     setLoading(false);
     setLastBotMove(null);
+    setLastRobbedKey(null);
     setErrorMsg(null);
+    setRobModeActive(false);
+    setPlayerBonusTurn(false);
   };
 
   //helper method to call the bot API and return the chosen move, throwing an error if the call fails for any reason
-  async function fetchBotMove(
-    botId: string,
-    yen: YEN,
-  ): Promise<BotResponse> {
+  async function fetchBotMove(botId: string, yen: YEN): Promise<BotResponse> {
+    const token = localStorage.getItem("token");
+
     const res = await fetch(
       `${API_GATEWAY_URL}/api/gamey/${GAMEY_API_VERSION}/ybot/choose/${botId}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(yen),
       },
     );
+    const data = await res.json();
+    console.log("Bot response:", JSON.stringify(data));
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.message ?? `HTTP ${res.status}`);
+      throw new Error(data.message ?? `HTTP ${res.status}`);
     }
-    return res.json();
+    return data;
   }
 
-  //helper method to try to reduce complexity of the click handler, by applying the player move and returning the new board map without mutating the original
-  function applyPlayerMove(
-    boardMap: BoardMap,
-    x: number,
-    y: number,
-    z: number,
-  ): BoardMap {
-    return { ...boardMap, [coordKey(x, y, z)]: 0 };
+  /**
+   * Runs a single bot turn. Returns the updated board after the bot plays.
+   * In rob mode, the bot has BOT_ROB_PROBABILITY chance of robbing a player cell
+   * instead of placing a new piece.
+   */
+  async function runBotTurn(
+    currentBoard: BoardMap,
+  ): Promise<{ board: BoardMap; wasSteal: boolean }> {
+    const data = await fetchBotMove(
+      botId,
+      buildYEN(currentBoard, 1, boardSize),
+    );
+    const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
+
+    if (data.is_steal) {
+      setLastRobbedKey(botKey);
+      setLastBotMove(null);
+    } else {
+      setLastBotMove(botKey);
+      setLastRobbedKey(null);
+    }
+
+    return { board: { ...currentBoard, [botKey]: 1 }, wasSteal: data.is_steal };
   }
 
-  const handleCellClick = useCallback(
-    async (x: number, y: number, z: number) => {
-      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
-      if (boardMap[coordKey(x, y, z)] !== undefined) return;
+  // ─── Player robs a bot cell ───────────────────────────────────────────────
 
+  const handleRobCell = useCallback(
+    async (key: string) => {
+      if (!robModeActive || gameStatus !== "ongoing" || loading) return;
+
+      setRobModeActive(false);
       setErrorMsg(null);
-      const afterPlayer = applyPlayerMove(boardMap, x, y, z);
-      setBoardMap(afterPlayer);
 
-      if (checkWin(afterPlayer, 0)) {
+      const afterRob: BoardMap = { ...boardMap, [key]: 0 };
+      setLastRobbedKey(key);
+      setBoardMap(afterRob);
+
+      if (checkWin(afterRob, 0)) {
         setGameStatus("player_won");
-        saveGame("player_won", afterPlayer, userName, config.difficulty, config.boardSize);
+        saveGame(
+          "player_won",
+          afterRob,
+          userName,
+          config.difficulty,
+          config.boardSize,
+          config.mode,
+        );
         return;
       }
 
@@ -239,50 +296,166 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       setLoading(true);
 
       try {
-        const data = await fetchBotMove(botId, buildYEN(afterPlayer, 1, boardSize));
-        const botKey = coordKey(data.coords.x, data.coords.y, data.coords.z);
-        const afterBot: BoardMap = { ...afterPlayer, [botKey]: 1 };
+        const { board: afterBot1 } = await runBotTurn(afterRob);
+        setBoardMap(afterBot1);
 
-        setBoardMap(afterBot);
-        setLastBotMove(botKey);
-
-        if (checkWin(afterBot, 1)) {
+        if (checkWin(afterBot1, 1)) {
           setGameStatus("bot_won");
-          saveGame("bot_won", afterBot, userName, config.difficulty, config.boardSize);
+          saveGame(
+            "bot_won",
+            afterBot1,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
+          return;
+        }
+
+        await new Promise((r) => setTimeout(r, 600));
+
+        const { board: afterBot2 } = await runBotTurn(afterBot1);
+        setBoardMap(afterBot2);
+
+        if (checkWin(afterBot2, 1)) {
+          setGameStatus("bot_won");
+          saveGame(
+            "bot_won",
+            afterBot2,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
         } else {
           setCurrentTurn(0);
         }
       } catch (err) {
-        setErrorMsg(`Bot error: ${err instanceof Error ? err.message : "Unknown error"}`);
+        setErrorMsg(
+          t("board.bot_error", {
+            message: err instanceof Error ? err.message : "Unknown error",
+          }),
+        );
         setCurrentTurn(0);
       } finally {
         setLoading(false);
       }
     },
-    [boardMap, currentTurn, gameStatus, loading, boardSize, userName, botId],
+    [
+      robModeActive,
+      boardMap,
+      gameStatus,
+      loading,
+      boardSize,
+      userName,
+      botId,
+      t,
+    ],
+  );
+  // ─── Player places a normal cell ─────────────────────────────────────────
+
+  const handleCellClick = useCallback(
+    async (x: number, y: number, z: number) => {
+      const key = coordKey(x, y, z);
+
+      if (robModeActive) {
+        if (boardMap[key] === 1) handleRobCell(key);
+        return;
+      }
+
+      if (gameStatus !== "ongoing" || currentTurn !== 0 || loading) return;
+      if (boardMap[key] !== undefined) return;
+
+      setErrorMsg(null);
+      const afterPlayer: BoardMap = { ...boardMap, [key]: 0 };
+      setBoardMap(afterPlayer);
+      setLastRobbedKey(null);
+
+      if (checkWin(afterPlayer, 0)) {
+        setGameStatus("player_won");
+        saveGame(
+          "player_won",
+          afterPlayer,
+          userName,
+          config.difficulty,
+          config.boardSize,
+          config.mode,
+        );
+        return;
+      }
+
+      if (playerBonusTurn) {
+        setPlayerBonusTurn(false);
+        return;
+      }
+
+      setCurrentTurn(1);
+      setLoading(true);
+
+      try {
+        const { board: afterBot, wasSteal } = await runBotTurn(afterPlayer);
+        setBoardMap(afterBot);
+
+        if (checkWin(afterBot, 1)) {
+          setGameStatus("bot_won");
+          saveGame(
+            "bot_won",
+            afterBot,
+            userName,
+            config.difficulty,
+            config.boardSize,
+            config.mode,
+          );
+          return;
+        }
+
+        if (wasSteal) {
+          setPlayerBonusTurn(true);
+        }
+
+        setCurrentTurn(0);
+      } catch (err) {
+        setErrorMsg(
+          t("board.bot_error", {
+            message: err instanceof Error ? err.message : "Unknown error",
+          }),
+        );
+        setCurrentTurn(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      boardMap,
+      currentTurn,
+      gameStatus,
+      loading,
+      boardSize,
+      userName,
+      botId,
+      robModeActive,
+      playerBonusTurn,
+      t,
+    ],
   );
 
   // ─── Labels ───────────────────────────────────────────────────────────────
 
-  const difficultyLabel: Record<Difficulty, string> = {
-    random: "🎲 Random",
-    easy: "😊 Easy",
-    hard: "🤖 Hard",
-  };
-
-  const statusLabel =
-    gameStatus === "player_won"
-      ? "🏆 You win!"
+  const statusLabel = robModeActive
+    ? t("board.status.rob_active")
+    : gameStatus === "player_won"
+      ? t("board.status.you_win")
       : gameStatus === "bot_won"
-        ? "🤖 Bot wins"
+        ? t("board.status.bot_wins")
         : loading
-          ? "⏳ Bot thinking…"
+          ? t("board.status.thinking")
           : currentTurn === 0
-            ? "🔵 Your turn"
-            : "🔴 Bot's turn";
+            ? t("board.status.your_turn")
+            : t("board.status.bot_turn");
 
-  const statusClass =
-    gameStatus === "player_won"
+  const statusClass = robModeActive
+    ? "status-rob"
+    : gameStatus === "player_won"
       ? "status-win"
       : gameStatus === "bot_won"
         ? "status-lose"
@@ -292,16 +465,83 @@ export default function GameBoard({ config, onBack, userName }: Props) {
             ? "status-player"
             : "status-bot";
 
+  const modeLabel =
+    config.mode === "standard" ? t("board.info.standard") : t("board.info.rob");
+
+  // ─── Per-cell visual logic ────────────────────────────────────────────────
+
+  function getCellStyle(
+    key: string,
+    occupied: Player | undefined,
+    isHovered: boolean,
+  ) {
+    const isLastBot = lastBotMove === key;
+    const isRobbed = lastRobbedKey === key;
+    const isRobTarget = robModeActive && occupied === 1; // bot cell highlightable for rob
+
+    let fill: string;
+    let stroke: string;
+    let strokeW = 1;
+    let filter: string | undefined;
+
+    if (occupied === 0) {
+      fill = isRobbed ? "rgba(56, 189, 248, 1)" : "rgba(56, 189, 248, 0.9)";
+      stroke = "#7dd3fc";
+      strokeW = 2;
+    } else if (occupied === 1) {
+      if (isRobTarget && isHovered) {
+        // Bot cell being hovered in rob mode — preview as stealable
+        fill = "rgba(250, 204, 21, 0.75)";
+        stroke = "#fbbf24";
+        strokeW = 3;
+        filter = "drop-shadow(0 0 6px rgba(251,191,36,0.8))";
+      } else if (isRobTarget) {
+        // Bot cell available to rob — pulsing amber tint
+        fill = "rgba(251, 113, 133, 0.85)";
+        stroke = "#fbbf24";
+        strokeW = 2.5;
+        filter = "drop-shadow(0 0 4px rgba(251,191,36,0.5))";
+      } else if (isRobbed) {
+        fill = "rgba(251, 113, 133, 1)";
+        stroke = "#f87171";
+        strokeW = 3;
+      } else {
+        fill = isLastBot
+          ? "rgba(251, 113, 133, 1)"
+          : "rgba(251, 113, 133, 0.85)";
+        stroke = "#fda4af";
+        strokeW = isLastBot ? 2 : 1;
+      }
+    } else if (isHovered) {
+      fill = "rgba(56, 189, 248, 0.18)";
+      stroke = "rgba(56, 189, 248, 0.6)";
+      strokeW = 2;
+    } else {
+      fill = "rgba(59, 48, 48, 0.04)";
+      stroke = "rgba(0, 0, 0, 0.08)";
+    }
+
+    return { fill, stroke, strokeW, filter };
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
+
+  const canPlayerAct =
+    gameStatus === "ongoing" && currentTurn === 0 && !loading;
+  const canRob =
+    isRobMode &&
+    canPlayerAct &&
+    !robModeActive &&
+    Object.values(boardMap).some((v) => v === 1);
 
   return (
     <div className="board">
       <div className="boardCard">
         <div className="boardHeader">
           <button className="btn" type="button" onClick={onBack}>
-            ← Back
+            {t("common.back")}
           </button>
-          <h2>Yovi — Y Game</h2>
+          <h2>{t("board.title")}</h2>
           <div style={{ width: 80 }} />
         </div>
 
@@ -311,25 +551,50 @@ export default function GameBoard({ config, onBack, userName }: Props) {
               config.boardSize.slice(1)}{" "}
             ({boardSize}×{boardSize})
           </span>
+          <span className="infoTag">{modeLabel}</span>
           <span className="infoTag">
-            {config.mode === "standard"
-              ? "Standard"
-              : config.mode === "standard_pie"
-                ? "Pie rule"
-                : "Master Y"}
+            {t(`board.difficulty_label.${config.difficulty}`)}
           </span>
-          <span className="infoTag">{difficultyLabel[config.difficulty]}</span>
           <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
           {gameStatus !== "ongoing" && (
             <button className="btn resetBtn" onClick={resetGame}>
-              New game
+              {t("board.new_game")}
             </button>
           )}
         </div>
 
+        {/* Rob-mode action bar */}
+        {isRobMode && gameStatus === "ongoing" && (
+          <div className="robBar">
+            {robModeActive ? (
+              <>
+                <span className="robHint">{t("board.rob.select_hint")}</span>
+                <button
+                  className="btn btnRobCancel"
+                  type="button"
+                  onClick={() => setRobModeActive(false)}
+                >
+                  {t("board.rob.cancel")}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="robHint">{t("board.rob.cost_hint")}</span>
+                <button
+                  className="btn btnRob"
+                  type="button"
+                  disabled={!canRob}
+                  onClick={() => setRobModeActive(true)}
+                >
+                  🗡 {t("board.rob.action")}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
-        {/* layoutClass applies visual theme from CSS (classic / futuristic / wooden) */}
         <div className={`svgWrapper ${layoutClass}`}>
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -344,7 +609,6 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
                 const occupied = boardMap[key];
                 const isHovered = hoveredKey === key;
-                const isLastBot = lastBotMove === key;
 
                 const cx =
                   BOARD_MARGIN +
@@ -354,34 +618,17 @@ export default function GameBoard({ config, onBack, userName }: Props) {
                 const cy =
                   BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
-                let fill: string;
-                let stroke: string;
-                let strokeW = 1;
-
-                if (occupied === 0) {
-                  fill = "rgba(56, 189, 248, 0.9)";
-                  stroke = "#7dd3fc";
-                  strokeW = 2;
-                } else if (occupied === 1) {
-                  fill = isLastBot
-                    ? "rgba(251, 113, 133, 1)"
-                    : "rgba(251, 113, 133, 0.85)";
-                  stroke = "#fda4af";
-                  strokeW = 2;
-                } else if (isHovered) {
-                  fill = "rgba(56, 189, 248, 0.18)";
-                  stroke = "rgba(56, 189, 248, 0.6)";
-                  strokeW = 2;
-                } else {
-                  fill = "rgba(59, 48, 48, 0.04)";
-                  stroke = "rgba(0, 0, 0, 0.08)";
-                }
+                const { fill, stroke, strokeW, filter } = getCellStyle(
+                  key,
+                  occupied,
+                  isHovered,
+                );
 
                 const isClickable =
-                  gameStatus === "ongoing" &&
-                  currentTurn === 0 &&
-                  occupied === undefined &&
-                  !loading;
+                  canPlayerAct &&
+                  (robModeActive
+                    ? occupied === 1
+                    : occupied === undefined && !robModeActive);
 
                 return (
                   <polygon
@@ -390,6 +637,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
                     fill={fill}
                     stroke={stroke}
                     strokeWidth={strokeW}
+                    filter={filter}
                     style={{
                       cursor: isClickable ? "pointer" : "default",
                       transition: "fill 0.15s, stroke 0.15s",
@@ -408,14 +656,19 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
         <div className="boardLegend">
           <span className="legendItem">
-            <span className="dot dotBlue" /> You (Blue)
+            <span className="dot dotBlue" /> {t("board.legend.you")}
           </span>
           <span className="legendItem">
-            <span className="dot dotRed" /> Bot (Red)
+            <span className="dot dotRed" /> {t("board.legend.bot")}
           </span>
+          {isRobMode && (
+            <span className="legendItem">
+              <span className="dot dotRob" /> {t("board.legend.rob")}
+            </span>
+          )}
         </div>
         <p className="rulesHint">
-          Connect all three sides of the triangle with your pieces to win.
+          {isRobMode ? t("board.rules_hint_rob") : t("board.rules_hint")}
         </p>
       </div>
     </div>

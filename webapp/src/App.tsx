@@ -6,6 +6,7 @@ import GameMenu from "./GameMenu";
 import GameHistory from "./GameHistory";
 import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
+import "./i18n/index.ts";
 
 type Screen = "login" | "signup" | "menu" | "board" | "history";
 

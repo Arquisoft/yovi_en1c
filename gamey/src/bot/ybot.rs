@@ -9,4 +9,13 @@ pub trait YBot: Send + Sync {
 
     /// Chooses a move based on the current game state.
     fn choose_move(&self, board: &GameY) -> Option<Coordinates>;
+
+    /// Returns true if the bot wants to steal an opponent's piece this turn.
+    fn wants_to_steal(&self, _board: &GameY) -> bool {
+        false
+    }
+    /// Returns move + steal all at once
+    fn choose_action(&self, board: &GameY) -> Option<(Coordinates, bool)> {
+        self.choose_move(board).map(|c| (c, false))
+    }
 }
