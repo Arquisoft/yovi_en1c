@@ -69,7 +69,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./users/monitoring/prometheus:/etc/prometheus
+      - ./gateway/monitoring/prometheus:/etc/prometheus
     networks:
       - monitor-net
 
@@ -79,7 +79,7 @@ services:
     ports:
       - "9091:3000"
     volumes:
-      - ./users/monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./gateway/monitoring/grafana/provisioning:/etc/grafana/provisioning
     networks:
       - monitor-net
 

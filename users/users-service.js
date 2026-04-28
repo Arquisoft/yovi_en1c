@@ -9,6 +9,7 @@ const app = express();
 const port = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
 
+// ─── Prometheus Middleware ─────────────────────────────────────────────────────
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
@@ -94,8 +95,8 @@ app.post("/signup", async (req, res) => {
 
     const token = jwt.sign(
       { userId: savedUser._id, username: savedUser.name },
-       JWT_SECRET,
-       { expiresIn: "2h" }
+      JWT_SECRET,
+      { expiresIn: "2h" },
     );
 
     res.status(201).json({
