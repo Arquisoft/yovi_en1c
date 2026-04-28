@@ -515,9 +515,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
         strokeW = isLastBot ? 2 : isWooden ? 2 : 1;
       }
     } else if (isHovered) {
-      fill = isWooden
-        ? "rgba(96, 165, 250, 0.22)"
-        : "rgba(56, 189, 248, 0.18)";
+      fill = isWooden ? "rgba(96, 165, 250, 0.22)" : "rgba(56, 189, 248, 0.18)";
       stroke = isWooden
         ? "rgba(191, 219, 254, 0.75)"
         : "rgba(56, 189, 248, 0.6)";
@@ -526,9 +524,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       fill = isWooden
         ? "rgba(255, 248, 220, 0.08)"
         : "rgba(148, 163, 184, 0.10)";
-      stroke = isWooden
-        ? "rgba(70, 42, 20, 0.5)"
-        : "rgba(125, 211, 252, 0.18)";
+      stroke = isWooden ? "rgba(70, 42, 20, 0.5)" : "rgba(125, 211, 252, 0.18)";
       strokeW = isWooden ? 1.8 : 1.4;
     }
 
@@ -555,7 +551,11 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
           <div className="centerTop">
             {gameStatus !== "ongoing" ? (
-              <button className="btn resetBtn" type="button" onClick={resetGame}>
+              <button
+                className="btn resetBtn"
+                type="button"
+                onClick={resetGame}
+              >
                 {t("board.new_game")}
               </button>
             ) : (
@@ -565,21 +565,22 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
           <div className="boardInfoStack">
             <div className="infoRow">
-              <span className="infoLabel">Board</span>
+              <span className="infoLabel">{t("board.info_labels.board")}</span>
               <span className="infoValue">
-                {config.boardSize.charAt(0).toUpperCase() +
-                  config.boardSize.slice(1)}{" "}
-                ({boardSize}×{boardSize})
+                {t(`menu.board.${config.boardSize}_title`)} ({boardSize}×
+                {boardSize})
               </span>
             </div>
 
             <div className="infoRow">
-              <span className="infoLabel">Mode</span>
+              <span className="infoLabel">{t("board.info_labels.mode")}</span>
               <span className="infoValue">{modeLabel}</span>
             </div>
 
             <div className="infoRow">
-              <span className="infoLabel">Difficulty</span>
+              <span className="infoLabel">
+                {t("board.info_labels.difficulty")}
+              </span>
               <span className="infoValue">
                 {t(`board.difficulty_label.${config.difficulty}`)}
               </span>
@@ -721,6 +722,6 @@ export default function GameBoard({ config, onBack, userName }: Props) {
           {isRobMode ? t("board.rules_hint_rob") : t("board.rules_hint")}
         </p>
       </div>
-    </div >
+    </div>
   );
 }

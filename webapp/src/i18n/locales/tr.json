@@ -152,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Y Oyunu",
+    "info_labels": {
+      "board": "Tahta",
+      "mode": "Mod",
+      "difficulty": "Zorluk"
+    },
     "info": {
       "standard": "Standart",
       "rob": "Soygun Modu",

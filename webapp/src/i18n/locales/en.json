@@ -153,6 +153,11 @@
   },
   "board": {
     "title": "Yovi — Y Game",
+    "info_labels": {
+      "board": "Board",
+      "mode": "Mode",
+      "difficulty": "Difficulty"
+    },
     "info": {
       "standard": "Standard",
       "rob": "Rob Mode",

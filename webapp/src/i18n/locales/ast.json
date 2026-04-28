@@ -152,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Xuegu Y",
+    "info_labels": {
+      "board": "Tablero",
+      "mode": "Modo",
+      "difficulty": "Dificultá"
+    },
     "info": {
       "standard": "Estándar",
       "rob": "Manera Robo",

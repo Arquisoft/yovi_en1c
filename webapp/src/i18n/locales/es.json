@@ -152,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Juego Y",
+    "info_labels": {
+      "board": "Tablero",
+      "mode": "Modo",
+      "difficulty": "Dificultad"
+    },
     "info": {
       "standard": "Estándar",
       "rob": "Modo Robo",

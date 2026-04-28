@@ -152,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Y-peli",
+    "info_labels": {
+      "board": "Lauta",
+      "mode": "Tila",
+      "difficulty": "Vaikeusaste"
+    },
     "info": {
       "standard": "Standardi",
       "rob": "Ryöstötila",
