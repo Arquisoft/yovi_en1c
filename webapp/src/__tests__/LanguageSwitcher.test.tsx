@@ -11,10 +11,9 @@ vi.mock("react-i18next", () => ({
     i18n: {
       changeLanguage: mockChangeLanguage,
       resolvedLanguage: "en",
-      language: "en", // Required for .startsWith() if used
+      language: "en", 
     },
   }),
-  // Fixes the "initReactI18next" export error
   initReactI18next: {
     type: "3rdParty",
     init: vi.fn(),

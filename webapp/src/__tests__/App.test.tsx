@@ -93,7 +93,6 @@ describe("App Navigation Flow", () => {
 
     expect(screen.getByText(/Welcome to the Y game!/i)).toBeInTheDocument();
     expect(screen.getByText("Login Screen")).toBeInTheDocument();
-    // Verify language switcher is present
     expect(screen.getByTestId("language-switcher")).toBeInTheDocument();
   });
 

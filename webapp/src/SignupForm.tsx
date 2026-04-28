@@ -20,14 +20,13 @@ const processSignupResponse = (data: Record<string, unknown>): void => {
 };
 
 const SignUpForm: React.FC<Props> = ({ onRegistered, onGoToLogin }) => {
-  const { t } = useTranslation(); // Inicializamos la traducción
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Validación movida dentro para usar t()
   const validateForm = (): string | null => {
     if (!username.trim() || !email.trim() || !password || !confirmPassword) {
       return t("signup.error_empty_fields");
