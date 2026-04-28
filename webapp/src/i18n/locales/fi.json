@@ -48,6 +48,7 @@
     "board_size_aria": "laudan koko",
     "game_mode_aria": "pelitila",
     "difficulty_aria": "vaikeusaste",
+    "rob_title": "Ryöstötila",
     "board": {
       "small_title": "Pieni",
       "small_desc": "5×5 lauta, sopii nopeisiin peleihin",
@@ -58,7 +59,9 @@
     },
     "mode": {
       "standard_title": "Standardi",
-      "standard_desc": "Klassiset Y-säännöt"
+      "standard_desc": "Klassiset Y-säännöt",
+      "rob_title": "Ryöstö",
+      "rob_desc": "Varasta vastustajan nappuloita"
     },
     "difficulty": {
       "random_title": "Satunnainen",
@@ -87,6 +90,7 @@
     "table": {
       "number": "#",
       "result": "Tulos",
+      "mode": "Pelitila",
       "difficulty": "Vaikeusaste",
       "size": "Koko",
       "points": "Pisteet",
@@ -132,22 +136,33 @@
     "title": "Yovi — Y-peli",
     "info": {
       "standard": "Standardi",
+      "rob": "Ryöstötila",
       "pie_rule": "Pie-sääntö",
-      "master_y": "Master Y"
+      "master_y": "Master Y",
+      "rob_active": "Valitse botin solu ryöstettäväksi"
+    },
+    "rob": {
+      "action": "Ryöstä",
+      "cancel": "Peruuta",
+      "cost_hint": "Ryöstä botin solu — maksaa 2 botin vuoroa",
+      "select_hint": "Klikkaa punaista solua varastaaksesi sen"
     },
     "status": {
       "you_win": "🏆 Voitit!",
       "bot_wins": "🤖 Botti voitti",
       "thinking": "⏳ Botti miettii…",
       "your_turn": "🔵 Sinun vuorosi",
-      "bot_turn": "🔴 Botin vuoro"
+      "bot_turn": "🔴 Botin vuoro",
+      "rob_active": "🗡 Valitse ryöstettävä solu"
     },
     "new_game": "Uusi peli",
     "legend": {
       "you": "Sinä (Sininen)",
-      "bot": "Botti (Punainen)"
+      "bot": "Botti (Punainen)",
+      "rob": "Ryöstetty solu"
     },
     "rules_hint": "Yhdistä kolmion kaikki kolme sivua nappuloillasi voittaaksesi.",
+    "rules_hint_rob": "Voit ryöstää botin solun milloin tahansa — mutta se pelaa kahdesti vastineeksi.",
     "difficulty_label": {
       "random": "🎲 Satunnainen",
       "easy": "😊 Helppo",

@@ -48,6 +48,7 @@
     "board_size_aria": "tahta boyutu",
     "game_mode_aria": "oyun modu",
     "difficulty_aria": "zorluk derecesi",
+    "rob_title": "Soygun Modu",
     "board": {
       "small_title": "Küçük",
       "small_desc": "5×5 tahta, hızlı oyunlar için uygun",
@@ -58,7 +59,9 @@
     },
     "mode": {
       "standard_title": "Standart",
-      "standard_desc": "Klasik Y kuralları"
+      "standard_desc": "Klasik Y kuralları",
+      "rob_title": "Soygun",
+      "rob_desc": "Rakip taşlarını çal"
     },
     "difficulty": {
       "random_title": "Rastgele",
@@ -87,6 +90,7 @@
     "table": {
       "number": "#",
       "result": "Sonuç",
+      "mode": "Mod",
       "difficulty": "Zorluk",
       "size": "Boyut",
       "points": "Puan",
@@ -132,22 +136,33 @@
     "title": "Yovi — Y Oyunu",
     "info": {
       "standard": "Standart",
+      "rob": "Soygun Modu",
       "pie_rule": "Pasta kuralı",
-      "master_y": "Usta Y"
+      "master_y": "Usta Y",
+      "rob_active": "Soymak için bir bot hücresi seçin"
+    },
+    "rob": {
+      "action": "Soy",
+      "cancel": "İptal",
+      "cost_hint": "Bir bot hücresini çal — 2 bot hamlesine mal olur",
+      "select_hint": "Çalmak için kırmızı bir hücreye tıklayın"
     },
     "status": {
       "you_win": "🏆 Kazandın!",
       "bot_wins": "🤖 Bot kazandı",
       "thinking": "⏳ Bot düşünüyor…",
       "your_turn": "🔵 Senin sıran",
-      "bot_turn": "🔴 Botun sırası"
+      "bot_turn": "🔴 Botun sırası",
+      "rob_active": "🗡 Soyulacak bir hücre seçin"
     },
     "new_game": "Yeni oyun",
     "legend": {
       "you": "Sen (Mavi)",
-      "bot": "Bot (Kırmızı)"
+      "bot": "Bot (Kırmızı)",
+      "rob": "Soyulmuş hücre"
     },
     "rules_hint": "Kazanmak için üçgenin üç kenarını da kendi taşlarınla birleştir.",
+    "rules_hint_rob": "İstediğiniz zaman bir bot hücresini soyabilirsiniz — ancak buna karşılık iki kez oynar.",
     "difficulty_label": {
       "random": "🎲 Rastgele",
       "easy": "😊 Kolay",
