@@ -60,7 +60,6 @@ describe("SignUpForm Full Coverage Suite", () => {
     global.fetch = vi.fn();
   });
 
-  // 2. Covers Line 62: Empty fields validation
   it("shows error when fields are empty", async () => {
     const user = userEvent.setup();
     render(
@@ -72,7 +71,6 @@ describe("SignUpForm Full Coverage Suite", () => {
     expect(screen.getByText(/signup.error_empty_fields/i)).toBeInTheDocument();
   });
 
-  // 3. Covers Lines 41-47: processSignupResponse & localStorage
   it("saves token and username to localStorage on success", async () => {
     const user = userEvent.setup();
     const fakeData = {
@@ -99,12 +97,11 @@ describe("SignUpForm Full Coverage Suite", () => {
     });
   });
 
-  // 4. Covers Lines 100-106: Catch block (SyntaxError & Network Error)
   it("handles SyntaxError when server returns invalid JSON", async () => {
     const user = userEvent.setup();
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      text: async () => "not-a-json", // This triggers JSON.parse() SyntaxError
+      text: async () => "not-a-json", 
     });
 
     render(

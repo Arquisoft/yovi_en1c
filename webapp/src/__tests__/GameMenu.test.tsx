@@ -243,7 +243,6 @@ describe("GameMenu", () => {
     });
     await user.click(toggle);
 
-    // This confirms the logic inside the 'if (Array.isArray(snippets)...)' block ran
     const triviaContent = document.querySelector(".triviaCardBack");
     expect(triviaContent?.textContent).toMatch(/Trivia Snippet/);
   });

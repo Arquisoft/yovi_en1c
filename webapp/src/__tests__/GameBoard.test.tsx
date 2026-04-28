@@ -62,7 +62,7 @@ const mockBotResponse = (x: number, y: number, z: number) =>
 
 const getPolygons = () => document.querySelectorAll("polygon");
 
-// ─── Standard mode suite (unchanged behavior) ─────────────────────────────────
+// ─── Standard mode suite  ─────────────────────────────────
 
 describe("GameBoard — Standard mode", () => {
   afterEach(() => {
@@ -172,7 +172,6 @@ describe("GameBoard — Rob mode", () => {
       <GameBoard config={robConfig} onBack={() => {}} userName="testUser" />,
     );
     expect(screen.getByText(/rob mode/i)).toBeInTheDocument();
-    // Rob button is rendered but disabled (no bot cells yet)
     expect(screen.getByRole("button", { name: /rob/i })).toBeDisabled();
     expect(screen.getByText(/steal a bot cell/i)).toBeInTheDocument();
   });
@@ -262,9 +261,8 @@ describe("GameBoard — Rob mode", () => {
     // Click a bot cell — need to find the polygon whose fill is red (bot's)
     // After the bot responded to the player's first move, one polygon is the bot's.
     // We stub Math.random so the bot doesn't try to rob back.
-    vi.spyOn(Math, "random").mockReturnValue(0); // < BOT_ROB_PROBABILITY is 0.25, 0 < 0.25 but no player cells to steal in turn 1
+    vi.spyOn(Math, "random").mockReturnValue(0); 
 
-    // Click a polygon (the board has a bot cell now)
     const allPolygons = getPolygons();
     // We need to click a polygon that is the bot's cell. Since the board is SVG,
     // we rely on the second and third fetch being called as a signal.
@@ -275,7 +273,6 @@ describe("GameBoard — Rob mode", () => {
 
     await waitFor(
       () =>
-        // After a successful rob: 1 (player move) + 2 (rob cost) = 3 total fetch calls
         expect(global.fetch).toHaveBeenCalledTimes(3),
       { timeout: 3000 },
     );

@@ -222,7 +222,6 @@ app.get("/games/list", async (req, res) => {
     return res.status(400).json({ error: "Invalid username format" });
   }
 
-  // Nueva variable construida desde cero — rompe el taint trace de SonarCloud
   const safeUsername = String(raw).replace(/[^a-zA-Z0-9_]/g, "");
 
   try {
