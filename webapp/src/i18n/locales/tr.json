@@ -48,6 +48,25 @@
     "board_size_aria": "tahta boyutu",
     "game_mode_aria": "oyun modu",
     "difficulty_aria": "zorluk derecesi",
+    "rob_title": "Soygun Modu",
+    "board_layout": "Tahta düzeni",
+    "board_layout_aria": "tahta düzeni",
+    "layout": {
+      "classic_title": "Klasik",
+      "classic_desc": "Keskin renklerle temiz ve modern bir görünüm.",
+      "wooden_title": "Ahşap",
+      "wooden_desc": "Rüstik, geleneksel bir tahta hissi."
+    },
+    "trivia_open_aria": "Oyun bilgilerini göster",
+    "trivia_close_aria": "Bilgileri kapat",
+    "trivia": [
+      "Y, Ea Ea adında biri tarafından yaratıldı! İster inan ister inanma.",
+      "Köşeler tahtanın iki kenarını birleştirir, ancak diğer tarafa depar atmak bir sonsuzluk gibi hissettirebilir.",
+      "Altıgen ızgaralar, çapraz dengesizliği önledikleri için strateji oyunlarında kullanılır.",
+      "Botla oynarken aslında Rust ile savaşıyorsun!",
+      "Y; Hex ve Havannah ile aynı aileye aittir, ancak kendine has taktikleri vardır.",
+      "Rastgele bot, zor botun çok sıkıcı gelmesi ihtimaline karşı çılgın bir joker cazibesine sahiptir."
+    ],
     "board": {
       "small_title": "Küçük",
       "small_desc": "5×5 tahta, hızlı oyunlar için uygun",
@@ -58,7 +77,9 @@
     },
     "mode": {
       "standard_title": "Standart",
-      "standard_desc": "Klasik Y kuralları"
+      "standard_desc": "Klasik Y kuralları",
+      "rob_title": "Soygun",
+      "rob_desc": "Rakip taşlarını çal"
     },
     "difficulty": {
       "random_title": "Rastgele",
@@ -87,6 +108,7 @@
     "table": {
       "number": "#",
       "result": "Sonuç",
+      "mode": "Mod",
       "difficulty": "Zorluk",
       "size": "Boyut",
       "points": "Puan",
@@ -130,24 +152,40 @@
   },
   "board": {
     "title": "Yovi — Y Oyunu",
+    "info_labels": {
+      "board": "Tahta",
+      "mode": "Mod",
+      "difficulty": "Zorluk"
+    },
     "info": {
       "standard": "Standart",
+      "rob": "Soygun Modu",
       "pie_rule": "Pasta kuralı",
-      "master_y": "Usta Y"
+      "master_y": "Usta Y",
+      "rob_active": "Soymak için bir bot hücresi seçin"
+    },
+    "rob": {
+      "action": "Soy",
+      "cancel": "İptal",
+      "cost_hint": "Bir bot hücresini çal — 2 bot hamlesine mal olur",
+      "select_hint": "Çalmak için kırmızı bir hücreye tıklayın"
     },
     "status": {
       "you_win": "🏆 Kazandın!",
       "bot_wins": "🤖 Bot kazandı",
       "thinking": "⏳ Bot düşünüyor…",
       "your_turn": "🔵 Senin sıran",
-      "bot_turn": "🔴 Botun sırası"
+      "bot_turn": "🔴 Botun sırası",
+      "rob_active": "🗡 Soyulacak bir hücre seçin"
     },
     "new_game": "Yeni oyun",
     "legend": {
       "you": "Sen (Mavi)",
-      "bot": "Bot (Kırmızı)"
+      "bot": "Bot (Kırmızı)",
+      "rob": "Soyulmuş hücre"
     },
     "rules_hint": "Kazanmak için üçgenin üç kenarını da kendi taşlarınla birleştir.",
+    "rules_hint_rob": "İstediğiniz zaman bir bot hücresini soyabilirsiniz — ancak buna karşılık iki kez oynar.",
     "difficulty_label": {
       "random": "🎲 Rastgele",
       "easy": "😊 Kolay",

@@ -98,8 +98,6 @@ const LoginForm: React.FC<Props> = ({ onLoggedIn, onGoToSignUp }) => {
 
   return (
     <div className="login-form-container">
-      <LanguageSwitcher />
-
       <form onSubmit={handleSubmit} className="register-form">
         <h2>{t("login.title")}</h2>
         <p>{t("login.subtitle")}</p>

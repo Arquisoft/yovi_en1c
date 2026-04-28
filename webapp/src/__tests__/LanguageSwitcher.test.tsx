@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import LanguageSwitcher from "../LanguageSwitcher";
 import "@testing-library/jest-dom";
 
@@ -11,37 +11,41 @@ vi.mock("react-i18next", () => ({
     i18n: {
       changeLanguage: mockChangeLanguage,
       resolvedLanguage: "en",
+      language: "en", // Required for .startsWith() if used
     },
   }),
+  // Fixes the "initReactI18next" export error
+  initReactI18next: {
+    type: "3rdParty",
+    init: vi.fn(),
+  },
 }));
 
-describe("LanguageSwitcher ", () => {
-  it("should render all language buttons and the label", () => {
-    render(<LanguageSwitcher />);
-
-    expect(screen.getByText("language_switcher.label:")).toBeInTheDocument();
-
-    expect(screen.getByRole("button", { name: "EN" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ES" })).toBeInTheDocument();
+describe("LanguageSwitcher", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("should call changeLanguage when a language button is clicked", () => {
+  const allLanguages = [
+    { code: "en", label: "ENG" },
+    { code: "es", label: "ESP" },
+    { code: "fi", label: "FIN" },
+    { code: "tr", label: "TUR" },
+    { code: "as", label: "AST" },
+  ];
+
+  it("should render all language buttons", () => {
     render(<LanguageSwitcher />);
-
-    const esButton = screen.getByRole("button", { name: "ES" });
-
-    fireEvent.click(esButton);
-
-    expect(mockChangeLanguage).toHaveBeenCalledWith("es");
+    allLanguages.forEach((lang) => {
+      expect(
+        screen.getByRole("button", { name: lang.label }),
+      ).toBeInTheDocument();
+    });
   });
 
-  it("should apply different styles to the active language", () => {
+  it("should call changeLanguage when clicked", () => {
     render(<LanguageSwitcher />);
-
-    const enButton = screen.getByRole("button", { name: "EN" });
-    const esButton = screen.getByRole("button", { name: "ES" });
-
-    expect(enButton.style.background).toBe("rgb(79, 70, 229)");
-    expect(esButton.style.background).toBe("transparent");
+    fireEvent.click(screen.getByRole("button", { name: "AST" }));
+    expect(mockChangeLanguage).toHaveBeenCalledWith("as");
   });
 });

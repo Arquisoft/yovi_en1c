@@ -1,0 +1,196 @@
+{
+  "common": {
+    "back": "← Volver",
+    "logout": "Cerrar sesión",
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "error_network": "Erru de rede",
+    "error_unexpected": "Respuesta inesperada del servidor. Verifica qu'el gateway y el serviciu d'usuarios tean funcionando."
+  },
+  "language_switcher": {
+    "label": "Idioma"
+  },
+  "login": {
+    "title": "¡Bienveníu de nuevu!",
+    "subtitle": "Introduz el to usuariu y contraseña para entrar.",
+    "username_label": "Usuariu",
+    "password_label": "Contraseña",
+    "submit": "¡Entrar!",
+    "no_account": "¿Nun tienes cuenta?",
+    "go_signup": "Rexístrate equí",
+    "error_empty": "Por favor, introduz usuariu y contraseña.",
+    "error_generic": "Erru al empecipiar sesión. Inténtalo de nuevu."
+  },
+  "signup": {
+    "title": "Rexistrase",
+    "subtitle": "Rellena'l formulariu para crear una cuenta.",
+    "username_label": "Usuariu",
+    "email_label": "Corréu electrónicu",
+    "password_label": "Contraseña",
+    "confirm_password_label": "Confirmar contraseña",
+    "submit": "Rexistrase",
+    "have_account": "¿Yá tienes cuenta?",
+    "go_login": "Empecipia sesión equí",
+    "error_empty": "Por favor, rellena tolos campos.",
+    "error_password_mismatch": "Les contraseñes nun coinciden.",
+    "error_generic": "Erru al rexistrase"
+  },
+  "menu": {
+    "title": "Sala de xuegu",
+    "subtitle": "Bienveníu, {{name}}. Escueye la to configuración para Y.",
+    "view_history": "Historial de partíes",
+    "board_size": "Tamañu del tableru",
+    "game_mode": "Manera de xuegu",
+    "opponent_style": "Estilu del oponente",
+    "start_game": "Empecipiar partida",
+    "prev_aria": "{{section}} anterior",
+    "next_aria": "{{section}} siguiente",
+    "board_size_aria": "tamañu de tableru",
+    "game_mode_aria": "manera de xuegu",
+    "difficulty_aria": "enzancái",
+    "rob_title": "Manera Robo",
+    "board_layout": "Diseñu del tableru",
+    "board_layout_aria": "diseñu del tableru",
+    "layout": {
+      "classic_title": "Clásicu",
+      "classic_desc": "Aspeutu llimpiu y modernu con colores nítidos.",
+      "wooden_title": "Madera",
+      "wooden_desc": "Una sensación de tableru rústica y tradicional."
+    },
+    "trivia_open_aria": "Amosar intereses del xuegu",
+    "trivia_close_aria": "Cerrar intereses",
+    "trivia": [
+      "¡Y foi creáu por un tipu llamáu Hala Hala! Crear o non.",
+      "Les esquines conecten dos llaos del tableru, pero la carrera escontra l'otru llau puede paecer una eternidá.",
+      "Les rejillas hexagonales utilizar en xuegos d'estratexa porque eviten el desequilibriu diagonal.",
+      "¡Cuando xuegues contra'l bot, en realidá tas lluchando contra Rust!",
+      "Y pertenez a la mesma familia que Hex y Havannah, pero tien les sos propies táctiques úniques.",
+      "El bot aleatoriu tien l'encantu d'un comodín temerariu, por si'l bot más mala te resulta demasiáu aburríu."
+    ],
+    "board": {
+      "small_title": "Pequenu",
+      "small_desc": "Tablero 5×5, ideal para partíes rápides",
+      "medium_title": "Medianu",
+      "medium_desc": "Tableru 7×7, esperiencia clásica de Y",
+      "large_title": "Grande",
+      "large_desc": "Tableru 9×9, partíes llargues ya intenses"
+    },
+    "mode": {
+      "standard_title": "Estándar",
+      "standard_desc": "Regles clásiques de Y",
+      "rob_title": "Robo",
+      "rob_desc": "Roba pieces d'adversariu"
+    },
+    "difficulty": {
+      "random_title": "Aleatoriu",
+      "random_desc": "Movimientos aleatorios",
+      "easy_title": "Fácil",
+      "easy_desc": "Un pocu más difícil",
+      "hard_title": "Malu",
+      "hard_desc": "Oponente con heurística completa"
+    }
+  },
+  "history": {
+    "title": "Historial de partíes",
+    "loading": "Cargando historial…",
+    "empty": "Inda nun xugasti nenguna partida. ¡Ve a xugar! 🎮",
+    "stats": {
+      "total": "Partíes totales",
+      "wins": "Victories",
+      "losses": "Ganes",
+      "win_rate": "Tasa de victories"
+    },
+    "filter": {
+      "all": "Toes",
+      "wins": "🏆 Victories",
+      "losses": "🤖 Ganes"
+    },
+    "table": {
+      "number": "#",
+      "result": "Resultáu",
+      "mode": "Manera",
+      "difficulty": "Dificultá",
+      "size": "Tamañu",
+      "points": "Pts",
+      "moves": "Movimientos",
+      "date": "Fecha"
+    },
+    "result": {
+      "win": "🏆 Victoria",
+      "loss": "🤖 Gana"
+    },
+    "difficulty_label": {
+      "random": "🎲 Aleatoriu",
+      "easy": "😊 Fácil",
+      "hard": "🔥 Difícil"
+    },
+    "board_size": {
+      "small": "5×5",
+      "medium": "7×7",
+      "large": "9×9"
+    },
+    "leaderboard": {
+      "rank": "Rangu",
+      "username": "Usuariu",
+      "total_points": "Puntos Totales",
+      "games": "Partíes",
+      "you": "Tu"
+    },
+    "stats_view": {
+      "progression": "Progresión de puntos (Últimes 10 partíes)",
+      "game_session": "Sesión de xuegu",
+      "win_rate_by_difficulty": "Tasa de victories por dificultá",
+      "avg_moves": "Promediu de movimientos",
+      "win_avg": "🏆 Promediu Victories",
+      "loss_avg": "🤖 Promediu Ganes",
+      "moves_unit": "movimientos"
+    },
+    "view": {
+      "stats": "Estadístiques",
+      "leaderboard": "Clasificación"
+    }
+  },
+  "board": {
+    "title": "Yovi — Xuegu Y",
+    "info_labels": {
+      "board": "Tablero",
+      "mode": "Modo",
+      "difficulty": "Dificultá"
+    },
+    "info": {
+      "standard": "Estándar",
+      "rob": "Manera Robo",
+      "pie_rule": "Riegla del pastel",
+      "master_y": "Master Y",
+      "rob_active": "Escueye una celda del bot para robar"
+    },
+    "rob": {
+      "action": "Robar",
+      "cancel": "Atayar",
+      "cost_hint": "Roba una celda del bot — cuesta 2 veces del bot",
+      "select_hint": "Fai clic n'una celda colorada para robala"
+    },
+    "status": {
+      "you_win": "🏆 ¡Ganasti!",
+      "bot_wins": "🤖 Gana'l bot",
+      "thinking": "⏳ El bot ta pensando…",
+      "your_turn": "🔵 La to vez",
+      "bot_turn": "🔴 Vez del bot",
+      "rob_active": "🗡 Escueye una celda para robar"
+    },
+    "new_game": "Nueva partida",
+    "legend": {
+      "you": "Tu (Azul)",
+      "bot": "Bot (Colloráu)",
+      "rob": "Celda robada"
+    },
+    "rules_hint": "Conecta los trés llaos del triángulu coles tos pieces para ganar.",
+    "rules_hint_rob": "Puedes robar una celda del bot en cualquier momentu, pero va xugar dos veces siguíes.",
+    "difficulty_label": {
+      "random": "🎲 Aleatoriu",
+      "easy": "😊 Fácil",
+      "hard": "🤖 Malu"
+    },
+    "bot_error": "Erru del bot: {{message}}"
+  }
+}

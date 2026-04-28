@@ -1,0 +1,2050 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="shortcut icon" type="image/x-icon" href="style/favicon.ico">
+<link href="style/style.css" rel="stylesheet" type="text/css">
+<link href="style/bootstrap.min.css" rel="stylesheet" type="text/css">
+<script src="js/jquery-3.7.1.slim.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/gatling.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/ellipsis.js"></script>
+<script src="js/highstock.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/stats.js"></script>
+<title>Gatling Stats - Global Information</title>
+</head>
+<body>
+<script>
+  const storedTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  if (storedTheme) document.documentElement.setAttribute('data-theme', storedTheme)
+
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const targetTheme = currentTheme === "light" ? "dark" : "light";
+
+    document.documentElement.setAttribute('data-theme', targetTheme)
+    localStorage.setItem('theme', targetTheme);
+  };
+</script>
+<div class="app-container">
+<div class="frise"></div>
+<div class="head">
+  <div class="gatling-open-source">
+    <a class="gatling-logo gatling-logo-light" href="https://gatling.io" target="blank_" title="Gatling Home Page"><img alt="Gatling" src="style/logo-light.svg"></a>
+    <a class="gatling-logo gatling-logo-dark" href="https://gatling.io" target="blank_" title="Gatling Home Page"><img alt="Gatling" src="style/logo-dark.svg"></a>
+    <a class="gatling-documentation" href="https://gatling.io/docs/" target="_blank">Documentation</a>
+  </div>
+  <div class="nav spacer"></div>
+  <a class="enterprise" href="https://gatling.io/enterprise/next-step/" target="_blank">
+    <span class="button-text-state">Try Enterprise Edition</span>
+    <span class="button-text-hover">Try Enterprise Edition</span>
+  </a>
+  <button id="theme-toggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle user interface mode">
+    <span class="toggle-dark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+    <span class="toggle-light"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+  </button>
+</div>
+<div class="container details">
+  <div class="nav">
+    <ul><li><a class="item" href="#RangesContainerId"><span class="nav-label">Ranges</span></a></li>
+<li><a class="item" href="#StatsContainerId"><span class="nav-label">Stats</span></a></li>
+<li><a class="item" href="#UserStartRateContainerId"><span class="nav-label">Users start rate</span></a></li>
+<li><a class="item" href="#MaxConcurrentUsersContainerId"><span class="nav-label">Concurrent users</span></a></li>
+<li><a class="item" href="#ResponseTimeDistributionContainerId"><span class="nav-label">Response time distribution</span></a></li>
+<li><a class="item" href="#ResponseTimeContainerId"><span class="nav-label">Response time percentiles</span></a></li>
+<li><a class="item" href="#RequestsContainerId"><span class="nav-label">Requests / sec</span></a></li>
+<li><a class="item" href="#ResponsesContainerId"><span class="nav-label">Responses / sec</span></a></li></ul>
+  </div>
+  <div class="cadre">
+    <div class="content">
+      <div class="content-header">
+        <div class="onglet">
+          RecordedSimulationYOVIEN1C
+        </div>
+        <div class="sous-menu" id="sousMenu">
+          <div class="sous-menu-spacer">
+            <div class="item ouvert"><a href="index.html">Global</a></div>
+<div class="item"><a id="details_link" href="req_request-0-693933696.html">Details</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="content-in">
+        <div class="container-article">
+          <div class="article">
+            
+            
+<div class="schema-container">
+
+            <div id="RangesContainerId" class="schema ranges">
+            </div>
+
+            <div class="schema polar">
+              <div id="container_number_of_requests"></div>
+            </div>
+<div class="simulation-card">
+  <div class="simulation-version-information">
+  <span class="simulation-information-title">Gatling Version</span>
+    <span class="simulation-information-item">
+      <span class="simulation-information-label">Version: </span>
+      <span>3.15.0</span>
+    </span>
+    <span class="simulation-information-item">
+      <span class="simulation-information-label">Released: </span>
+      <span>2026-02-27</span>
+    </span>
+  </div>
+  <div id="simulation-information" class="simulation-version-information">
+    <span class="simulation-information-title">Run Information</span>
+    <div class="simulation-information-container">
+      <span class="simulation-information-item">
+        <span class="simulation-information-label">Date: </span>
+        <span>2026-04-27 21:07:35 GMT</span>
+      </span>
+      <span class="simulation-information-item">
+        <span class="simulation-information-label">Duration: </span>
+        <span>1m 52s </span>
+      </span>
+      <span class="simulation-information-item">
+        <span class="simulation-information-label">Description: </span>
+        <span>&mdash;</span>
+      </span>
+
+    </div>
+  </div>
+</div>
+</div>
+
+                      <div id="statistics_table_container">
+                        <div id="StatsContainerId" class="statistics extensible-geant collapsed">
+                            <div class="title">
+                              <div id="statistics_title" class="title_base"><span class="title_base_stats">Stats</span><span class="expand-table">Fixed height</span><span id="toggle-stats" class="toggle-table"></span><span class="collapse-table">Full size</span></div>
+                              <div class="right">
+                                  <button class="statistics-button expand-all-button">Expand all groups</button>
+                                  <button class="statistics-button collapse-all-button">Collapse all groups</button>
+                                  <button id="statistics_full_screen" class="statistics-button" onclick="openStatisticsTableModal()"><img alt="Fullscreen" src="style/fullscreen.svg"></button>
+                              </div>
+                            </div>
+                            <div class="scrollable">
+                              <table id="container_statistics_head" class="statistics-in extensible-geant">
+                                  <thead>
+                                      <tr>
+                                          <th rowspan="2" id="col-1" class="header sortable sorted-up"><span>Requests</span></th>
+                                          <th colspan="5" class="header"><span class="executions">Executions</span></th>
+                                          <th colspan="8" class="header"><span class="response-time">Response Time (ms)</span></th>
+                                      </tr>
+                                      <tr>
+                                          <th id="col-2" class="header sortable"><span>Total</span></th>
+                                          <th id="col-3" class="header sortable"><span>OK</span></th>
+                                          <th id="col-4" class="header sortable"><span>KO</span></th>
+                                          <th id="col-5" class="header sortable"><span>% KO</span></th>
+                                          <th id="col-6" class="header sortable"><span><abbr title="Count of events per second">Cnt/s</abbr></span></th>
+                                          <th id="col-7" class="header sortable"><span>Min</span></th>
+<th id="col-8" class="header sortable"><span>50th pct</span></th>
+<th id="col-9" class="header sortable"><span>75th pct</span></th>
+<th id="col-10" class="header sortable"><span>95th pct</span></th>
+<th id="col-11" class="header sortable"><span>99th pct</span></th>
+<th id="col-12" class="header sortable"><span>Max</span></th>
+<th id="col-13" class="header sortable"><span>Mean</span></th>
+<th id="col-14" class="header sortable"><span><abbr title="Standard Deviation">Std Dev</abbr></span></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody><tr id="ROOT" >
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="ROOT" style="margin-left: 0px;" class="expand-button ">&nbsp;</span>
+        <a href="index.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-ROOT" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-ROOT')" id="stats-table-ROOT" class="ellipsed-name">All Requests</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">152</td>
+  <td class="value ok col-3">148</td>
+  <td class="value ko col-4">4</td>
+  <td class="value ko col-5">2.63</td>
+  <td class="value total col-6">1.35</td>
+  <td class="value total col-7">38</td>
+  <td class="value total col-8">91</td>
+  <td class="value total col-9">164</td>
+  <td class="value total col-10">22991</td>
+  <td class="value total col-11">25696</td>
+  <td class="value total col-12">25733</td>
+  <td class="value total col-13">3248</td>
+  <td class="value total col-14">7146</td>
+</tr></tbody>
+                              </table>
+                              <table id="container_statistics_body" class="statistics-in extensible-geant">
+                                  <tbody><tr id="req_request-0-693933696" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-0-693933696" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-0-693933696.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-0-693933696" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-0-693933696')" id="stats-table-req_request-0-693933696" class="ellipsed-name">request_0</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">83</td>
+  <td class="value total col-8">83</td>
+  <td class="value total col-9">83</td>
+  <td class="value total col-10">83</td>
+  <td class="value total col-11">83</td>
+  <td class="value total col-12">83</td>
+  <td class="value total col-13">83</td>
+  <td class="value total col-14">0</td>
+</tr><tr id="req_request-4-693933700" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-4-693933700" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-4-693933700.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-4-693933700" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-4-693933700')" id="stats-table-req_request-4-693933700" class="ellipsed-name">request_4</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">81</td>
+  <td class="value total col-8">82</td>
+  <td class="value total col-9">90</td>
+  <td class="value total col-10">90</td>
+  <td class="value total col-11">90</td>
+  <td class="value total col-12">90</td>
+  <td class="value total col-13">84</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-2-693933698" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-2-693933698" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-2-693933698.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-2-693933698" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-2-693933698')" id="stats-table-req_request-2-693933698" class="ellipsed-name">request_2</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">80</td>
+  <td class="value total col-8">82</td>
+  <td class="value total col-9">82</td>
+  <td class="value total col-10">82</td>
+  <td class="value total col-11">82</td>
+  <td class="value total col-12">82</td>
+  <td class="value total col-13">82</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-3-693933699" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-3-693933699" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-3-693933699.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-3-693933699" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-3-693933699')" id="stats-table-req_request-3-693933699" class="ellipsed-name">request_3</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">81</td>
+  <td class="value total col-8">81</td>
+  <td class="value total col-9">82</td>
+  <td class="value total col-10">82</td>
+  <td class="value total col-11">82</td>
+  <td class="value total col-12">82</td>
+  <td class="value total col-13">81</td>
+  <td class="value total col-14">0</td>
+</tr><tr id="req_request-1-693933697" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-1-693933697" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-1-693933697.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-1-693933697" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-1-693933697')" id="stats-table-req_request-1-693933697" class="ellipsed-name">request_1</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">39</td>
+  <td class="value total col-8">39</td>
+  <td class="value total col-9">39</td>
+  <td class="value total col-10">39</td>
+  <td class="value total col-11">39</td>
+  <td class="value total col-12">39</td>
+  <td class="value total col-13">39</td>
+  <td class="value total col-14">0</td>
+</tr><tr id="req_request-5-693933701" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-5-693933701" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-5-693933701.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-5-693933701" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-5-693933701')" id="stats-table-req_request-5-693933701" class="ellipsed-name">request_5</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">83</td>
+  <td class="value total col-8">86</td>
+  <td class="value total col-9">86</td>
+  <td class="value total col-10">86</td>
+  <td class="value total col-11">86</td>
+  <td class="value total col-12">86</td>
+  <td class="value total col-13">85</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-6-693933702" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-6-693933702" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-6-693933702.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-6-693933702" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-6-693933702')" id="stats-table-req_request-6-693933702" class="ellipsed-name">request_6</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">0</td>
+  <td class="value ko col-4">4</td>
+  <td class="value ko col-5">100</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">68</td>
+  <td class="value total col-8">76</td>
+  <td class="value total col-9">77</td>
+  <td class="value total col-10">77</td>
+  <td class="value total col-11">77</td>
+  <td class="value total col-12">77</td>
+  <td class="value total col-13">74</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-7-693933703" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-7-693933703" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-7-693933703.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-7-693933703" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-7-693933703')" id="stats-table-req_request-7-693933703" class="ellipsed-name">request_7</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">83</td>
+  <td class="value total col-8">84</td>
+  <td class="value total col-9">85</td>
+  <td class="value total col-10">85</td>
+  <td class="value total col-11">85</td>
+  <td class="value total col-12">85</td>
+  <td class="value total col-13">84</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-8-693933704" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-8-693933704" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-8-693933704.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-8-693933704" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-8-693933704')" id="stats-table-req_request-8-693933704" class="ellipsed-name">request_8</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">49</td>
+  <td class="value total col-8">50</td>
+  <td class="value total col-9">52</td>
+  <td class="value total col-10">52</td>
+  <td class="value total col-11">52</td>
+  <td class="value total col-12">52</td>
+  <td class="value total col-13">50</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-9-693933705" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-9-693933705" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-9-693933705.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-9-693933705" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-9-693933705')" id="stats-table-req_request-9-693933705" class="ellipsed-name">request_9</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">104</td>
+  <td class="value total col-8">107</td>
+  <td class="value total col-9">107</td>
+  <td class="value total col-10">107</td>
+  <td class="value total col-11">107</td>
+  <td class="value total col-12">107</td>
+  <td class="value total col-13">106</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-10-37108175" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-10-37108175" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-10-37108175.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-10-37108175" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-10-37108175')" id="stats-table-req_request-10-37108175" class="ellipsed-name">request_10</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">95</td>
+  <td class="value total col-8">96</td>
+  <td class="value total col-9">104</td>
+  <td class="value total col-10">104</td>
+  <td class="value total col-11">104</td>
+  <td class="value total col-12">104</td>
+  <td class="value total col-13">98</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-11-37108176" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-11-37108176" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-11-37108176.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-11-37108176" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-11-37108176')" id="stats-table-req_request-11-37108176" class="ellipsed-name">request_11</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">97</td>
+  <td class="value total col-8">103</td>
+  <td class="value total col-9">105</td>
+  <td class="value total col-10">105</td>
+  <td class="value total col-11">105</td>
+  <td class="value total col-12">105</td>
+  <td class="value total col-13">102</td>
+  <td class="value total col-14">3</td>
+</tr><tr id="req_request-12-37108177" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-12-37108177" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-12-37108177.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-12-37108177" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-12-37108177')" id="stats-table-req_request-12-37108177" class="ellipsed-name">request_12</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">83</td>
+  <td class="value total col-8">87</td>
+  <td class="value total col-9">91</td>
+  <td class="value total col-10">91</td>
+  <td class="value total col-11">91</td>
+  <td class="value total col-12">91</td>
+  <td class="value total col-13">86</td>
+  <td class="value total col-14">3</td>
+</tr><tr id="req_request-13-37108178" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-13-37108178" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-13-37108178.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-13-37108178" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-13-37108178')" id="stats-table-req_request-13-37108178" class="ellipsed-name">request_13</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">66</td>
+  <td class="value total col-8">69</td>
+  <td class="value total col-9">86</td>
+  <td class="value total col-10">86</td>
+  <td class="value total col-11">86</td>
+  <td class="value total col-12">86</td>
+  <td class="value total col-13">72</td>
+  <td class="value total col-14">8</td>
+</tr><tr id="req_request-14-37108179" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-14-37108179" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-14-37108179.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-14-37108179" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-14-37108179')" id="stats-table-req_request-14-37108179" class="ellipsed-name">request_14</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">76</td>
+  <td class="value total col-8">85</td>
+  <td class="value total col-9">85</td>
+  <td class="value total col-10">85</td>
+  <td class="value total col-11">85</td>
+  <td class="value total col-12">85</td>
+  <td class="value total col-13">82</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-16-37108181" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-16-37108181" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-16-37108181.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-16-37108181" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-16-37108181')" id="stats-table-req_request-16-37108181" class="ellipsed-name">request_16</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">80</td>
+  <td class="value total col-8">86</td>
+  <td class="value total col-9">132</td>
+  <td class="value total col-10">132</td>
+  <td class="value total col-11">132</td>
+  <td class="value total col-12">132</td>
+  <td class="value total col-13">96</td>
+  <td class="value total col-14">21</td>
+</tr><tr id="req_request-15-37108180" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-15-37108180" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-15-37108180.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-15-37108180" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-15-37108180')" id="stats-table-req_request-15-37108180" class="ellipsed-name">request_15</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">38</td>
+  <td class="value total col-8">41</td>
+  <td class="value total col-9">41</td>
+  <td class="value total col-10">41</td>
+  <td class="value total col-11">41</td>
+  <td class="value total col-12">41</td>
+  <td class="value total col-13">40</td>
+  <td class="value total col-14">1</td>
+</tr><tr id="req_request-17-37108182" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-17-37108182" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-17-37108182.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-17-37108182" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-17-37108182')" id="stats-table-req_request-17-37108182" class="ellipsed-name">request_17</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">125</td>
+  <td class="value total col-8">142</td>
+  <td class="value total col-9">164</td>
+  <td class="value total col-10">164</td>
+  <td class="value total col-11">164</td>
+  <td class="value total col-12">164</td>
+  <td class="value total col-13">139</td>
+  <td class="value total col-14">16</td>
+</tr><tr id="req_request-19-37108184" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-19-37108184" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-19-37108184.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-19-37108184" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-19-37108184')" id="stats-table-req_request-19-37108184" class="ellipsed-name">request_19</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">129</td>
+  <td class="value total col-8">164</td>
+  <td class="value total col-9">168</td>
+  <td class="value total col-10">168</td>
+  <td class="value total col-11">168</td>
+  <td class="value total col-12">168</td>
+  <td class="value total col-13">152</td>
+  <td class="value total col-14">15</td>
+</tr><tr id="req_request-18-37108183" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-18-37108183" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-18-37108183.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-18-37108183" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-18-37108183')" id="stats-table-req_request-18-37108183" class="ellipsed-name">request_18</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">106</td>
+  <td class="value total col-8">159</td>
+  <td class="value total col-9">161</td>
+  <td class="value total col-10">161</td>
+  <td class="value total col-11">161</td>
+  <td class="value total col-12">161</td>
+  <td class="value total col-13">145</td>
+  <td class="value total col-14">23</td>
+</tr><tr id="req_request-20-37108206" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-20-37108206" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-20-37108206.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-20-37108206" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-20-37108206')" id="stats-table-req_request-20-37108206" class="ellipsed-name">request_20</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">78</td>
+  <td class="value total col-8">82</td>
+  <td class="value total col-9">89</td>
+  <td class="value total col-10">89</td>
+  <td class="value total col-11">89</td>
+  <td class="value total col-12">89</td>
+  <td class="value total col-13">82</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-23-37108209" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-23-37108209" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-23-37108209.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-23-37108209" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-23-37108209')" id="stats-table-req_request-23-37108209" class="ellipsed-name">request_23</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">8852</td>
+  <td class="value total col-8">11972</td>
+  <td class="value total col-9">21307</td>
+  <td class="value total col-10">21307</td>
+  <td class="value total col-11">21307</td>
+  <td class="value total col-12">21307</td>
+  <td class="value total col-13">13287</td>
+  <td class="value total col-14">4766</td>
+</tr><tr id="req_request-22-37108208" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-22-37108208" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-22-37108208.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-22-37108208" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-22-37108208')" id="stats-table-req_request-22-37108208" class="ellipsed-name">request_22</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">1086</td>
+  <td class="value total col-8">2965</td>
+  <td class="value total col-9">4918</td>
+  <td class="value total col-10">4918</td>
+  <td class="value total col-11">4918</td>
+  <td class="value total col-12">4918</td>
+  <td class="value total col-13">2769</td>
+  <td class="value total col-14">1408</td>
+</tr><tr id="req_request-21-37108207" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-21-37108207" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-21-37108207.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-21-37108207" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-21-37108207')" id="stats-table-req_request-21-37108207" class="ellipsed-name">request_21</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">5870</td>
+  <td class="value total col-8">15110</td>
+  <td class="value total col-9">18147</td>
+  <td class="value total col-10">18147</td>
+  <td class="value total col-11">18147</td>
+  <td class="value total col-12">18147</td>
+  <td class="value total col-13">11769</td>
+  <td class="value total col-14">5031</td>
+</tr><tr id="req_request-26-37108212" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-26-37108212" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-26-37108212.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-26-37108212" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-26-37108212')" id="stats-table-req_request-26-37108212" class="ellipsed-name">request_26</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">9990</td>
+  <td class="value total col-8">17261</td>
+  <td class="value total col-9">20304</td>
+  <td class="value total col-10">20304</td>
+  <td class="value total col-11">20304</td>
+  <td class="value total col-12">20304</td>
+  <td class="value total col-13">15436</td>
+  <td class="value total col-14">3816</td>
+</tr><tr id="req_request-24-37108210" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-24-37108210" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-24-37108210.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-24-37108210" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-24-37108210')" id="stats-table-req_request-24-37108210" class="ellipsed-name">request_24</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">7023</td>
+  <td class="value total col-8">16239</td>
+  <td class="value total col-9">19214</td>
+  <td class="value total col-10">19214</td>
+  <td class="value total col-11">19214</td>
+  <td class="value total col-12">19214</td>
+  <td class="value total col-13">13886</td>
+  <td class="value total col-14">4519</td>
+</tr><tr id="req_request-25-37108211" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-25-37108211" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-25-37108211.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-25-37108211" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-25-37108211')" id="stats-table-req_request-25-37108211" class="ellipsed-name">request_25</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">88</td>
+  <td class="value total col-8">102</td>
+  <td class="value total col-9">104</td>
+  <td class="value total col-10">104</td>
+  <td class="value total col-11">104</td>
+  <td class="value total col-12">104</td>
+  <td class="value total col-13">96</td>
+  <td class="value total col-14">7</td>
+</tr><tr id="req_request-27-37108213" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-27-37108213" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-27-37108213.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-27-37108213" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-27-37108213')" id="stats-table-req_request-27-37108213" class="ellipsed-name">request_27</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">22295</td>
+  <td class="value total col-8">24433</td>
+  <td class="value total col-9">25445</td>
+  <td class="value total col-10">25445</td>
+  <td class="value total col-11">25445</td>
+  <td class="value total col-12">25445</td>
+  <td class="value total col-13">23878</td>
+  <td class="value total col-14">1179</td>
+</tr><tr id="req_request-28-37108214" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-28-37108214" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-28-37108214.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-28-37108214" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-28-37108214')" id="stats-table-req_request-28-37108214" class="ellipsed-name">request_28</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">1880</td>
+  <td class="value total col-8">25662</td>
+  <td class="value total col-9">25733</td>
+  <td class="value total col-10">25733</td>
+  <td class="value total col-11">25733</td>
+  <td class="value total col-12">25733</td>
+  <td class="value total col-13">19693</td>
+  <td class="value total col-14">10284</td>
+</tr><tr id="req_request-29-37108215" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-29-37108215" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-29-37108215.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-29-37108215" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-29-37108215')" id="stats-table-req_request-29-37108215" class="ellipsed-name">request_29</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">9418</td>
+  <td class="value total col-8">23856</td>
+  <td class="value total col-9">25662</td>
+  <td class="value total col-10">25662</td>
+  <td class="value total col-11">25662</td>
+  <td class="value total col-12">25662</td>
+  <td class="value total col-13">19931</td>
+  <td class="value total col-14">6315</td>
+</tr><tr id="req_request-32-37108239" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-32-37108239" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-32-37108239.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-32-37108239" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-32-37108239')" id="stats-table-req_request-32-37108239" class="ellipsed-name">request_32</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">77</td>
+  <td class="value total col-8">84</td>
+  <td class="value total col-9">85</td>
+  <td class="value total col-10">85</td>
+  <td class="value total col-11">85</td>
+  <td class="value total col-12">85</td>
+  <td class="value total col-13">82</td>
+  <td class="value total col-14">3</td>
+</tr><tr id="req_request-33-37108240" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-33-37108240" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-33-37108240.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-33-37108240" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-33-37108240')" id="stats-table-req_request-33-37108240" class="ellipsed-name">request_33</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">39</td>
+  <td class="value total col-8">42</td>
+  <td class="value total col-9">44</td>
+  <td class="value total col-10">44</td>
+  <td class="value total col-11">44</td>
+  <td class="value total col-12">44</td>
+  <td class="value total col-13">41</td>
+  <td class="value total col-14">2</td>
+</tr><tr id="req_request-34-37108241" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-34-37108241" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-34-37108241.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-34-37108241" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-34-37108241')" id="stats-table-req_request-34-37108241" class="ellipsed-name">request_34</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">82</td>
+  <td class="value total col-8">88</td>
+  <td class="value total col-9">90</td>
+  <td class="value total col-10">90</td>
+  <td class="value total col-11">90</td>
+  <td class="value total col-12">90</td>
+  <td class="value total col-13">87</td>
+  <td class="value total col-14">3</td>
+</tr><tr id="req_request-37-37108244" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-37-37108244" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-37-37108244.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-37-37108244" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-37-37108244')" id="stats-table-req_request-37-37108244" class="ellipsed-name">request_37</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">94</td>
+  <td class="value total col-8">105</td>
+  <td class="value total col-9">108</td>
+  <td class="value total col-10">108</td>
+  <td class="value total col-11">108</td>
+  <td class="value total col-12">108</td>
+  <td class="value total col-13">103</td>
+  <td class="value total col-14">5</td>
+</tr><tr id="req_request-35-37108242" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-35-37108242" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-35-37108242.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-35-37108242" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-35-37108242')" id="stats-table-req_request-35-37108242" class="ellipsed-name">request_35</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">91</td>
+  <td class="value total col-8">97</td>
+  <td class="value total col-9">102</td>
+  <td class="value total col-10">102</td>
+  <td class="value total col-11">102</td>
+  <td class="value total col-12">102</td>
+  <td class="value total col-13">96</td>
+  <td class="value total col-14">4</td>
+</tr><tr id="req_request-36-37108243" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-36-37108243" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-36-37108243.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-36-37108243" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-36-37108243')" id="stats-table-req_request-36-37108243" class="ellipsed-name">request_36</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">98</td>
+  <td class="value total col-8">103</td>
+  <td class="value total col-9">106</td>
+  <td class="value total col-10">106</td>
+  <td class="value total col-11">106</td>
+  <td class="value total col-12">106</td>
+  <td class="value total col-13">103</td>
+  <td class="value total col-14">3</td>
+</tr><tr id="req_request-38-37108245" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-38-37108245" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-38-37108245.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-38-37108245" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-38-37108245')" id="stats-table-req_request-38-37108245" class="ellipsed-name">request_38</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">81</td>
+  <td class="value total col-8">82</td>
+  <td class="value total col-9">87</td>
+  <td class="value total col-10">87</td>
+  <td class="value total col-11">87</td>
+  <td class="value total col-12">87</td>
+  <td class="value total col-13">83</td>
+  <td class="value total col-14">2</td>
+</tr><tr id="req_request-39-37108246" data-parent="ROOT">
+  <td class="total col-1">
+    <div class="expandable-container">
+      <span id="req_request-39-37108246" style="margin-left: 0px;" class="expand-button hidden">&nbsp;</span>
+        <a href="req_request-39-37108246.html" class="withTooltip">
+          <span class="table-cell-tooltip" id="parent-stats-table-req_request-39-37108246" data-toggle="popover" data-placement="right" data-container="body" data-content="">
+            <span onmouseover="isEllipsed('stats-table-req_request-39-37108246')" id="stats-table-req_request-39-37108246" class="ellipsed-name">request_39</span>
+          </span>
+        </a>
+      <span class="value" style="display:none;">0</span>
+    </div>
+  </td>
+  <td class="value total col-2">4</td>
+  <td class="value ok col-3">4</td>
+  <td class="value ko col-4">0</td>
+  <td class="value ko col-5">0</td>
+  <td class="value total col-6">0.04</td>
+  <td class="value total col-7">209</td>
+  <td class="value total col-8">218</td>
+  <td class="value total col-9">235</td>
+  <td class="value total col-10">235</td>
+  <td class="value total col-11">235</td>
+  <td class="value total col-12">235</td>
+  <td class="value total col-13">219</td>
+  <td class="value total col-14">10</td>
+</tr></tbody>
+                              </table>
+                            </div>
+                        </div>
+                      </div>
+<dialog id="statistics_table_modal" class="statistics-table-modal">
+  <div class="statistics-table-modal-header"><button class="button-modal" onclick="closeStatisticsTableModal()"><img alt="Close" src="style/close.svg"></button></div>
+  <div class="statistics-table-modal-container">
+    <div id="statistics_table_modal_content" class="statistics-table-modal-content"></div>
+  </div>
+</dialog>
+<div class="statistics extensible-geant collapsed">
+    <div class="title">
+        Errors
+    </div>
+    <table id="container_errors" class="statistics-in extensible-geant">
+        <thead>
+            <tr>
+                <th id="error-col-1" class="header sortable"><span>Error</span></th>
+                <th id="error-col-2" class="header sortable"><span>Count</span></th>
+                <th id="error-col-3" class="header sortable"><span>Percentage</span></th>
+            </tr>
+        </thead>
+		<tbody>
+		    
+		    <tr>
+		    	<td class="error-col-1 total ko">status.find.in([200, 209], 304), found 400<span class="value" style="display:none">0</span></td>
+		    	<td class="value error-col-2 total ko">4</td>
+		    	<td class="value error-col-3 total ko">100%</td>
+		    </tr>
+		</tbody>
+    </table>
+</div>
+
+            <div class="schema geant">
+              <div id="UserStartRateContainerId" class="geant"></div>
+            </div>
+
+            <div class="schema geant">
+              <div id="MaxConcurrentUsersContainerId" class="geant"></div>
+            </div>
+
+            <div class="schema geant">
+              <div id="ResponseTimeDistributionContainerId" class="geant"></div>
+            </div>
+
+            <div class="schema geant">
+              <div id="ResponseTimeContainerId" class="geant"></div>
+            </div>
+
+            <div class="schema geant">
+                <div id="RequestsContainerId" class="geant"></div>
+            </div>
+
+            <div class="schema geant">
+                <div id="ResponsesContainerId" class="geant"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('.simulation-tooltip').popover({trigger:'hover', placement:'left'});
+        
+        setActiveMenu();
+        
+Highcharts.setOptions({
+  global: { useUTC: false }
+});
+
+new Highcharts.Chart({
+  chart: {
+    renderTo: 'RangesContainerId',
+    marginRight: 100
+  },
+  credits: { enabled: false },
+  legend: { enabled: false },
+  title: {
+    text: '<span class="chart_title">Response Time Ranges</span>',
+    useHTML: true
+  },
+  xAxis: {
+    categories: [
+      "t < 800 ms",
+      "t >= 800 ms <br> t < 1200 ms",
+      "t >= 1200 ms",
+      "failed"
+    ]
+  },
+  yAxis: {
+    title: { text: 'Number of Requests' },
+    reversedStacks: false
+  },
+  tooltip: {
+    formatter: function() {
+      var s;
+      if (this.point.name) { // the pie chart
+        s = ''+ this.point.name +': '+ this.y +'% requests';
+      } else {
+        s = ''+ this.y + ' requests';
+      }
+      return s;
+    }
+  },
+  plotOptions: {
+    series: {
+      stacking: 'normal',
+      shadow: true
+    }
+  },
+  series: [
+    {
+      type: 'column',
+      data: [{
+      	color: '#68b65c',
+      	y: 116
+      },
+      {
+      	color: '#FFDD00',
+      	y: 1
+      },
+      {
+      	color: '#FFA900',
+      	y: 31
+      },
+      {
+      	color: '#f15b4f',
+      	y: 4
+      }]
+    },
+    {
+      type: 'pie',
+      name: 'Percentages',
+      data: [
+        {
+          name: "t < 800 ms",
+          y: 76.31578947368422,
+          color: '#68b65c'
+        },
+        {
+          name: "800 ms <= t < 1200 ms",
+          y: 0.6578947368421052,
+          color: '#FFDD00'
+        },
+        {
+          name: "t >= 1200 ms",
+          y: 20.394736842105264,
+          color: '#FFA900'
+        },
+        {
+          name: "failed",
+          y: 2.631578947368421,
+          color: '#f15b4f'
+        }
+      ],
+      center: [345, 0],
+      size: 90,
+      showInLegend: false,
+      dataLabels: { enabled: false }
+    }
+  ]
+});
+
+var tickInterval = 1.0;
+
+new Highcharts.Chart({
+  chart: {
+    renderTo:'container_number_of_requests',
+    polar:true,
+    type:'column',
+    height:330
+  },
+  credits:{
+    enabled:false
+  },
+  title:{
+    text:'<span class="chart_title">Number of requests</span>',
+    useHTML: true,
+    widthAdjust:-20
+  },
+  xAxis:{
+    tickmarkPlacement:'on',
+    tickInterval: tickInterval,
+    categories: ['request_0', 'request_4', 'request_2', 'request_3', 'request_1', 'request_5', 'request_6', 'request_7', 'request_8', 'request_9', 'request_10', 'request_11', 'request_12', 'request_13', 'request_14', 'request_16', 'request_15', 'request_17', 'request_19', 'request_18', 'request_20', 'request_23', 'request_22', 'request_21', 'request_26', 'request_24', 'request_25', 'request_27', 'request_28', 'request_29', 'request_32', 'request_33', 'request_34', 'request_37', 'request_35', 'request_36', 'request_38', 'request_39'],
+    labels:{ enabled:false }
+  },
+  yAxis:{
+    min:0,
+    reversedStacks: false
+  },
+  plotOptions:{
+    series:{
+      stacking:'normal',
+      groupPadding:0,
+      pointPlacement:'on',
+      shadow: true
+    }
+  },
+  legend: {
+      borderWidth: 0,
+      itemStyle: { fontWeight: "normal" },
+      symbolRadius: 0
+  },
+  series:[
+      {
+      name:'OK',
+      data:[4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+      color:"#68b65c"
+    },
+    {
+      name:'KO',
+      data:[0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      color:"#f15b4f"
+    }
+  ]
+});
+
+	    $('#container_exceptions').sortable('#container_exceptions');
+    
+$('#container_statistics_head').sortable('#container_statistics_body');
+$('.statistics').expandable();
+
+$('#statistics_title').addClass('title_collapsed');
+$('#statistics_title').click(function() {
+    $('#toggle-stats').toggleClass("off");
+    $(this).toggleClass('title_collapsed').toggleClass('title_expanded');
+    $('#container_statistics_body').parent().toggleClass('scrollable').toggleClass('');
+});
+
+$('.table-cell-tooltip').popover({trigger:'hover'});
+
+	    $('#container_errors').sortable('#container_errors');
+    
+new Highcharts.StockChart({
+  chart: {
+    renderTo: 'UserStartRateContainerId',
+    zoomType: 'x'
+  },
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    align: 'right',
+    verticalAlign: 'top',
+    layout: 'vertical',
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title">Number of users started per second</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false
+  },
+  rangeSelector: {
+    buttonSpacing: 0,
+    buttonTheme: {
+      fill: '#CFC9C6',
+      padding: 1,
+      stroke: '#000000',
+      'stroke-width': 0.25,
+      style: {
+        color: '#000000',
+        fontWeight: 'bold',
+      },
+      states: {
+        stroke: '#000000',
+        'stroke-width': 0.25,
+        hover: {
+          fill: '#92918C',
+          style: { color: 'black' }
+        },
+        select: {
+          fill: '#FFA900',
+          style: { color: 'white' }
+        }
+      }
+    },
+    buttons : [
+      {
+        type : 'minute',
+        count : 1,
+        text : '1m'
+      }, {
+        type : 'minute',
+        count : 10,
+        text : '10m'
+      }, {
+        type : 'hour',
+        count : 1,
+        text : '1h'
+      }, {
+        type : 'all',
+        count : 1,
+        text : 'All'
+      }
+    ],
+    selected : 3,
+    inputEnabled : false
+  },
+  xAxis: {
+    type: 'datetime',
+    ordinal: false,
+    maxZoom: 10000 // three days
+  },
+  yAxis: {
+    title: { text: 'Number of users started' },
+    opposite: false,
+    min: 0
+  },
+  series: [
+    {
+color: '#5E7BE2',
+name: 'RecordedSimulationYOVIEN1C',
+data: [
+  [1777324056000, 4],[1777324057000, 0],[1777324058000, 0],[1777324059000, 0],[1777324060000, 0],[1777324061000, 0],[1777324062000, 0],[1777324063000, 0],[1777324064000, 0],[1777324065000, 0],[1777324066000, 0],[1777324067000, 0],[1777324068000, 0],[1777324069000, 0],[1777324070000, 0],[1777324071000, 0],[1777324072000, 0],[1777324073000, 0],[1777324074000, 0],[1777324075000, 0],[1777324076000, 0],[1777324077000, 0],[1777324078000, 0],[1777324079000, 0],[1777324080000, 0],[1777324081000, 0],[1777324082000, 0],[1777324083000, 0],[1777324084000, 0],[1777324085000, 0],[1777324086000, 0],[1777324087000, 0],[1777324088000, 0],[1777324089000, 0],[1777324090000, 0],[1777324091000, 0],[1777324092000, 0],[1777324093000, 0],[1777324094000, 0],[1777324095000, 0],[1777324096000, 0],[1777324097000, 0],[1777324098000, 0],[1777324099000, 0],[1777324100000, 0],[1777324101000, 0],[1777324102000, 0],[1777324103000, 0],[1777324104000, 0],[1777324105000, 0],[1777324106000, 0],[1777324107000, 0],[1777324108000, 0],[1777324109000, 0],[1777324110000, 0],[1777324111000, 0],[1777324112000, 0],[1777324113000, 0],[1777324114000, 0],[1777324115000, 0],[1777324116000, 0],[1777324117000, 0],[1777324118000, 0],[1777324119000, 0],[1777324120000, 0],[1777324121000, 0],[1777324122000, 0],[1777324123000, 0],[1777324124000, 0],[1777324125000, 0],[1777324126000, 0],[1777324127000, 0],[1777324128000, 0],[1777324129000, 0],[1777324130000, 0],[1777324131000, 0],[1777324132000, 0],[1777324133000, 0],[1777324134000, 0],[1777324135000, 0],[1777324136000, 0],[1777324137000, 0],[1777324138000, 0],[1777324139000, 0],[1777324140000, 0],[1777324141000, 0],[1777324142000, 0],[1777324143000, 0],[1777324144000, 0],[1777324145000, 0],[1777324146000, 0],[1777324147000, 0],[1777324148000, 0],[1777324149000, 0],[1777324150000, 0],[1777324151000, 0],[1777324152000, 0],[1777324153000, 0],[1777324154000, 0],[1777324155000, 0],[1777324156000, 0],[1777324157000, 0],[1777324158000, 0],[1777324159000, 0],[1777324160000, 0],[1777324161000, 0],[1777324162000, 0],[1777324163000, 0],[1777324164000, 0],[1777324165000, 0],[1777324166000, 0],[1777324167000, 0],[1777324168000, 0]
+],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+},
+    {
+color: '#FFA900',
+name: 'All users',
+data: [
+  [1777324056000, 4],[1777324057000, 0],[1777324058000, 0],[1777324059000, 0],[1777324060000, 0],[1777324061000, 0],[1777324062000, 0],[1777324063000, 0],[1777324064000, 0],[1777324065000, 0],[1777324066000, 0],[1777324067000, 0],[1777324068000, 0],[1777324069000, 0],[1777324070000, 0],[1777324071000, 0],[1777324072000, 0],[1777324073000, 0],[1777324074000, 0],[1777324075000, 0],[1777324076000, 0],[1777324077000, 0],[1777324078000, 0],[1777324079000, 0],[1777324080000, 0],[1777324081000, 0],[1777324082000, 0],[1777324083000, 0],[1777324084000, 0],[1777324085000, 0],[1777324086000, 0],[1777324087000, 0],[1777324088000, 0],[1777324089000, 0],[1777324090000, 0],[1777324091000, 0],[1777324092000, 0],[1777324093000, 0],[1777324094000, 0],[1777324095000, 0],[1777324096000, 0],[1777324097000, 0],[1777324098000, 0],[1777324099000, 0],[1777324100000, 0],[1777324101000, 0],[1777324102000, 0],[1777324103000, 0],[1777324104000, 0],[1777324105000, 0],[1777324106000, 0],[1777324107000, 0],[1777324108000, 0],[1777324109000, 0],[1777324110000, 0],[1777324111000, 0],[1777324112000, 0],[1777324113000, 0],[1777324114000, 0],[1777324115000, 0],[1777324116000, 0],[1777324117000, 0],[1777324118000, 0],[1777324119000, 0],[1777324120000, 0],[1777324121000, 0],[1777324122000, 0],[1777324123000, 0],[1777324124000, 0],[1777324125000, 0],[1777324126000, 0],[1777324127000, 0],[1777324128000, 0],[1777324129000, 0],[1777324130000, 0],[1777324131000, 0],[1777324132000, 0],[1777324133000, 0],[1777324134000, 0],[1777324135000, 0],[1777324136000, 0],[1777324137000, 0],[1777324138000, 0],[1777324139000, 0],[1777324140000, 0],[1777324141000, 0],[1777324142000, 0],[1777324143000, 0],[1777324144000, 0],[1777324145000, 0],[1777324146000, 0],[1777324147000, 0],[1777324148000, 0],[1777324149000, 0],[1777324150000, 0],[1777324151000, 0],[1777324152000, 0],[1777324153000, 0],[1777324154000, 0],[1777324155000, 0],[1777324156000, 0],[1777324157000, 0],[1777324158000, 0],[1777324159000, 0],[1777324160000, 0],[1777324161000, 0],[1777324162000, 0],[1777324163000, 0],[1777324164000, 0],[1777324165000, 0],[1777324166000, 0],[1777324167000, 0],[1777324168000, 0]
+],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+}
+  ]
+});
+
+new Highcharts.StockChart({
+  chart: {
+    renderTo: 'MaxConcurrentUsersContainerId',
+    zoomType: 'x'
+  },
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    align: 'right',
+    verticalAlign: 'top',
+    layout: 'vertical',
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title">Number of concurrent users</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false
+  },
+  rangeSelector: {
+    buttonSpacing: 0,
+    buttonTheme: {
+      fill: '#CFC9C6',
+      padding: 1,
+      stroke: '#000000',
+      'stroke-width': 0.25,
+      style: {
+        color: '#000000',
+        fontWeight: 'bold',
+      },
+      states: {
+        stroke: '#000000',
+        'stroke-width': 0.25,
+        hover: {
+          fill: '#92918C',
+          style: { color: 'black' }
+        },
+        select: {
+          fill: '#FFA900',
+          style: { color: 'white' }
+        }
+      }
+    },
+    buttons : [
+      {
+        type : 'minute',
+        count : 1,
+        text : '1m'
+      }, {
+        type : 'minute',
+        count : 10,
+        text : '10m'
+      }, {
+        type : 'hour',
+        count : 1,
+        text : '1h'
+      }, {
+        type : 'all',
+        count : 1,
+        text : 'All'
+      }
+    ],
+    selected : 3,
+    inputEnabled : false
+  },
+  xAxis: {
+    type: 'datetime',
+    ordinal: false,
+    maxZoom: 10000 // three days
+  },
+  yAxis: {
+    title: { text: 'Number of concurrent users' },
+    opposite: false,
+    min: 0
+  },
+  series: [
+    {
+color: '#5E7BE2',
+name: 'RecordedSimulationYOVIEN1C',
+data: [
+  [1777324056000, 4],[1777324057000, 4],[1777324058000, 4],[1777324059000, 4],[1777324060000, 4],[1777324061000, 4],[1777324062000, 4],[1777324063000, 4],[1777324064000, 4],[1777324065000, 4],[1777324066000, 4],[1777324067000, 4],[1777324068000, 4],[1777324069000, 4],[1777324070000, 4],[1777324071000, 4],[1777324072000, 4],[1777324073000, 4],[1777324074000, 4],[1777324075000, 4],[1777324076000, 4],[1777324077000, 4],[1777324078000, 4],[1777324079000, 4],[1777324080000, 4],[1777324081000, 4],[1777324082000, 4],[1777324083000, 4],[1777324084000, 4],[1777324085000, 4],[1777324086000, 4],[1777324087000, 4],[1777324088000, 4],[1777324089000, 4],[1777324090000, 4],[1777324091000, 4],[1777324092000, 4],[1777324093000, 4],[1777324094000, 4],[1777324095000, 4],[1777324096000, 4],[1777324097000, 4],[1777324098000, 4],[1777324099000, 4],[1777324100000, 4],[1777324101000, 4],[1777324102000, 4],[1777324103000, 4],[1777324104000, 4],[1777324105000, 4],[1777324106000, 4],[1777324107000, 4],[1777324108000, 4],[1777324109000, 4],[1777324110000, 4],[1777324111000, 4],[1777324112000, 4],[1777324113000, 4],[1777324114000, 4],[1777324115000, 4],[1777324116000, 4],[1777324117000, 4],[1777324118000, 4],[1777324119000, 4],[1777324120000, 4],[1777324121000, 4],[1777324122000, 4],[1777324123000, 4],[1777324124000, 4],[1777324125000, 4],[1777324126000, 4],[1777324127000, 4],[1777324128000, 4],[1777324129000, 4],[1777324130000, 4],[1777324131000, 4],[1777324132000, 4],[1777324133000, 4],[1777324134000, 4],[1777324135000, 4],[1777324136000, 4],[1777324137000, 4],[1777324138000, 4],[1777324139000, 4],[1777324140000, 4],[1777324141000, 4],[1777324142000, 4],[1777324143000, 4],[1777324144000, 4],[1777324145000, 4],[1777324146000, 4],[1777324147000, 4],[1777324148000, 4],[1777324149000, 4],[1777324150000, 4],[1777324151000, 4],[1777324152000, 4],[1777324153000, 4],[1777324154000, 4],[1777324155000, 4],[1777324156000, 4],[1777324157000, 4],[1777324158000, 4],[1777324159000, 4],[1777324160000, 4],[1777324161000, 4],[1777324162000, 4],[1777324163000, 4],[1777324164000, 4],[1777324165000, 4],[1777324166000, 3],[1777324167000, 2],[1777324168000, 1]
+],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+},
+    {
+color: '#FFA900',
+name: 'All users',
+data: [
+  [1777324056000, 4],[1777324057000, 4],[1777324058000, 4],[1777324059000, 4],[1777324060000, 4],[1777324061000, 4],[1777324062000, 4],[1777324063000, 4],[1777324064000, 4],[1777324065000, 4],[1777324066000, 4],[1777324067000, 4],[1777324068000, 4],[1777324069000, 4],[1777324070000, 4],[1777324071000, 4],[1777324072000, 4],[1777324073000, 4],[1777324074000, 4],[1777324075000, 4],[1777324076000, 4],[1777324077000, 4],[1777324078000, 4],[1777324079000, 4],[1777324080000, 4],[1777324081000, 4],[1777324082000, 4],[1777324083000, 4],[1777324084000, 4],[1777324085000, 4],[1777324086000, 4],[1777324087000, 4],[1777324088000, 4],[1777324089000, 4],[1777324090000, 4],[1777324091000, 4],[1777324092000, 4],[1777324093000, 4],[1777324094000, 4],[1777324095000, 4],[1777324096000, 4],[1777324097000, 4],[1777324098000, 4],[1777324099000, 4],[1777324100000, 4],[1777324101000, 4],[1777324102000, 4],[1777324103000, 4],[1777324104000, 4],[1777324105000, 4],[1777324106000, 4],[1777324107000, 4],[1777324108000, 4],[1777324109000, 4],[1777324110000, 4],[1777324111000, 4],[1777324112000, 4],[1777324113000, 4],[1777324114000, 4],[1777324115000, 4],[1777324116000, 4],[1777324117000, 4],[1777324118000, 4],[1777324119000, 4],[1777324120000, 4],[1777324121000, 4],[1777324122000, 4],[1777324123000, 4],[1777324124000, 4],[1777324125000, 4],[1777324126000, 4],[1777324127000, 4],[1777324128000, 4],[1777324129000, 4],[1777324130000, 4],[1777324131000, 4],[1777324132000, 4],[1777324133000, 4],[1777324134000, 4],[1777324135000, 4],[1777324136000, 4],[1777324137000, 4],[1777324138000, 4],[1777324139000, 4],[1777324140000, 4],[1777324141000, 4],[1777324142000, 4],[1777324143000, 4],[1777324144000, 4],[1777324145000, 4],[1777324146000, 4],[1777324147000, 4],[1777324148000, 4],[1777324149000, 4],[1777324150000, 4],[1777324151000, 4],[1777324152000, 4],[1777324153000, 4],[1777324154000, 4],[1777324155000, 4],[1777324156000, 4],[1777324157000, 4],[1777324158000, 4],[1777324159000, 4],[1777324160000, 4],[1777324161000, 4],[1777324162000, 4],[1777324163000, 4],[1777324164000, 4],[1777324165000, 4],[1777324166000, 3],[1777324167000, 2],[1777324168000, 1]
+],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+}
+  ]
+});
+
+new Highcharts.Chart({
+  chart: {
+    renderTo: 'ResponseTimeDistributionContainerId',
+    type: 'column',
+    marginBottom: 60
+  },
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    y: 5,
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title">Response Time Distribution</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false
+  },
+  xAxis: {
+    categories: ['166', '423', '680', '937', '1194', '1451', '1708', '1965', '2222', '2479', '2736', '2993', '3250', '3507', '3764', '4021', '4278', '4535', '4792', '5049', '5305', '5562', '5819', '6076', '6333', '6590', '6847', '7104', '7361', '7618', '7875', '8132', '8389', '8646', '8903', '9160', '9417', '9674', '9931', '10188', '10444', '10701', '10958', '11215', '11472', '11729', '11986', '12243', '12500', '12757', '13014', '13271', '13528', '13785', '14042', '14299', '14556', '14813', '15070', '15327', '15583', '15840', '16097', '16354', '16611', '16868', '17125', '17382', '17639', '17896', '18153', '18410', '18667', '18924', '19181', '19438', '19695', '19952', '20209', '20466', '20722', '20979', '21236', '21493', '21750', '22007', '22264', '22521', '22778', '23035', '23292', '23549', '23806', '24063', '24320', '24577', '24834', '25091', '25348', '25605'],
+    tickInterval: 20
+  },
+  yAxis: {
+    min: 0,
+    title: { text: 'Percentage of Requests' },
+    reversedStacks: false
+  },
+  tooltip: {
+    formatter: function() {
+      return '<b>'+ this.x +' ms</b><br/>'+
+      this.series.name +': '+ this.y +' %<br/>'+
+      'Total: '+ this.point.stackTotal + ' %';
+    }
+  },
+  plotOptions: {
+    series: {
+      groupPadding: 0,
+      stacking: 'normal',
+	    shadow: true
+    }
+  },
+  series: [
+  	{
+type: 'column',
+color: '#68b65c',
+name: 'OK',
+data: [
+  76.31,0.0,0.0,0.0,0.65,0.0,0.0,0.65,0.65,0.0,0.0,0.65,0.0,0.0,0.0,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.0,0.65,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.65,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.0,0.65,0.0,0.0,0.65,0.0,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.65,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.0,0.0,0.65,0.0,0.65,0.0,0.65,0.0,0.0,0.0,0.65,2.63
+],
+tooltip: { yDecimals: 0, ySuffix: 'ms' }
+},
+  	{
+type: 'column',
+color: '#f15b4f',
+name: 'KO',
+data: [
+  2.63,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+],
+tooltip: { yDecimals: 0, ySuffix: 'ms' }
+}
+  ]
+});
+
+new Highcharts.StockChart({
+  chart: {
+    renderTo: 'ResponseTimeContainerId',
+    zoomType: 'x',
+    marginBottom: 60
+  },
+  colors: ['#c4fd90', '#7ff77f', '#6ff2ad', '#61ede6', '#58c7e0', '#4ea1d4', '#487ad9', '#3f52cc', '#7335dc', '#c73905', '#FFA900'],
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    y: -65,
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title chart_title_">Response Time Percentiles over Time (OK)</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false,
+    baseSeries: 9
+  },
+  rangeSelector: {
+    rangeSelector: { align: "left" },
+    buttonSpacing: 0,
+    buttonTheme: {
+      fill: '#CFC9C6',
+      padding: 1,
+      stroke: '#000000',
+      'stroke-width': 0.25,
+      style: {
+        color: '#000000',
+        fontWeight: 'bold',
+      },
+      states: {
+        stroke: '#92918C',
+        'stroke-width': 0.25,
+        hover: {
+          fill: '#92918C',
+          style: { color: 'black' }
+        },
+        select: {
+          fill: '#FFA900',
+          style: { color: 'white' }
+        }
+      }
+    },
+    buttons : [
+      {
+        type : 'minute',
+        count : 1,
+        text : '1m'
+      }, {
+        type : 'minute',
+        count : 10,
+        text : '10m'
+      }, {
+        type : 'hour',
+        count : 1,
+        text : '1h'
+      }, {
+        type : 'all',
+        count : 1,
+        text : 'All'
+      }
+    ],
+    selected : 3,
+    inputEnabled : false
+  },
+  xAxis: {
+    type: 'datetime',
+    ordinal: false,
+    maxZoom: 10000 // three days
+  },
+  yAxis:[
+    {
+      min: 0,
+      title: { text: 'Response Time (ms)' },
+      opposite: false
+    }
+  ],
+  plotOptions: {
+    arearange: { lineWidth: 1 },
+    series: {
+      dataGrouping: { enabled: false }
+    }
+  },
+  series: [
+  
+         {
+pointInterval: 1000,
+name: 'min',
+data: [[1777324056000, 39], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 83], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 49], [1777324091000, null], [1777324092000, 95], [1777324093000, 66], [1777324094000, null], [1777324095000, null], [1777324096000, 38], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 78], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 42], [1777324149000, 39], [1777324150000, 44], [1777324151000, 40], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 87], [1777324166000, 81], [1777324167000, 81], [1777324168000, 82]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 10
+},
+         {
+pointInterval: 1000,
+name: '25%',
+data: [[1777324056000, 81], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 50], [1777324091000, null], [1777324092000, 97], [1777324093000, 69], [1777324094000, null], [1777324095000, null], [1777324096000, 82], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 1086], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 85], [1777324149000, 77], [1777324150000, 84], [1777324151000, 82], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 87], [1777324166000, 81], [1777324167000, 81], [1777324168000, 82]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 9
+},
+         {
+pointInterval: 1000,
+name: '50%',
+data: [[1777324056000, 82], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 83], [1777324091000, null], [1777324092000, 104], [1777324093000, 84], [1777324094000, null], [1777324095000, null], [1777324096000, 125], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 9990], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 102], [1777324149000, 91], [1777324150000, 97], [1777324151000, 95], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 8
+},
+         {
+pointInterval: 1000,
+name: '75%',
+data: [[1777324056000, 83], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 84], [1777324091000, null], [1777324092000, 107], [1777324093000, 87], [1777324094000, null], [1777324095000, null], [1777324096000, 154], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 18147], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 106], [1777324149000, 94], [1777324150000, 103], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 7
+},
+         {
+pointInterval: 1000,
+name: '80%',
+data: [[1777324056000, 83], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 84], [1777324091000, null], [1777324092000, 107], [1777324093000, 87], [1777324094000, null], [1777324095000, null], [1777324096000, 159], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 19214], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 106], [1777324149000, 94], [1777324150000, 103], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 6
+},
+         {
+pointInterval: 1000,
+name: '85%',
+data: [[1777324056000, 83], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 84], [1777324091000, null], [1777324092000, 107], [1777324093000, 87], [1777324094000, null], [1777324095000, null], [1777324096000, 161], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 21307], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 108], [1777324149000, 98], [1777324150000, 105], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 5
+},
+         {
+pointInterval: 1000,
+name: '90%',
+data: [[1777324056000, 83], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 85], [1777324091000, null], [1777324092000, 107], [1777324093000, 91], [1777324094000, null], [1777324095000, null], [1777324096000, 164], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 22295], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 108], [1777324149000, 98], [1777324150000, 105], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 4
+},
+         {
+pointInterval: 1000,
+name: '95%',
+data: [[1777324056000, 90], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 85], [1777324091000, null], [1777324092000, 107], [1777324093000, 91], [1777324094000, null], [1777324095000, null], [1777324096000, 164], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 24433], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 108], [1777324149000, 98], [1777324150000, 105], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 3
+},
+         {
+pointInterval: 1000,
+name: '99%',
+data: [[1777324056000, 90], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 85], [1777324091000, null], [1777324092000, 107], [1777324093000, 91], [1777324094000, null], [1777324095000, null], [1777324096000, 168], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 25445], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 108], [1777324149000, 98], [1777324150000, 105], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 2
+},
+         {
+pointInterval: 1000,
+name: 'max',
+data: [[1777324056000, 90], [1777324057000, null], [1777324058000, null], [1777324059000, null], [1777324060000, null], [1777324061000, null], [1777324062000, null], [1777324063000, null], [1777324064000, null], [1777324065000, null], [1777324066000, null], [1777324067000, null], [1777324068000, null], [1777324069000, null], [1777324070000, null], [1777324071000, null], [1777324072000, null], [1777324073000, null], [1777324074000, null], [1777324075000, null], [1777324076000, null], [1777324077000, null], [1777324078000, null], [1777324079000, null], [1777324080000, null], [1777324081000, null], [1777324082000, null], [1777324083000, 86], [1777324084000, null], [1777324085000, null], [1777324086000, null], [1777324087000, null], [1777324088000, null], [1777324089000, null], [1777324090000, 85], [1777324091000, null], [1777324092000, 107], [1777324093000, 91], [1777324094000, null], [1777324095000, null], [1777324096000, 168], [1777324097000, null], [1777324098000, null], [1777324099000, null], [1777324100000, null], [1777324101000, null], [1777324102000, null], [1777324103000, null], [1777324104000, null], [1777324105000, null], [1777324106000, null], [1777324107000, null], [1777324108000, null], [1777324109000, null], [1777324110000, null], [1777324111000, null], [1777324112000, null], [1777324113000, null], [1777324114000, 25445], [1777324115000, 25495], [1777324116000, 1880], [1777324117000, 25662], [1777324118000, 25662], [1777324119000, 25733], [1777324120000, null], [1777324121000, null], [1777324122000, 23856], [1777324123000, null], [1777324124000, null], [1777324125000, null], [1777324126000, 20787], [1777324127000, null], [1777324128000, null], [1777324129000, null], [1777324130000, null], [1777324131000, null], [1777324132000, 9418], [1777324133000, null], [1777324134000, null], [1777324135000, null], [1777324136000, null], [1777324137000, null], [1777324138000, null], [1777324139000, null], [1777324140000, null], [1777324141000, null], [1777324142000, null], [1777324143000, null], [1777324144000, null], [1777324145000, null], [1777324146000, null], [1777324147000, null], [1777324148000, 108], [1777324149000, 98], [1777324150000, 105], [1777324151000, 103], [1777324152000, null], [1777324153000, null], [1777324154000, null], [1777324155000, null], [1777324156000, null], [1777324157000, null], [1777324158000, null], [1777324159000, null], [1777324160000, null], [1777324161000, null], [1777324162000, null], [1777324163000, null], [1777324164000, null], [1777324165000, 218], [1777324166000, 235], [1777324167000, 214], [1777324168000, 209]],
+tooltip: { yDecimals: 0, ySuffix: 'ms' },
+type : 'area',
+yAxis: 0,
+zIndex: 1
+}
+  ]
+});
+
+new Highcharts.StockChart({
+  chart: {
+    renderTo: 'RequestsContainerId',
+    zoomType: 'x',
+    marginBottom: 60
+  },
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    y: -65,
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title">Number of requests per second</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false
+  },
+  rangeSelector: {
+    buttonSpacing: 0,
+    buttonTheme: {
+      fill: '#CFC9C6',
+      padding: 1,
+      stroke: '#000000',
+      'stroke-width': 0.25,
+      style: {
+        color: '#000000',
+        fontWeight: 'bold',
+      },
+      states: {
+        stroke: '#000000',
+        'stroke-width': 0.25,
+        hover: {
+          fill: '#92918C',
+          style: { color: 'black' }
+         },
+         select: {
+          fill: '#FFA900',
+          style: { color: 'white' }
+        }
+      }
+    },
+    buttons : [
+      {
+        type : 'minute',
+        count : 1,
+        text : '1m'
+      }, {
+        type : 'minute',
+        count : 10,
+        text : '10m'
+      }, {
+        type : 'hour',
+        count : 1,
+        text : '1h'
+      }, {
+        type : 'all',
+        count : 1,
+        text : 'All'
+      }
+    ],
+    selected : 3,
+    inputEnabled : false
+  },
+  plotOptions: {
+    series: {
+      dataGrouping: { enabled: false }
+    },
+    area: {
+      stacking: 'normal'
+    }
+  },
+  xAxis: {
+    type: 'datetime',
+    ordinal: false,
+    maxZoom: 10000 // three days
+  },
+  yAxis:[
+    {
+      min: 0,
+      title: { text: 'Number of requests' },
+      opposite: false,
+      reversedStacks: false
+    }
+  ],
+  series: [
+    {
+color: '#5E7BE2',
+name: 'All',
+data: [[1777324056000, 20], [1777324057000, 0], [1777324058000, 0], [1777324059000, 0], [1777324060000, 0], [1777324061000, 0], [1777324062000, 0], [1777324063000, 0], [1777324064000, 0], [1777324065000, 0], [1777324066000, 0], [1777324067000, 0], [1777324068000, 0], [1777324069000, 0], [1777324070000, 0], [1777324071000, 0], [1777324072000, 0], [1777324073000, 0], [1777324074000, 0], [1777324075000, 0], [1777324076000, 0], [1777324077000, 0], [1777324078000, 0], [1777324079000, 0], [1777324080000, 0], [1777324081000, 0], [1777324082000, 0], [1777324083000, 8], [1777324084000, 0], [1777324085000, 0], [1777324086000, 0], [1777324087000, 0], [1777324088000, 0], [1777324089000, 0], [1777324090000, 8], [1777324091000, 0], [1777324092000, 12], [1777324093000, 8], [1777324094000, 0], [1777324095000, 0], [1777324096000, 24], [1777324097000, 0], [1777324098000, 0], [1777324099000, 0], [1777324100000, 0], [1777324101000, 0], [1777324102000, 0], [1777324103000, 0], [1777324104000, 0], [1777324105000, 0], [1777324106000, 0], [1777324107000, 0], [1777324108000, 0], [1777324109000, 0], [1777324110000, 0], [1777324111000, 0], [1777324112000, 0], [1777324113000, 0], [1777324114000, 32], [1777324115000, 1], [1777324116000, 1], [1777324117000, 1], [1777324118000, 1], [1777324119000, 1], [1777324120000, 0], [1777324121000, 0], [1777324122000, 1], [1777324123000, 0], [1777324124000, 0], [1777324125000, 0], [1777324126000, 1], [1777324127000, 0], [1777324128000, 0], [1777324129000, 0], [1777324130000, 0], [1777324131000, 0], [1777324132000, 1], [1777324133000, 0], [1777324134000, 0], [1777324135000, 0], [1777324136000, 0], [1777324137000, 0], [1777324138000, 0], [1777324139000, 0], [1777324140000, 0], [1777324141000, 0], [1777324142000, 0], [1777324143000, 0], [1777324144000, 0], [1777324145000, 0], [1777324146000, 0], [1777324147000, 0], [1777324148000, 6], [1777324149000, 6], [1777324150000, 6], [1777324151000, 6], [1777324152000, 0], [1777324153000, 0], [1777324154000, 0], [1777324155000, 0], [1777324156000, 0], [1777324157000, 0], [1777324158000, 0], [1777324159000, 0], [1777324160000, 0], [1777324161000, 0], [1777324162000, 0], [1777324163000, 0], [1777324164000, 0], [1777324165000, 2], [1777324166000, 2], [1777324167000, 2], [1777324168000, 2]],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+,type: 'area'
+}
+  ]
+});
+
+new Highcharts.StockChart({
+  chart: {
+    renderTo: 'ResponsesContainerId',
+    zoomType: 'x',
+    marginBottom: 60
+  },
+  credits: { enabled: false },
+  legend: {
+    enabled: true,
+    floating: true,
+    y: -65,
+    borderWidth: 0,
+    itemStyle: { fontWeight: "normal" },
+    symbolRadius: 0
+  },
+  title: {
+    text: '<span class="chart_title">Number of responses per second</span>',
+    useHTML: true
+  },
+  navigator: {
+    maskInside: false
+  },
+  rangeSelector: {
+    buttonSpacing: 0,
+    buttonTheme: {
+      fill: '#CFC9C6',
+      padding: 1,
+      stroke: '#000000',
+      'stroke-width': 0.25,
+      style: {
+        color: '#000000',
+        fontWeight: 'bold',
+      },
+      states: {
+        stroke: '#000000',
+        'stroke-width': 0.25,
+        hover: {
+          fill: '#92918C',
+          style: { color: 'black' }
+         },
+         select: {
+          fill: '#FFA900',
+          style: { color: 'white' }
+        }
+      }
+    },
+    buttons : [
+      {
+        type : 'minute',
+        count : 1,
+        text : '1m'
+      }, {
+        type : 'minute',
+        count : 10,
+        text : '10m'
+      }, {
+        type : 'hour',
+        count : 1,
+        text : '1h'
+      }, {
+        type : 'all',
+        count : 1,
+        text : 'All'
+      }
+    ],
+    selected : 3,
+    inputEnabled : false
+  },
+  plotOptions: {
+    series: {
+      dataGrouping: { enabled: false }
+    },
+    area: {
+      stacking: 'normal'
+    }
+  },
+  xAxis: {
+    type: 'datetime',
+    ordinal: false,
+    maxZoom: 10000 // three days
+  },
+  yAxis:[
+    {
+      min: 0,
+      title: { text: 'Number of responses' },
+      opposite: false,
+      reversedStacks: false
+    }
+  ],
+  series: [
+    {
+color: '#5E7BE2',
+name: 'All',
+data: [[1777324056000, 20], [1777324057000, 0], [1777324058000, 0], [1777324059000, 0], [1777324060000, 0], [1777324061000, 0], [1777324062000, 0], [1777324063000, 0], [1777324064000, 0], [1777324065000, 0], [1777324066000, 0], [1777324067000, 0], [1777324068000, 0], [1777324069000, 0], [1777324070000, 0], [1777324071000, 0], [1777324072000, 0], [1777324073000, 0], [1777324074000, 0], [1777324075000, 0], [1777324076000, 0], [1777324077000, 0], [1777324078000, 0], [1777324079000, 0], [1777324080000, 0], [1777324081000, 0], [1777324082000, 0], [1777324083000, 8], [1777324084000, 0], [1777324085000, 0], [1777324086000, 0], [1777324087000, 0], [1777324088000, 0], [1777324089000, 0], [1777324090000, 4], [1777324091000, 4], [1777324092000, 12], [1777324093000, 8], [1777324094000, 0], [1777324095000, 0], [1777324096000, 24], [1777324097000, 0], [1777324098000, 0], [1777324099000, 0], [1777324100000, 0], [1777324101000, 0], [1777324102000, 0], [1777324103000, 0], [1777324104000, 0], [1777324105000, 0], [1777324106000, 0], [1777324107000, 0], [1777324108000, 0], [1777324109000, 0], [1777324110000, 0], [1777324111000, 0], [1777324112000, 0], [1777324113000, 0], [1777324114000, 8], [1777324115000, 1], [1777324116000, 1], [1777324117000, 1], [1777324118000, 1], [1777324119000, 1], [1777324120000, 1], [1777324121000, 1], [1777324122000, 1], [1777324123000, 1], [1777324124000, 1], [1777324125000, 1], [1777324126000, 1], [1777324127000, 1], [1777324128000, 1], [1777324129000, 1], [1777324130000, 1], [1777324131000, 0], [1777324132000, 2], [1777324133000, 1], [1777324134000, 0], [1777324135000, 1], [1777324136000, 1], [1777324137000, 1], [1777324138000, 1], [1777324139000, 1], [1777324140000, 1], [1777324141000, 1], [1777324142000, 1], [1777324143000, 1], [1777324144000, 1], [1777324145000, 1], [1777324146000, 1], [1777324147000, 1], [1777324148000, 6], [1777324149000, 6], [1777324150000, 6], [1777324151000, 6], [1777324152000, 0], [1777324153000, 0], [1777324154000, 0], [1777324155000, 0], [1777324156000, 0], [1777324157000, 0], [1777324158000, 0], [1777324159000, 0], [1777324160000, 0], [1777324161000, 0], [1777324162000, 0], [1777324163000, 0], [1777324164000, 0], [1777324165000, 2], [1777324166000, 2], [1777324167000, 1], [1777324168000, 3]],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+
+},
+{
+color: '#68b65c',
+name: 'OK',
+data: [[1777324056000, 20], [1777324057000, 0], [1777324058000, 0], [1777324059000, 0], [1777324060000, 0], [1777324061000, 0], [1777324062000, 0], [1777324063000, 0], [1777324064000, 0], [1777324065000, 0], [1777324066000, 0], [1777324067000, 0], [1777324068000, 0], [1777324069000, 0], [1777324070000, 0], [1777324071000, 0], [1777324072000, 0], [1777324073000, 0], [1777324074000, 0], [1777324075000, 0], [1777324076000, 0], [1777324077000, 0], [1777324078000, 0], [1777324079000, 0], [1777324080000, 0], [1777324081000, 0], [1777324082000, 0], [1777324083000, 4], [1777324084000, 0], [1777324085000, 0], [1777324086000, 0], [1777324087000, 0], [1777324088000, 0], [1777324089000, 0], [1777324090000, 4], [1777324091000, 4], [1777324092000, 12], [1777324093000, 8], [1777324094000, 0], [1777324095000, 0], [1777324096000, 24], [1777324097000, 0], [1777324098000, 0], [1777324099000, 0], [1777324100000, 0], [1777324101000, 0], [1777324102000, 0], [1777324103000, 0], [1777324104000, 0], [1777324105000, 0], [1777324106000, 0], [1777324107000, 0], [1777324108000, 0], [1777324109000, 0], [1777324110000, 0], [1777324111000, 0], [1777324112000, 0], [1777324113000, 0], [1777324114000, 8], [1777324115000, 1], [1777324116000, 1], [1777324117000, 1], [1777324118000, 1], [1777324119000, 1], [1777324120000, 1], [1777324121000, 1], [1777324122000, 1], [1777324123000, 1], [1777324124000, 1], [1777324125000, 1], [1777324126000, 1], [1777324127000, 1], [1777324128000, 1], [1777324129000, 1], [1777324130000, 1], [1777324131000, 0], [1777324132000, 2], [1777324133000, 1], [1777324134000, 0], [1777324135000, 1], [1777324136000, 1], [1777324137000, 1], [1777324138000, 1], [1777324139000, 1], [1777324140000, 1], [1777324141000, 1], [1777324142000, 1], [1777324143000, 1], [1777324144000, 1], [1777324145000, 1], [1777324146000, 1], [1777324147000, 1], [1777324148000, 6], [1777324149000, 6], [1777324150000, 6], [1777324151000, 6], [1777324152000, 0], [1777324153000, 0], [1777324154000, 0], [1777324155000, 0], [1777324156000, 0], [1777324157000, 0], [1777324158000, 0], [1777324159000, 0], [1777324160000, 0], [1777324161000, 0], [1777324162000, 0], [1777324163000, 0], [1777324164000, 0], [1777324165000, 2], [1777324166000, 2], [1777324167000, 1], [1777324168000, 3]],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+,type: 'area'
+},
+{
+color: '#f15b4f',
+name: 'KO',
+data: [[1777324056000, 0], [1777324057000, 0], [1777324058000, 0], [1777324059000, 0], [1777324060000, 0], [1777324061000, 0], [1777324062000, 0], [1777324063000, 0], [1777324064000, 0], [1777324065000, 0], [1777324066000, 0], [1777324067000, 0], [1777324068000, 0], [1777324069000, 0], [1777324070000, 0], [1777324071000, 0], [1777324072000, 0], [1777324073000, 0], [1777324074000, 0], [1777324075000, 0], [1777324076000, 0], [1777324077000, 0], [1777324078000, 0], [1777324079000, 0], [1777324080000, 0], [1777324081000, 0], [1777324082000, 0], [1777324083000, 4], [1777324084000, 0], [1777324085000, 0], [1777324086000, 0], [1777324087000, 0], [1777324088000, 0], [1777324089000, 0], [1777324090000, 0], [1777324091000, 0], [1777324092000, 0], [1777324093000, 0], [1777324094000, 0], [1777324095000, 0], [1777324096000, 0], [1777324097000, 0], [1777324098000, 0], [1777324099000, 0], [1777324100000, 0], [1777324101000, 0], [1777324102000, 0], [1777324103000, 0], [1777324104000, 0], [1777324105000, 0], [1777324106000, 0], [1777324107000, 0], [1777324108000, 0], [1777324109000, 0], [1777324110000, 0], [1777324111000, 0], [1777324112000, 0], [1777324113000, 0], [1777324114000, 0], [1777324115000, 0], [1777324116000, 0], [1777324117000, 0], [1777324118000, 0], [1777324119000, 0], [1777324120000, 0], [1777324121000, 0], [1777324122000, 0], [1777324123000, 0], [1777324124000, 0], [1777324125000, 0], [1777324126000, 0], [1777324127000, 0], [1777324128000, 0], [1777324129000, 0], [1777324130000, 0], [1777324131000, 0], [1777324132000, 0], [1777324133000, 0], [1777324134000, 0], [1777324135000, 0], [1777324136000, 0], [1777324137000, 0], [1777324138000, 0], [1777324139000, 0], [1777324140000, 0], [1777324141000, 0], [1777324142000, 0], [1777324143000, 0], [1777324144000, 0], [1777324145000, 0], [1777324146000, 0], [1777324147000, 0], [1777324148000, 0], [1777324149000, 0], [1777324150000, 0], [1777324151000, 0], [1777324152000, 0], [1777324153000, 0], [1777324154000, 0], [1777324155000, 0], [1777324156000, 0], [1777324157000, 0], [1777324158000, 0], [1777324159000, 0], [1777324160000, 0], [1777324161000, 0], [1777324162000, 0], [1777324163000, 0], [1777324164000, 0], [1777324165000, 0], [1777324166000, 0], [1777324167000, 0], [1777324168000, 0]],
+tooltip: { yDecimals: 0, ySuffix: '', valueDecimals: 0 }
+,type: 'area'
+},
+{
+type: 'pie',
+name: 'Distribution',
+data: [
+  {name: 'OK', y: 148, color: '#68b65c'},
+  {name: 'KO', y: 4, color: '#f15b4f'}
+],
+center: [775, -40],
+size: 70,
+showInLegend: false,
+dataLabels: { enabled: false },
+dataGrouping: { enabled: false }
+}
+  ]
+});
+
+    });
+</script>
+</div>
+</body>
+</html>
