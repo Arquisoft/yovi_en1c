@@ -40,7 +40,9 @@ describe("GameMenu", () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    await user.click(screen.getByRole("button", { name: /menu.view_history/i }));
+    await user.click(
+      screen.getByRole("button", { name: /menu.view_history/i }),
+    );
     expect(mockProps.onViewHistory).toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: /common.logout/i }));
@@ -59,9 +61,7 @@ describe("GameMenu", () => {
     // Difficulty: Random → Easy
     await user.click(nextButtons[2]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
 
     expect(mockProps.onStartGame).toHaveBeenCalledWith({
       boardSize: "medium",
@@ -86,7 +86,7 @@ describe("GameMenu", () => {
     render(<GameMenu {...mockProps} />);
 
     await user.click(
-      screen.getByRole("button", { name: /show game trivia/i }),
+      screen.getByRole("button", { name: /menu\.trivia_open_aria/i }),
     );
 
     expect(document.querySelector(".triviaCard")).toHaveAttribute(
@@ -102,10 +102,10 @@ describe("GameMenu", () => {
     render(<GameMenu {...mockProps} />);
 
     await user.click(
-      screen.getByRole("button", { name: /show game trivia/i }),
+      screen.getByRole("button", { name: /menu\.trivia_open_aria/i }),
     );
     await user.click(
-      screen.getByRole("button", { name: /close trivia/i }),
+      screen.getByRole("button", { name: /menu\.trivia_close_aria/i }),
     );
 
     expect(document.querySelector(".triviaCard")).toHaveAttribute(
@@ -119,7 +119,9 @@ describe("GameMenu", () => {
     const user = userEvent.setup();
     render(<GameMenu {...mockProps} />);
 
-    const toggle = screen.getByRole("button", { name: /show game trivia/i });
+    const toggle = screen.getByRole("button", {
+      name: /menu\.trivia_open_aria/i,
+    });
     await user.click(toggle);
     await user.click(toggle);
 
@@ -151,9 +153,7 @@ describe("GameMenu", () => {
     const prevButtons = screen.getAllByRole("button", { name: /prev/i });
     await user.click(prevButtons[0]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
     expect(mockProps.onStartGame).toHaveBeenCalledWith(
       expect.objectContaining({ boardSize: "large" }),
     );
@@ -167,9 +167,7 @@ describe("GameMenu", () => {
     const prevButtons = screen.getAllByRole("button", { name: /prev/i });
     await user.click(prevButtons[1]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
     expect(mockProps.onStartGame).toHaveBeenCalledWith(
       expect.objectContaining({ mode: "rob" }),
     );
@@ -183,9 +181,7 @@ describe("GameMenu", () => {
     const prevButtons = screen.getAllByRole("button", { name: /prev/i });
     await user.click(prevButtons[2]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
     expect(mockProps.onStartGame).toHaveBeenCalledWith(
       expect.objectContaining({ difficulty: "hard" }),
     );
@@ -199,9 +195,7 @@ describe("GameMenu", () => {
     const prevButtons = screen.getAllByRole("button", { name: /prev/i });
     await user.click(prevButtons[3]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
     expect(mockProps.onStartGame).toHaveBeenCalledWith(
       expect.objectContaining({ layout: "wooden" }),
     );
@@ -218,9 +212,7 @@ describe("GameMenu", () => {
     await user.click(nextButtons[0]);
     await user.click(nextButtons[0]);
 
-    await user.click(
-      screen.getByRole("button", { name: /menu.start_game/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /menu.start_game/i }));
     expect(mockProps.onStartGame).toHaveBeenCalledWith(
       expect.objectContaining({ boardSize: "small" }),
     );
