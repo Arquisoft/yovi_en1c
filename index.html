@@ -509,8 +509,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_quality_scenarios">10.2. Quality Scenarios</a></li>
 </ul>
 </li>
-<li><a href="#section-technical-risks">11. Risks and Technical Debts</a></li>
-<li><a href="#section-glossary">12. Glossary</a></li>
+<li><a href="#section-testing">11. Testing</a>
+<ul class="sectlevel2">
+<li><a href="#_unitary_tests">11.1. Unitary Tests</a></li>
+<li><a href="#_e2e_tests">11.2. E2E Tests</a></li>
+<li><a href="#_load_testing_gatling">11.3. Load Testing (Gatling)</a></li>
+</ul>
+</li>
+<li><a href="#section-technical-risks">12. Risks and Technical Debts</a></li>
+<li><a href="#section-glossary">13. Glossary</a></li>
 </ul>
 </div>
 </div>
@@ -2454,12 +2461,153 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 </div>
-<div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-technical-risks">11. Risks and Technical Debts</h2>
+<h2 id="section-testing">11. Testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To ensure the quality requirements and scenarios defined above are met, the system undergoes rigorous testing across multiple levels.</p>
+</div>
+<div class="sect2">
+<h3 id="_unitary_tests">11.1. Unitary Tests</h3>
+<div class="paragraph">
+<p>Unitary tests isolate individual components, functions, and services to verify their correctness in a controlled environment.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Frontend:</strong> Webapp UI components and hooks are tested using tools like Vitest and React Testing Library to ensure correct rendering, localization (i18n), and state management.</p>
+</li>
+<li>
+<p><strong>Gateway:</strong> API gateway is tested to ensure the performance and rerouting to the backend services.</p>
+</li>
+<li>
+<p><strong>Backend:</strong> All services  tested to ensure they execute as expected independent of external databases or network dependencies.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_e2e_tests">11.2. E2E Tests</h3>
+<div class="paragraph">
+<p>End-to-End (E2E) testing validates the entire application flow from the user&#8217;s perspective.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>These tests simulate real user interactions in a browser environment.</p>
+</li>
+<li>
+<p>They ensure that the frontend, backend microservices, and databases integrate correctly, verifying that core user journeys (e.g., logging in, viewing user lists) complete successfully.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_load_testing_gatling">11.3. Load Testing (Gatling)</h3>
+<div class="paragraph">
+<p>Load testing was conducted using Gatling to verify the system&#8217;s resilience under concurrent usage.
+The test mocks for each user, loggin, playing against easy bot on small board, and against heuristic bot in largest board, in between the stats board is checked and some log out and log in is performed too.</p>
+</div>
+<div class="sect3">
+<h4 id="_test_environment">11.3.1. Test Environment</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Platform:</strong> Azure Virtual Machine</p>
+</li>
+<li>
+<p><strong>Configuration:</strong> 1 vCPU, 2 GB RAM</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_load_test_results">11.3.2. Load Test Results</h4>
+<div class="paragraph">
+<p>The following table summarizes the performance metrics retrieved from the Gatling reports for scenarios of 4 and 10 concurrent users.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Metric</th>
+<th class="tableblock halign-left valign-top">4 Concurrent Users</th>
+<th class="tableblock halign-left valign-top">10 Concurrent Users</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Total Requests</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">152</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">380</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Successful Requests (OK)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">148</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">366</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Failed Requests (KO)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Error Rate</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.63%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.68%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Mean Response Time</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3,248 ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7,572 ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>95th Percentile</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">22,991 ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">51,501 ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Max Response Time</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">25,696 ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">60,007 ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Primary Errors</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Status 400</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Status 400 &amp; Request Timeouts</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_analysis">11.3.3. Analysis</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Performance Bottlenecks:</strong> The test results indicate that while the system remains functional, it suffers from extreme latency. A 95th percentile of 51 seconds under just 10 users suggests the CPU is likely saturated, leading to the observed 60-second request timeouts.</p>
+</li>
+<li>
+<p><strong>Infrastructure Assessment:</strong> The current <strong>1 vCPU and 2 GB RAM</strong> configuration is insufficient for handling concurrent traffic effectively, as the overhead of managing multiple microservices and the database exceeds the available processing power.</p>
+</li>
+<li>
+<p><strong>Considerations:</strong> Upgrading the infrastructure to at least <strong>2 vCPUs and 4 GB RAM</strong> would allow for better thread management and enough memory buffer to prevent the request queuing that is currently causing the high response times.</p>
+</li>
+</ul>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-technical-risks">12. Risks and Technical Debts</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Following are stated the key risks and potential areas of technical debt that require attention (Relevance from 1(low) to 3(high)):</p>
@@ -2480,6 +2628,12 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance Bottleneck</strong> (Resource Exhaustion)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gatling tests show 95th percentile response times &gt;50s and timeouts with only 10 concurrent users on the current 1vCPU/2GB RAM VM.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Upgrade Azure VM to 2vCPU/4GB RAM, optimize database queries, and implement horizontal scaling if load increases.</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Workflow Imbalance</strong> (End-of-sprint rush)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
@@ -2533,7 +2687,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-glossary">12. Glossary</h2>
+<h2 id="section-glossary">13. Glossary</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
