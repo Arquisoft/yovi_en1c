@@ -1,6 +1,9 @@
 import { Given, When, Then } from "@cucumber/cucumber";
 import assert from "assert";
 
+const FAKE_TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEyMyJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
 Given("the register page is open", async function () {
   await this.page.goto("http://localhost:5173");
 });
@@ -12,7 +15,7 @@ When("the API returns a successful registration", async function () {
       contentType: "application/json",
       body: JSON.stringify({
         message: "Login successful",
-        token: "fake-token-for-testing",
+        token: FAKE_TOKEN,
         user: { id: "123", username: "Alice" },
       }),
     });
@@ -34,9 +37,9 @@ Then(
     const text = await page.textContent(".menuSubtitle");
     assert.ok(
       text.includes(expectedName),
-      `Expected name "${expectedName}" not found in: "${text}"`,
+      `Expected name "${expectedName}" not found in: "${text}"`
     );
-  },
+  }
 );
 
 When("the API returns a 400 error", async function () {
@@ -51,7 +54,7 @@ When("the API returns a 400 error", async function () {
 
 When("the network call fails", async function () {
   await this.page.route("**/api/users/login", async (route) =>
-    route.abort("failed"),
+    route.abort("failed")
   );
 });
 
@@ -61,13 +64,11 @@ Then(
     const page = this.page;
     await page.waitForSelector(".error-message", { timeout: 5000 });
     const text = await page.textContent(".error-message");
-
     const actualExpected =
       expected === "Network error" ? "Failed to fetch" : expected;
-
     assert.ok(
       text.includes(actualExpected),
-      `Error expected: "${actualExpected}", obtained: "${text}"`,
+      `Error expected: "${actualExpected}", obtained: "${text}"`
     );
-  },
+  }
 );
