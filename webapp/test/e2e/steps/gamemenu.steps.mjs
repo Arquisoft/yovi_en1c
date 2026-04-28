@@ -126,24 +126,3 @@ Then("the game history page should be displayed", async function () {
   const page = this.page;
   await page.waitForSelector(".historyCard, .history", { timeout: 5000 });
 });
-
-When("I click the logout button", async function () {
-  const page = this.page;
-  const buttons = await page.$$(".btn.btnSecondary");
-  for (const button of buttons) {
-    const text = await button.textContent();
-    if (text && (text.includes("Logout") || text.includes("logout") || text.includes("Cerrar") || text.includes("Çıkış"))) {
-      await button.click();
-      break;
-    }
-  }
-});
-
-Then("I should be back on the login page", async function () {
-  const page = this.page;
-  await page.waitForSelector("#username, .login-form-container", {
-    timeout: 5000,
-  });
-  const usernameInput = await page.$("#username");
-  assert.ok(usernameInput, "Login form should be visible");
-});

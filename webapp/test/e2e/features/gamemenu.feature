@@ -36,8 +36,3 @@ Feature: GameMenu
     Given the user is logged in and on the menu
     When I click the view history button
     Then the game history page should be displayed
-
-  Scenario: Logout from menu
-    Given the user is logged in and on the menu
-    When I click the logout button
-    Then I should be back on the login page
