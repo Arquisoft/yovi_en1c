@@ -133,6 +133,7 @@ Given("the user is on the game history page", async function () {
 
 When("I click on the sort dropdown", async function () {
   const page = this.page;
+  await page.waitForSelector(".sortable", { timeout: 5000 });
   const sortable = await page.$(".sortable");
   if (sortable) {
     await sortable.click();
@@ -143,6 +144,7 @@ Then(
   "I should be able to sort by date, moves, result, difficulty, or board size",
   async function () {
     const page = this.page;
+    await page.waitForSelector(".sortable", { timeout: 5000 });
     const sortables = await page.$$(".sortable");
     assert.ok(sortables.length > 0, "Sort headers should be visible");
   }
