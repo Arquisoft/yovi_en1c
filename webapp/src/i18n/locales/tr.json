@@ -49,6 +49,24 @@
     "game_mode_aria": "oyun modu",
     "difficulty_aria": "zorluk derecesi",
     "rob_title": "Soygun Modu",
+    "board_layout": "Tahta düzeni",
+    "board_layout_aria": "tahta düzeni",
+    "layout": {
+      "classic_title": "Klasik",
+      "classic_desc": "Keskin renklerle temiz ve modern bir görünüm.",
+      "wooden_title": "Ahşap",
+      "wooden_desc": "Rüstik, geleneksel bir tahta hissi."
+    },
+    "trivia_open_aria": "Oyun bilgilerini göster",
+    "trivia_close_aria": "Bilgileri kapat",
+    "trivia": [
+      "Y, Ea Ea adında biri tarafından yaratıldı! İster inan ister inanma.",
+      "Köşeler tahtanın iki kenarını birleştirir, ancak diğer tarafa depar atmak bir sonsuzluk gibi hissettirebilir.",
+      "Altıgen ızgaralar, çapraz dengesizliği önledikleri için strateji oyunlarında kullanılır.",
+      "Botla oynarken aslında Rust ile savaşıyorsun!",
+      "Y; Hex ve Havannah ile aynı aileye aittir, ancak kendine has taktikleri vardır.",
+      "Rastgele bot, zor botun çok sıkıcı gelmesi ihtimaline karşı çılgın bir joker cazibesine sahiptir."
+    ],
     "board": {
       "small_title": "Küçük",
       "small_desc": "5×5 tahta, hızlı oyunlar için uygun",
@@ -134,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Y Oyunu",
+    "info_labels": {
+      "board": "Tahta",
+      "mode": "Mod",
+      "difficulty": "Zorluk"
+    },
     "info": {
       "standard": "Standart",
       "rob": "Soygun Modu",

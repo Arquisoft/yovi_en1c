@@ -49,6 +49,24 @@
     "game_mode_aria": "modo de juego",
     "difficulty_aria": "dificultad",
     "rob_title": "Modo Robo",
+    "board_layout": "Diseño del tablero",
+    "board_layout_aria": "diseño del tablero",
+    "layout": {
+      "classic_title": "Clásico",
+      "classic_desc": "Aspecto limpio y moderno con colores nítidos.",
+      "wooden_title": "Madera",
+      "wooden_desc": "Una sensación de tablero rústica y tradicional."
+    },
+    "trivia_open_aria": "Mostrar curiosidades del juego",
+    "trivia_close_aria": "Cerrar curiosidades",
+    "trivia": [
+      "¡Y fue creado por un tipo llamado Ea Ea! Créalo o no.",
+      "Las esquinas conectan dos lados del tablero, pero la carrera hacia el otro lado puede parecer una eternidad.",
+      "Las rejillas hexagonales se utilizan en juegos de estrategia porque evitan el desequilibrio diagonal.",
+      "¡Cuando juegas contra el bot, en realidad estás luchando contra Rust!",
+      "Y pertenece a la misma familia que Hex y Havannah, pero tiene sus propias tácticas únicas.",
+      "El bot aleatorio tiene el encanto de un comodín temerario, por si el bot más difícil te resulta demasiado aburrido."
+    ],
     "board": {
       "small_title": "Pequeño",
       "small_desc": "Tablero 5×5, ideal para partidas rápidas",
@@ -134,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Juego Y",
+    "info_labels": {
+      "board": "Tablero",
+      "mode": "Modo",
+      "difficulty": "Dificultad"
+    },
     "info": {
       "standard": "Estándar",
       "rob": "Modo Robo",

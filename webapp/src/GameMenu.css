@@ -4,49 +4,216 @@
   position: relative;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  background-color: #111116;
-
-  /* Fixed Hexagon Pattern with scattered Red/Blue flickering glows */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='200' viewBox='0 0 112 200'%3E%3Cdefs%3E%3Cstyle%3E .hex %7B stroke: %232d2d35; stroke-width: 1; fill: none; %7D .blue %7B fill: %233b82f6; opacity: 0; animation: pulse 8s infinite; %7D .red %7B fill: %23ef4444; opacity: 0; animation: pulse 12s infinite 2s; %7D @keyframes pulse %7B 0%25, 100%25 %7B opacity: 0; %7D 50%25 %7B opacity: 0.15; %7D %7D %3C/style%3E%3C/defs%3E%3Cpath class='hex' d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100'/%3E%3Cpath class='hex' d='M84 66L56 50L56 16L84 0L112 16L112 50L84 66L84 100'/%3E%3Cpath class='hex blue' d='M28 66L0 50L0 16L28 0L56 16L56 50z'/%3E%3Cpath class='hex red' d='M84 166L56 150L56 116L84 100L112 116L112 150z'/%3E%3C/svg%3E");
-  background-size: 112px 200px;
-  background-attachment: fixed; /* Keeps the background from scrolling */
+  padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+h2 {
+  color: #e5e7eb;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.menuTitleRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.menuTitleRow .historyButton {
+  justify-self: start;
+}
+
+.menuTitleRow .triviaHelp {
+  justify-self: end;
+}
+
+.menuTitle {
+  margin: 0;
+  text-align: center;
+}
+
+.menuSubtitle {
+  color: #b8c6e0;
+  font-size: 2rem;
+  line-height: 1.5;
+  padding-bottom: 1.5rem;
+}
+
+.triviaHelp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.triviaButton {
+  animation: suave 90s linear infinite;
+  background: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 0;
+  color: #22d3ee;
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: "Inter", system-ui, sans-serif;
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.triviaHelp.isOpen .triviaCardFront {
+  pointer-events: none;
+}
+
+.triviaHelp.isOpen .triviaCardBack {
+  pointer-events: auto;
+}
+
+.triviaButton:focus,
+.triviaButton:focus-visible,
+.triviaButton:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.triviaHelp.isOpen .triviaButton {
+  animation-play-state: paused;
+}
+
+.triviaCard {
+  position: absolute;
+  right: 0;
+  top: 130%;
+  min-width: 240px;
+  width: 260px;
+  height: auto;
+  perspective: 900px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.triviaHelp.isOpen .triviaCard {
+  opacity: 1;
+}
+
+.triviaCardInner {
+  width: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+  transition: transform 0.5s ease;
+}
+
+.triviaHelp.isOpen .triviaCardInner {
+  transform: rotateY(0deg);
+}
+
+.triviaCardFront {
+  position: absolute;
+  inset: 0;
+}
+
+.triviaCardBack {
+  position: relative;
+  background: linear-gradient(160deg,
+      rgba(30, 41, 59, 0.96),
+      rgba(15, 23, 42, 0.98));
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  font-family: "Inter", system-ui, sans-serif;
+  line-height: 1.6;
+  padding: 1rem 1.2rem;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  text-align: left;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  white-space: normal;
+  pointer-events: auto;
+}
+
+.triviaClose {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #e5e7eb;
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0;
+  line-height: 1;
+  font-weight: 700;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.triviaClose:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+@keyframes suave {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .menuCard {
   width: 100%;
   max-width: 760px;
-  background: rgba(26, 26, 31, 0.95); /* Slight transparency */
-  backdrop-filter: blur(8px); /* Nice glass effect */
+  background: rgba(26, 26, 31, 0.95);
+  backdrop-filter: blur(8px);
+  /* Nice glass effect */
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 22px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  padding: 2rem;
+  padding: 0;
   box-sizing: border-box;
+  max-height: 95vh;
+  overflow-y: auto;
 }
 
 .menuHeader {
+  padding: 15px 20px 0;
+  position: relative;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  min-height: 48px;
 }
 
 .menuTitle {
-  margin: 0;
-  font-size: 2rem;
-  color: #22d3ee;
+  margin: 0 auto;
 }
 
 .menuSubtitle {
   margin-top: 0.6rem;
   color: #4b5563;
-  font-size: 1rem;
+  font-size: 30px;
   line-height: 1.5;
+  display: block;
 }
 
 .menuSection {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
 }
 
 .sectionTitle {
@@ -64,6 +231,8 @@
 }
 
 .carouselButton {
+  font-size: 1.8rem;
+  font-weight: 700;
   width: 50px;
   height: 50px;
   border: none;
@@ -94,21 +263,14 @@
   transform: translateY(0) scale(1);
 }
 
-.carouselButton span {
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1;
-  transform: translateY(-1px);
-}
-
 .carouselCard {
   flex: 1;
   max-width: 430px;
-  min-height: 118px;
+  min-height: fit-content;
   background: var(--color-surface, #74748a);
   border: 1.5px solid #b6e3ea;
   border-radius: 18px;
-  padding: 1.2rem 1.5rem;
+  padding: 0.5rem 0.8rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -136,23 +298,56 @@
   font-size: 0.96rem;
   color: #b8c6e0;
   line-height: 1.45;
+  display: block;
 }
 
 .actions {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
-.btn {
+.btnPrimary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #ffffff;
   border: none;
-  border-radius: 12px;
-  padding: 0.9rem 1.4rem;
-  font-size: 1rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 10px 30px rgba(34, 197, 94, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btnPrimary:hover {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 36px rgba(34, 197, 94, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 6px 18px rgba(34, 197, 94, 0.3);
+}
+
+.btn,
+.btnPrimary,
+.btnSecondary {
+  color: #ffffff !important;
+}
+
+.btn {
+  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
   cursor: pointer;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   transition:
@@ -161,13 +356,6 @@
     opacity 0.2s ease;
 }
 
-.btnPrimary {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-  letter-spacing: 0.02em;
-}
 
 .btnPrimary:hover {
   background: #7c73ff;
@@ -184,10 +372,8 @@
 }
 
 .btnSecondary {
-  background: #a5a5b5;
-  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid #5b5b6a;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .btnSecondary:hover {
@@ -201,33 +387,145 @@
   transform: translateY(0);
 }
 
-.historyButtonWrapper .btnSecondary {
-  padding: 0.6rem 1rem;
+.historyButton--desktop {
+  display: block;
+  border-radius: 10px;
   font-size: 0.9rem;
-  background: #3a3a44;
+  background: rgba(255, 255, 255, 0.08);
   border-color: #7c73ff;
 }
 
-@media (max-width: 640px) {
+.historyButton--mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
   .menu {
-    padding: 1rem;
+    padding: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
   }
 
   .menuCard {
-    padding: 1.4rem;
+    width: min(95vw, 520px);
+    padding: 1rem;
     border-radius: 18px;
+    max-height: none;
+    min-height: auto;
+  }
+
+  .menuHeader {
+    padding: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .menuTitleRow {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
   }
 
   .menuTitle {
     font-size: 1.7rem;
+    white-space: nowrap;
   }
 
   .menuSubtitle {
-    font-size: 0.95rem;
+    display: none;
+  }
+
+  .triviaHelp {
+    display: none;
+  }
+
+  .triviaPopup {
+    display: none;
+  }
+
+  .triviaCard {
+    display: none;
+  }
+
+  .sectionTitle {
+    text-align: center;
+    margin-bottom: 0.45rem;
   }
 
   .carousel {
     gap: 0.75rem;
+  }
+
+
+  .carouselButton {
+    width: 44px;
+    height: 44px;
+  }
+
+  .carouselCard {
+    max-width: 300px;
+    padding: 0.45rem 0.7rem;
+  }
+
+  .optionDescription {
+    display: block;
+  }
+
+  .actions {
+    margin: 0.75rem 0 0;
+  }
+}
+
+@media (max-width: 450px) {
+
+
+  .menuCard {
+    width: 100%;
+    padding: 0.85rem;
+  }
+
+  .menuTitle {
+    font-size: 1.2rem;
+    align-self: center;
+  }
+
+  .historyButton--desktop {
+    display: none;
+  }
+
+  .historyButton--mobile {
+    display: block;
+  }
+
+  .triviaHelp {
+    display: none;
+  }
+
+  h2 {
+    color: #e5e7eb;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .triviaHelp {
+    display: none;
+  }
+
+  .menuSubtitle {
+    display: none;
+  }
+
+  .carouselCard {
+    min-height: fit-content;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .optionTitle {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+  }
+
+  .optionDescription {
+    display: none;
   }
 
   .carouselButton {
@@ -235,70 +533,29 @@
     height: 44px;
   }
 
-  .carouselButton span {
-    font-size: 1.5rem;
-  }
-
-  .carouselCard {
-    flex: 1;
-    max-width: 430px;
-    min-height: 118px;
-    background: #1f1f24;
-    border: 1.5px solid #3c4454;
-    border-radius: 18px;
-    padding: 1.2rem 1.5rem;
+  .menuCard {
+    min-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease,
-      transform 0.15s ease;
   }
 
-  .carouselCard:hover {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
   }
 
-  .optionTitle {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #e8f1ff;
-    margin-bottom: 0.35rem;
+  .btnLarge {
+    grid-column: 1 / -1;
   }
 
-  .optionDescription {
-    font-size: 0.96rem;
-    color: #b8c6e0;
-    line-height: 1.45;
+  .historyButton--desktop {
+    display: none;
   }
-}
 
-/* ── View Toggle ─────────────────────────────────────────────────────────── */
-.viewToggle {
-  display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.25rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+  .historyButton--mobile {
+    display: block;
+  }
 
-.toggleBtn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.toggleBtn.active {
-  background: var(--color-surface, #1a1a1f);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }

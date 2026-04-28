@@ -48,7 +48,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App hexBackground">
       <header
         style={{ padding: "1rem", display: "flex", justifyContent: "flex-end" }}
       >

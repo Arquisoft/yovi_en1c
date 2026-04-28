@@ -49,6 +49,24 @@
     "game_mode_aria": "manera de xuegu",
     "difficulty_aria": "enzancái",
     "rob_title": "Manera Robo",
+    "board_layout": "Diseñu del tableru",
+    "board_layout_aria": "diseñu del tableru",
+    "layout": {
+      "classic_title": "Clásicu",
+      "classic_desc": "Aspeutu llimpiu y modernu con colores nítidos.",
+      "wooden_title": "Madera",
+      "wooden_desc": "Una sensación de tableru rústica y tradicional."
+    },
+    "trivia_open_aria": "Amosar intereses del xuegu",
+    "trivia_close_aria": "Cerrar intereses",
+    "trivia": [
+      "¡Y foi creáu por un tipu llamáu Hala Hala! Crear o non.",
+      "Les esquines conecten dos llaos del tableru, pero la carrera escontra l'otru llau puede paecer una eternidá.",
+      "Les rejillas hexagonales utilizar en xuegos d'estratexa porque eviten el desequilibriu diagonal.",
+      "¡Cuando xuegues contra'l bot, en realidá tas lluchando contra Rust!",
+      "Y pertenez a la mesma familia que Hex y Havannah, pero tien les sos propies táctiques úniques.",
+      "El bot aleatoriu tien l'encantu d'un comodín temerariu, por si'l bot más mala te resulta demasiáu aburríu."
+    ],
     "board": {
       "small_title": "Pequenu",
       "small_desc": "Tablero 5×5, ideal para partíes rápides",
@@ -134,6 +152,11 @@
   },
   "board": {
     "title": "Yovi — Xuegu Y",
+    "info_labels": {
+      "board": "Tablero",
+      "mode": "Modo",
+      "difficulty": "Dificultá"
+    },
     "info": {
       "standard": "Estándar",
       "rob": "Manera Robo",

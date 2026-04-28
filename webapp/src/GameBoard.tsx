@@ -30,7 +30,8 @@ const ROB_BOT_ID_MAP: Record<Difficulty, string> = {
 };
 
 const LAYOUT_CLASS_MAP: Record<GameConfig["layout"], string> = {
-  classic: "layout-classic",
+  classic: "classic",
+  wooden: "wooden",
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -184,6 +185,7 @@ export default function GameBoard({ config, onBack, userName }: Props) {
       ? ROB_BOT_ID_MAP[config.difficulty]
       : BOT_ID_MAP[config.difficulty];
   const layoutClass = LAYOUT_CLASS_MAP[config.layout];
+  const isWooden = layoutClass === "wooden";
 
   const svgWidth =
     BOARD_MARGIN * 2 +
@@ -486,8 +488,8 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
     if (occupied === 0) {
       fill = isRobbed ? "rgba(56, 189, 248, 1)" : "rgba(56, 189, 248, 0.9)";
-      stroke = "#7dd3fc";
-      strokeW = 2;
+      stroke = isWooden ? "#bae6fd" : "#7dd3fc";
+      strokeW = isWooden ? 2.2 : 2;
     } else if (occupied === 1) {
       if (isRobTarget && isHovered) {
         // Bot cell being hovered in rob mode — preview as stealable
@@ -509,16 +511,21 @@ export default function GameBoard({ config, onBack, userName }: Props) {
         fill = isLastBot
           ? "rgba(251, 113, 133, 1)"
           : "rgba(251, 113, 133, 0.85)";
-        stroke = "#fda4af";
-        strokeW = isLastBot ? 2 : 1;
+        stroke = isWooden ? "#fecdd3" : "#fda4af";
+        strokeW = isLastBot ? 2 : isWooden ? 2 : 1;
       }
     } else if (isHovered) {
-      fill = "rgba(56, 189, 248, 0.18)";
-      stroke = "rgba(56, 189, 248, 0.6)";
+      fill = isWooden ? "rgba(96, 165, 250, 0.22)" : "rgba(56, 189, 248, 0.18)";
+      stroke = isWooden
+        ? "rgba(191, 219, 254, 0.75)"
+        : "rgba(56, 189, 248, 0.6)";
       strokeW = 2;
     } else {
-      fill = "rgba(59, 48, 48, 0.04)";
-      stroke = "rgba(0, 0, 0, 0.08)";
+      fill = isWooden
+        ? "rgba(255, 248, 220, 0.08)"
+        : "rgba(148, 163, 184, 0.10)";
+      stroke = isWooden ? "rgba(70, 42, 20, 0.5)" : "rgba(125, 211, 252, 0.18)";
+      strokeW = isWooden ? 1.8 : 1.4;
     }
 
     return { fill, stroke, strokeW, filter };
@@ -535,32 +542,61 @@ export default function GameBoard({ config, onBack, userName }: Props) {
     Object.values(boardMap).some((v) => v === 1);
 
   return (
-    <div className="board">
+    <div className="board hexBackground">
       <div className="boardCard">
-        <div className="boardHeader">
-          <button className="btn" type="button" onClick={onBack}>
+        <div className="boardTopGrid">
+          <button className="btn boardBackBtn" type="button" onClick={onBack}>
             {t("common.back")}
           </button>
-          <h2>{t("board.title")}</h2>
-          <div style={{ width: 80 }} />
-        </div>
 
-        <div className="boardMeta">
-          <span className="infoTag">
-            {config.boardSize.charAt(0).toUpperCase() +
-              config.boardSize.slice(1)}{" "}
-            ({boardSize}×{boardSize})
-          </span>
-          <span className="infoTag">{modeLabel}</span>
-          <span className="infoTag">
-            {t(`board.difficulty_label.${config.difficulty}`)}
-          </span>
-          <span className={`statusTag ${statusClass}`}>{statusLabel}</span>
-          {gameStatus !== "ongoing" && (
-            <button className="btn resetBtn" onClick={resetGame}>
-              {t("board.new_game")}
-            </button>
-          )}
+          <div className="centerTop">
+            {gameStatus !== "ongoing" ? (
+              <button
+                className="btn resetBtn"
+                type="button"
+                onClick={resetGame}
+              >
+                {t("board.new_game")}
+              </button>
+            ) : (
+              <h2 className="boardTitle">{t("board.title")}</h2>
+            )}
+          </div>
+
+          <div className="boardInfoStack">
+            <div className="infoRow">
+              <span className="infoLabel">{t("board.info_labels.board")}</span>
+              <span className="infoValue">
+                {t(`menu.board.${config.boardSize}_title`)} ({boardSize}×
+                {boardSize})
+              </span>
+            </div>
+
+            <div className="infoRow">
+              <span className="infoLabel">{t("board.info_labels.mode")}</span>
+              <span className="infoValue">{modeLabel}</span>
+            </div>
+
+            <div className="infoRow">
+              <span className="infoLabel">
+                {t("board.info_labels.difficulty")}
+              </span>
+              <span className="infoValue">
+                {t(`board.difficulty_label.${config.difficulty}`)}
+              </span>
+            </div>
+          </div>
+
+          <div className="playerBadge playerBadgeTop">
+            <div className="avatar avatarRed">🤖</div>
+            <div className="playerText">
+              <span className="playerName">Bot</span>
+            </div>
+          </div>
+
+          <div className={`statusTag ${statusClass}`}>{statusLabel}</div>
+
+          <div className="boardTopEmpty" />
         </div>
 
         {/* Rob-mode action bar */}
@@ -595,63 +631,78 @@ export default function GameBoard({ config, onBack, userName }: Props) {
 
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
-        <div className={`svgWrapper ${layoutClass}`}>
-          <svg
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            style={{ display: "block", width: "100%", height: "auto" }}
-          >
-            {Array.from({ length: boardSize }, (_, row) =>
-              Array.from({ length: row + 1 }, (_, col) => {
-                const x = boardSize - 1 - row;
-                const y = col;
-                const z = row - col;
-                const key = coordKey(x, y, z);
+        <div className="boardMiddle">
+          <div className={`svgWrapper ${layoutClass}`}>
+            <div className="boardSurface">
+              <svg
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                style={{ display: "block", width: "100%", height: "auto" }}
+              >
+                {Array.from({ length: boardSize }, (_, row) =>
+                  Array.from({ length: row + 1 }, (_, col) => {
+                    const x = boardSize - 1 - row;
+                    const y = col;
+                    const z = row - col;
+                    const key = coordKey(x, y, z);
 
-                const occupied = boardMap[key];
-                const isHovered = hoveredKey === key;
+                    const occupied = boardMap[key];
+                    const isHovered = hoveredKey === key;
 
-                const cx =
-                  BOARD_MARGIN +
-                  ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
-                  col * HEX_HORIZONTAL_SPACING +
-                  HEX_HORIZONTAL_SPACING / 2;
-                const cy =
-                  BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
+                    const cx =
+                      BOARD_MARGIN +
+                      ((boardSize - 1 - row) * HEX_HORIZONTAL_SPACING) / 2 +
+                      col * HEX_HORIZONTAL_SPACING +
+                      HEX_HORIZONTAL_SPACING / 2;
+                    const cy =
+                      BOARD_MARGIN + row * HEX_VERTICAL_SPACING + HEX_RADIUS;
 
-                const { fill, stroke, strokeW, filter } = getCellStyle(
-                  key,
-                  occupied,
-                  isHovered,
-                );
+                    const { fill, stroke, strokeW, filter } = getCellStyle(
+                      key,
+                      occupied,
+                      isHovered,
+                    );
 
-                const isClickable =
-                  canPlayerAct &&
-                  (robModeActive
-                    ? occupied === 1
-                    : occupied === undefined && !robModeActive);
+                    const isClickable =
+                      canPlayerAct &&
+                      (robModeActive
+                        ? occupied === 1
+                        : occupied === undefined && !robModeActive);
 
-                return (
-                  <polygon
-                    key={key}
-                    points={hexPoints(cx, cy, HEX_RADIUS - 1)}
-                    fill={fill}
-                    stroke={stroke}
-                    strokeWidth={strokeW}
-                    filter={filter}
-                    style={{
-                      cursor: isClickable ? "pointer" : "default",
-                      transition: "fill 0.15s, stroke 0.15s",
-                    }}
-                    onClick={() => handleCellClick(x, y, z)}
-                    onMouseEnter={() => {
-                      if (isClickable) setHoveredKey(key);
-                    }}
-                    onMouseLeave={() => setHoveredKey(null)}
-                  />
-                );
-              }),
-            )}
-          </svg>
+                    return (
+                      <polygon
+                        key={key}
+                        points={hexPoints(cx, cy, HEX_RADIUS - 1)}
+                        fill={fill}
+                        stroke={stroke}
+                        strokeWidth={strokeW}
+                        filter={filter}
+                        style={{
+                          cursor: isClickable ? "pointer" : "default",
+                          transition: "fill 0.15s, stroke 0.15s",
+                        }}
+                        onClick={() => handleCellClick(x, y, z)}
+                        onMouseEnter={() => {
+                          if (isClickable) setHoveredKey(key);
+                        }}
+                        onMouseLeave={() => setHoveredKey(null)}
+                      />
+                    );
+                  }),
+                )}
+              </svg>
+            </div>
+          </div>
+
+          <div className="boardLower">
+            <div className="playerBadge playerBadgeBottom">
+              <div className="avatar avatarBlue">
+                {(userName?.[0] || "Y").toUpperCase()}
+              </div>
+              <div className="playerText">
+                <span className="playerName">{userName || "You"}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="boardLegend">
