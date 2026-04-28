@@ -95,3 +95,49 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 Tabular or free form text.
 ****
 endif::arc42help[]
+
+[[section-testing]]
+== Testing
+
+To ensure the quality requirements and scenarios defined above are met, the system undergoes rigorous testing across multiple levels.
+
+=== Unitary Tests
+Unitary tests isolate individual components, functions, and services to verify their correctness in a controlled environment.
+
+* **Frontend:** Webapp UI components and hooks are tested using tools like Vitest and React Testing Library to ensure correct rendering, localization (i18n), and state management.
+* **Gateway:** API gateway is tested to ensure the performance and rerouting to the backend services.
+* **Backend:** All services  tested to ensure they execute as expected independent of external databases or network dependencies.
+
+=== E2E Tests
+End-to-End (E2E) testing validates the entire application flow from the user's perspective.
+
+* These tests simulate real user interactions in a browser environment.
+* They ensure that the frontend, backend microservices, and databases integrate correctly, verifying that core user journeys (e.g., logging in, viewing user lists) complete successfully.
+
+=== Load Testing (Gatling)
+Load testing was conducted using Gatling to verify the system's resilience under concurrent usage. 
+The test mocks for each user, loggin, playing against easy bot on small board, and against heuristic bot in largest board, in between the stats board is checked and some log out and log in is performed too.
+
+==== Test Environment
+* **Platform:** Azure Virtual Machine
+* **Configuration:** 1 vCPU, 2 GB RAM
+
+==== Load Test Results
+The following table summarizes the performance metrics retrieved from the Gatling reports for scenarios of 4 and 10 concurrent users. 
+[options="header",cols="1,1,1"]
+|===
+| Metric | 4 Concurrent Users | 10 Concurrent Users
+| **Total Requests** | 152 | 380
+| **Successful Requests (OK)** | 148 | 366
+| **Failed Requests (KO)** | 4 | 14
+| **Error Rate** | 2.63% | 3.68%
+| **Mean Response Time** | 3,248 ms | 7,572 ms
+| **95th Percentile** | 22,991 ms | 51,501 ms
+| **Max Response Time** | 25,696 ms | 60,007 ms
+| **Primary Errors** | Status 400 | Status 400 & Request Timeouts
+|===
+
+==== Analysis 
+* **Performance Bottlenecks:** The test results indicate that while the system remains functional, it suffers from extreme latency. A 95th percentile of 51 seconds under just 10 users suggests the CPU is likely saturated, leading to the observed 60-second request timeouts.
+* **Infrastructure Assessment:** The current **1 vCPU and 2 GB RAM** configuration is insufficient for handling concurrent traffic effectively, as the overhead of managing multiple microservices and the database exceeds the available processing power.
+* **Considerations:** Upgrading the infrastructure to at least **2 vCPUs and 4 GB RAM** would allow for better thread management and enough memory buffer to prevent the request queuing that is currently causing the high response times.
