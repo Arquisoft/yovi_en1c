@@ -1,4 +1,5 @@
 import express from "express";
+import promBundle from "express-prom-bundle";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import jwt from "jsonwebtoken";
 import swaggerUi from "swagger-ui-express";
@@ -8,6 +9,10 @@ import fs from "node:fs";
 const JWT_SECRET = process.env.JWT_SECRET || "gamey_secret_26";
 const app = express();
 const PORT = 8000;
+
+// ─── Prometheus Middleware ─────────────────────────────────────────────────────
+const metricsMiddleware = promBundle({ includeMethod: true });
+app.use(metricsMiddleware);
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const SERVICES = {
