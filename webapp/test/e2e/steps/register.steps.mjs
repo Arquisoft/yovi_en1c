@@ -21,27 +21,6 @@ When("the API returns a successful registration", async function () {
     });
   });
 });
-/*
-When("I enter {string} as the username and submit", async function (username) {
-  const page = this.page;
-  await page.fill("#username", username);
-  await page.fill("#password", "testpassword123");
-  await page.click(".submit-button");
-});
-
-Then(
-  "I should see a welcome message containing {string}",
-  async function (expectedName) {
-    const page = this.page;
-    await page.waitForSelector(".menuSubtitle", { timeout: 5000 });
-    const text = await page.textContent(".menuSubtitle");
-    assert.ok(
-      text.includes(expectedName),
-      `Expected name "${expectedName}" not found in: "${text}"`
-    );
-  }
-);
-*/
 When("the API returns a 400 error", async function () {
   await this.page.route("**/api/users/login", async (route) => {
     await route.fulfill({
