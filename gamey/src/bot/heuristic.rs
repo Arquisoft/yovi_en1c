@@ -220,6 +220,27 @@ fn minimax(
         vec![]
     };
 
+    let steal_candidates: Vec<Coordinates> = if rob_mode {
+        let mut opp: Vec<(Coordinates, u32)> = all_coords(size)
+            .into_iter()
+            // FIX: usar `opponent` local (ya era correcto), pero ahora
+            // verificamos explícitamente que la celda pertenece al
+            // oponente del jugador que mueve en ESTE nivel.
+            .filter(|c| board.cell_at(c) == Cell::Occupied(opponent))
+            .filter_map(|c| {
+                let mut sim = board.clone();
+                sim.add_move(Movement::Steal { player: current_player, coords: c }).ok()?;
+                Some((c, virtual_connection_cost(&sim, current_player)))
+            })
+            .collect();
+        opp.sort_by_key(|&(_, cost)| cost);
+        opp.truncate(3);
+        opp.into_iter().map(|(c, _)| c).collect()
+    } else {
+        vec![]
+    };
+
+    // El resto del minimax es idéntico — sin cambios aquí
     if maximizing {
         let mut value = i32::MIN;
         for coords in &placement_candidates {

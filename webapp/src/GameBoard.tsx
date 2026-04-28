@@ -629,6 +629,36 @@ export default function GameBoard({ config, onBack, userName }: Props) {
           </div>
         )}
 
+        {/* Rob-mode action bar */}
+        {isRobMode && gameStatus === "ongoing" && (
+          <div className="robBar">
+            {robModeActive ? (
+              <>
+                <span className="robHint">{t("board.rob.select_hint")}</span>
+                <button
+                  className="btn btnRobCancel"
+                  type="button"
+                  onClick={() => setRobModeActive(false)}
+                >
+                  {t("board.rob.cancel")}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="robHint">{t("board.rob.cost_hint")}</span>
+                <button
+                  className="btn btnRob"
+                  type="button"
+                  disabled={!canRob}
+                  onClick={() => setRobModeActive(true)}
+                >
+                  🗡 {t("board.rob.action")}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {errorMsg && <div className="errorBanner">{errorMsg}</div>}
 
         <div className="boardMiddle">

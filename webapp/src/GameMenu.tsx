@@ -323,7 +323,6 @@ export default function GameMenu({
                 Game history
               </button>
             </div>
-
             <button
               className="btn btnSecondary"
               type="button"
