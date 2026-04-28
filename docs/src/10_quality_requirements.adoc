@@ -114,7 +114,7 @@ End-to-End (E2E) testing validates the entire application flow from the user's p
 * These tests simulate real user interactions in a browser environment.
 * They ensure that the frontend, backend microservices, and databases integrate correctly, verifying that core user journeys (e.g., logging in, viewing user lists) complete successfully.
 
-=== Load Testing (Gatling)
+=== Load Testing
 Load testing was conducted using Gatling to verify the system's resilience under concurrent usage. 
 The test mocks for each user, loggin, playing against easy bot on small board, and against heuristic bot in largest board, in between the stats board is checked and some log out and log in is performed too.
 
