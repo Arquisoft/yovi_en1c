@@ -14,24 +14,22 @@ export interface GameConfig {
   layout: LayoutStyle;
 }
 
-const TRIVIA_SNIPPETS = [
-  "Y was created by a guy named Ea Ea! Believe it or not.",
-  "Corners connect two sides of the board, but the dash to the other side can feel like an eternity.",
-  "Hex grids are used in strategy games because they avoid diagonal imbalance.",
-  "When you are playing the bot, you are actually battling Rust!",
-  "Y belongs to the same family as Hex and Havannah, but it has its own unique tactics.",
-  "Random bot has the reckless wild card charm, in case the more difficult bot gets too boring for you.",
-];
-
-function getRandomTrivia() {
-  const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return TRIVIA_SNIPPETS[array[0] % TRIVIA_SNIPPETS.length];
-}
-
 export function TriviaHelp() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [trivia] = useState(getRandomTrivia);
+
+  // Initialize state once by picking a random item from the translated array
+  const [trivia] = useState(() => {
+    const snippets = t("menu.trivia", { returnObjects: true });
+
+    // Ensure we have an array before trying to pick an index
+    if (Array.isArray(snippets) && snippets.length > 0) {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      return snippets[array[0] % snippets.length];
+    }
+    return "";
+  });
 
   return (
     <div className={`triviaHelp ${open ? "isOpen" : ""}`}>
@@ -39,7 +37,7 @@ export function TriviaHelp() {
         type="button"
         className="triviaButton"
         onClick={() => setOpen((prev) => !prev)}
-        aria-label="Show game trivia"
+        aria-label={t("menu.trivia_open_aria")}
         aria-expanded={open}
       >
         ¿
@@ -54,7 +52,7 @@ export function TriviaHelp() {
             <button
               className="triviaClose"
               onClick={() => setOpen(false)}
-              aria-label="Close trivia"
+              aria-label={t("menu.trivia_close_aria")}
             >
               ×
             </button>
@@ -124,7 +122,6 @@ export default function GameMenu({
     <div className="menu hexBackground">
       <div className="menuCard">
         <div className="menuHeader">
-
           <div className="menuTitleRow">
             <div className="historyButton historyButton--desktop">
               <button
@@ -202,7 +199,9 @@ export default function GameMenu({
                 ‹
               </button>
               <div className="carouselCard">
-                <span className="optionTitle">{modeLabels[modeIndex].title}</span>
+                <span className="optionTitle">
+                  {modeLabels[modeIndex].title}
+                </span>
                 <span className="optionDescription">
                   {modeLabels[modeIndex].description}
                 </span>
@@ -325,7 +324,11 @@ export default function GameMenu({
               </button>
             </div>
 
-            <button className="btn btnSecondary" type="button" onClick={onLogOut}>
+            <button
+              className="btn btnSecondary"
+              type="button"
+              onClick={onLogOut}
+            >
               {t("common.logout")}
             </button>
           </div>

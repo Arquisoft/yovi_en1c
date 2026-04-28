@@ -49,6 +49,24 @@
     "game_mode_aria": "game mode",
     "difficulty_aria": "difficulty",
     "rob_title": "Rob Mode",
+    "board_layout": "Board layout",
+    "board_layout_aria": "board layout",
+    "layout": {
+      "classic_title": "Classic",
+      "classic_desc": "Clean, modern look with sharp colors.",
+      "wooden_title": "Wooden",
+      "wooden_desc": "A rustic, traditional board feel."
+    },
+    "trivia_open_aria": "Show game trivia",
+    "trivia_close_aria": "Close trivia",
+    "trivia": [
+      "Y was created by a guy named Ea Ea! Believe it or not.",
+      "Corners connect two sides of the board, but the dash to the other side can feel like an eternity.",
+      "Hex grids are used in strategy games because they avoid diagonal imbalance.",
+      "When you are playing the bot, you are actually battling Rust!",
+      "Y belongs to the same family as Hex and Havannah, but it has its own unique tactics.",
+      "Random bot has the reckless wild card charm, in case the more difficult bot gets too boring for you."
+    ],
     "board": {
       "small_title": "Small",
       "small_desc": "5×5 board, great for quick games",

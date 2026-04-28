@@ -49,6 +49,24 @@
     "game_mode_aria": "pelitila",
     "difficulty_aria": "vaikeusaste",
     "rob_title": "Ryöstötila",
+    "board_layout": "Laudan asettelu",
+    "board_layout_aria": "laudan asettelu",
+    "layout": {
+      "classic_title": "Klassinen",
+      "classic_desc": "Puhdas, moderni ulkoasu terävillä väreillä.",
+      "wooden_title": "Puinen",
+      "wooden_desc": "Maalaismainen, perinteinen pelilaudan tuntu."
+    },
+    "trivia_open_aria": "Näytä pelin nippelitiedot",
+    "trivia_close_aria": "Sulje nippelitiedot",
+    "trivia": [
+      "Y:n loi tyyppi nimeltä Ea Ea! Usko tai älä.",
+      "Kulmat yhdistävät laudan kaksi sivua, mutta ryntäys toiselle puolelle voi tuntua ikuisuudelta.",
+      "Heksaruudukoita käytetään strategiapeleissä, koska ne välttävät diagonaalista epätasapainoa.",
+      "Kun pelaat bottia vastaan, taistelet todellisuudessa Rustia vastaan!",
+      "Y kuuluu samaan perheeseen kuin Hex ja Havannah, mutta sillä on omat ainutlaatuiset taktiikkansa.",
+      "Satunnaisbotilla on holtiton jokerin viehätys, jos vaikeampi botti käy liian tylsäksi."
+    ],
     "board": {
       "small_title": "Pieni",
       "small_desc": "5×5 lauta, sopii nopeisiin peleihin",
