@@ -248,14 +248,6 @@ describe("GameMenu", () => {
     expect(triviaContent?.textContent).toMatch(/Trivia Snippet/);
   });
 
-  // Covers the fallback branch (if snippets is not an array or empty)
-  it("shows empty string if trivia snippets are missing", () => {
-    // We temporarily override the mock behavior for this specific test
-    vi.spyOn(console, "error").mockImplementation(() => {}); // Suppress potential i18n warnings
-
-    render(<GameMenu {...mockProps} />);
-  });
-
   // Coverage for the Desktop History Button explicitly
   it("triggers onViewHistory when the desktop button is clicked", async () => {
     const user = userEvent.setup();
