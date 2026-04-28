@@ -4,6 +4,26 @@ import { describe, expect, it, vi } from "vitest";
 import App from "../App";
 import "@testing-library/jest-dom";
 
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (str: string) => str,
+    i18n: {
+      changeLanguage: vi.fn(),
+      resolvedLanguage: "en",
+      language: "en",
+    },
+  }),
+  initReactI18next: {
+    type: "3rdParty",
+    init: vi.fn(),
+  },
+}));
+
+// 2. Mock the LanguageSwitcher component
+vi.mock("../LanguageSwitcher", () => ({
+  default: () => <div data-testid="language-switcher">Language Selector</div>,
+}));
+
 vi.mock("../RegisterForm", () => ({
   default: ({ onLoggedIn, onGoToSignUp }: any) => (
     <div>
@@ -68,11 +88,13 @@ vi.mock("../GameHistory", () => ({
 }));
 
 describe("App Navigation Flow", () => {
-  it("shows login screen on initial render", () => {
+  it("shows login screen and language switcher on initial render", () => {
     render(<App />);
 
     expect(screen.getByText(/Welcome to the Y game!/i)).toBeInTheDocument();
     expect(screen.getByText("Login Screen")).toBeInTheDocument();
+    // Verify language switcher is present
+    expect(screen.getByTestId("language-switcher")).toBeInTheDocument();
   });
 
   it("navigates from login to menu after logging in", async () => {

@@ -6,6 +6,7 @@ import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fi from "./locales/fi.json";
 import tr from "./locales/tr.json";
+import as from "./locales/ast.json";
 
 i18n
   .use(LanguageDetector) // auto-detect browser language
@@ -16,9 +17,10 @@ i18n
       es: { translation: es },
       fi: { translation: fi },
       tr: { translation: tr },
+      as: { translation: as },
     },
     fallbackLng: "en",
-    supportedLngs: ["en", "es", "fi", "tr"],
+    supportedLngs: ["en", "es", "fi", "tr", "as"],
     interpolation: {
       escapeValue: false, // React already escapes by default
     },

@@ -60,19 +60,6 @@ describe("SignUpForm Full Coverage Suite", () => {
     global.fetch = vi.fn();
   });
 
-  // 1. Covers Line 28: LanguageSwitcher onClick
-  it("changes language when a flag button is clicked", async () => {
-    const user = userEvent.setup();
-    render(
-      <SignUpForm onRegistered={onRegistered} onGoToLogin={onGoToLogin} />,
-    );
-
-    const spanishBtn = screen.getByRole("button", { name: /es/i });
-    await user.click(spanishBtn);
-
-    expect(mockChangeLanguage).toHaveBeenCalledWith("es");
-  });
-
   // 2. Covers Line 62: Empty fields validation
   it("shows error when fields are empty", async () => {
     const user = userEvent.setup();

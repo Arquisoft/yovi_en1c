@@ -7,7 +7,7 @@ import GameHistory from "./GameHistory";
 import type { GameConfig } from "./GameMenu";
 import GameBoard from "./GameBoard";
 import "./i18n/index.ts";
-
+import LanguageSwitcher from "./LanguageSwitcher";
 type Screen = "login" | "signup" | "menu" | "board" | "history";
 
 function App() {
@@ -49,6 +49,11 @@ function App() {
 
   return (
     <div className="App hexBackground">
+      <header
+        style={{ padding: "1rem", display: "flex", justifyContent: "flex-end" }}
+      >
+        <LanguageSwitcher />
+      </header>
       <div>
         <a
           href="https://github.com/Arquisoft/yovi_en1c"

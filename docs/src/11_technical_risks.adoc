@@ -8,6 +8,11 @@ Following are stated the key risks and potential areas of technical debt that re
 |===
 | Category & Item | Relevance | Considerations | Potential Mitigation
 
+| **Performance Bottleneck** (Resource Exhaustion)
+| 3
+| Gatling tests show 95th percentile response times >50s and timeouts with only 10 concurrent users on the current 1vCPU/2GB RAM VM.
+| Upgrade Azure VM to 2vCPU/4GB RAM, optimize database queries, and implement horizontal scaling if load increases.
+
 | **Workflow Imbalance** (End-of-sprint rush)
 | 2
 | Concentrating workload at the end of a sprint often leads to rushed implementation, higher defect rates, and technical debt.
